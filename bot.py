@@ -1664,6 +1664,18 @@ class Handler(BaseHTTPRequestHandler):
                 pass
 
 
+def keep_alive():
+    """Render bepul tarifi 15 daqiqa so'rovsiz qolsa serverni uxlatadi. KEEP_ALIVE=1 bo'lsa
+    har 10 daqiqada o'z manziliga so'rov yuboriladi va server uxlamaydi."""
+    url = CFG["WEBAPP_URL"] + "/healthz"
+    while True:
+        time.sleep(600)
+        try:
+            urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "gumbaz-keepalive"}), timeout=20).read()
+        except Exception as e:
+            log.info("keep-alive: %s", e)
+
+
 def shutdown(signum, frame):
     log.info("To'xtatilmoqda — zaxira saqlanmoqda…")
     try:
@@ -1696,6 +1708,9 @@ def main():
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
     threading.Thread(target=BACKUP.loop, daemon=True).start()
+    if str(os.environ.get("KEEP_ALIVE", "")).lower() in ("1", "true", "yes", "on"):
+        threading.Thread(target=keep_alive, daemon=True).start()
+        log.info("Keep-alive yoqilgan: server uxlamaydi")
 
     bots = [CLIENT] if SINGLE_BOT else [CLIENT, ADMIN]
     for b in bots:
