@@ -486,8 +486,59 @@ def app_url(page=""):
 _geo_cache, _geo_lock, _geo_last = {}, threading.Lock(), [0.0]
 
 
+_CYR = dict(zip("абвгдеёжзийклмнопрстуфхцчшщъыьэюяўқғҳ",
+                ["a", "b", "v", "g", "d", "e", "yo", "j", "z", "i", "y", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "f",
+                 "x", "ts", "ch", "sh", "sh", "'", "i", "", "e", "yu", "ya", "o'", "q", "g'", "h"]))
+_STREET_RU = [(r"^(?:улица|ул\.)\s+(.+)$", r"\1 ko'chasi"), (r"^(.+?)\s+(?:улица|ул\.)$", r"\1 ko'chasi"),
+              (r"^проспект\s+(.+)$", r"\1 shoh ko'chasi"), (r"^(.+?)\s+проспект$", r"\1 shoh ko'chasi"),
+              (r"^(?:переулок|пер\.)\s+(.+)$", r"\1 tor ko'chasi"), (r"^(?:махалля|махалла)\s+(.+)$", r"\1 mahallasi"),
+              (r"^(.+?)\s+(?:махалля|махалла)$", r"\1 mahallasi"), (r"^(.+?)\s+область$", r"\1 viloyati")]
+
+
+# Rasmiy o'zbekcha nomlar (OSM ko'pincha ruscha beradi)
+_UZ_NAMES = {
+    "кашкадарьинская область": "Qashqadaryo viloyati", "самаркандская область": "Samarqand viloyati",
+    "бухарская область": "Buxoro viloyati", "сурхандарьинская область": "Surxondaryo viloyati",
+    "ташкентская область": "Toshkent viloyati", "навоийская область": "Navoiy viloyati",
+    "джизакская область": "Jizzax viloyati", "сырдарьинская область": "Sirdaryo viloyati",
+    "ферганская область": "Farg'ona viloyati", "андижанская область": "Andijon viloyati",
+    "наманганская область": "Namangan viloyati", "хорезмская область": "Xorazm viloyati",
+    "республика каракалпакстан": "Qoraqalpog'iston Respublikasi", "ташкент": "Toshkent",
+    "шахрисабз": "Shahrisabz", "шахрисабзский район": "Shahrisabz tumani", "карши": "Qarshi", "китаб": "Kitob",
+    "яккабаг": "Yakkabog'", "гузар": "G'uzor", "камаши": "Qamashi", "чиракчи": "Chiroqchi", "касан": "Koson",
+    "самарканд": "Samarqand", "бухара": "Buxoro", "термез": "Termiz", "кунчикар": "Kunchiqar",
+}
+
+
+def to_latin(text):
+    """O'zbek/rus kirill yozuvini o'zbek lotiniga o'giradi (OSM ma'lumotlari ko'pincha kirillda)."""
+    if not re.search("[А-Яа-яЁёЎўҚқҒғҲҳ]", text or ""):
+        return text or ""
+    t = text.strip()
+    if t.lower() in _UZ_NAMES:
+        return _UZ_NAMES[t.lower()]
+    for pat, rep in _STREET_RU:
+        t = re.sub(pat, rep, t, flags=re.I)
+    out = []
+    for i, ch in enumerate(t):
+        lo = ch.lower()
+        if lo in _CYR:
+            v = _CYR[lo]
+            if lo == "х" and i + 1 < len(t) and t[i + 1].lower() not in "кгх" and i > 0 and t[i - 1].lower() in "аоуэ":
+                v = "h"  # Шахрисабз → Shahrisabz (unli orasidagi «х» — h)
+            if lo == "е" and (i == 0 or not t[i - 1].isalpha()):
+                v = "ye"
+            out.append(v.capitalize() if ch.isupper() and v else v)
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
 def reverse_geocode(lat, lon, lang="uz"):
-    key = (round(lat, 4), round(lon, 4), lang)
+    """Koordinatadan manzil: «Qashqadaryo viloyati, Shahrisabz, Nasaf ko'chasi, 76».
+    Uy raqami faqat OpenStreetMap'da bo'lsa chiqadi — bo'lmasa mijoz o'zi yozadi."""
+    lang = "ru" if lang == "ru" else "uz"
+    key = (round(lat, 5), round(lon, 5), lang)
     if key in _geo_cache:
         return _geo_cache[key]
     res = ""
@@ -500,25 +551,38 @@ def reverse_geocode(lat, lon, lang="uz"):
             {"format": "jsonv2", "lat": lat, "lon": lon, "zoom": 18, "addressdetails": 1,
              "accept-language": "ru" if lang == "ru" else "uz,ru"})
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": f"GumbazExpressBot/3.0 (+{CFG['WEBAPP_URL']})"})
+            req = urllib.request.Request(url, headers={"User-Agent": f"GumbazExpressBot/3.2 (+{CFG['WEBAPP_URL']})"})
             with urllib.request.urlopen(req, timeout=8) as r:
-                d = json.loads(r.read())
-            a = d.get("address", {})
-            street = a.get("road") or a.get("pedestrian") or ""
-            if street and a.get("house_number"):
-                street += ", " + a["house_number"]
-            parts = []
-            for p in (street, a.get("suburb") or a.get("quarter") or a.get("neighbourhood") or a.get("village") or "",
-                      a.get("city") or a.get("town") or a.get("county") or ""):
-                if p and p not in parts:
-                    parts.append(p)
-            res = ", ".join(parts) or d.get("display_name", "")
+                a = json.loads(r.read()).get("address", {})
+            res = format_address(a, lang)
         except Exception as e:
             log.info("geocode xato: %s", e)
     if res:
         _geo_cache[key] = res
+        if len(_geo_cache) > 3000:
+            _geo_cache.clear()
         return res
     return f"{lat:.5f}, {lon:.5f}"
+
+
+def format_address(a, lang="uz"):
+    region = a.get("state") or a.get("region") or ""
+    city = a.get("city") or a.get("town") or a.get("village") or a.get("hamlet") or a.get("county") or ""
+    road = a.get("road") or a.get("pedestrian") or a.get("residential") or a.get("footway") or ""
+    hood = a.get("neighbourhood") or a.get("quarter") or a.get("suburb") or a.get("city_district") or ""
+    house = a.get("house_number") or ""
+    if lang == "uz":
+        region, city, road, hood = (to_latin(x) for x in (region, city, road, hood))
+    street = road or hood
+    parts = []
+    for p in (region, city, street):
+        p = (p or "").strip()
+        if p and all(p.lower() not in q.lower() for q in parts):
+            parts.append(p)
+    addr = ", ".join(parts)
+    if house and street:
+        addr += f", {house}"
+    return addr
 
 
 # ═════════════════════════════ Xarita kataklari (zaxira yo'li) ═════════════════════════════
@@ -1149,7 +1213,7 @@ ROUTE_PERM = {
     "product/toggle": ("stock", "menu"), "product/save": "menu", "product/delete": "menu",
     "category/save": "menu", "category/delete": "menu",
     "banner/save": "banners", "banner/delete": "banners",
-    "settings/save": "settings", "customers": "customers", "broadcast": "broadcast",
+    "settings/save": "settings", "geocode": "settings", "customers": "customers", "broadcast": "broadcast",
     "staff": "owner", "staff/save": "owner", "staff/delete": "owner",
 }
 UPLOAD_TYPES = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "video/mp4": "mp4", "video/quicktime": "mov"}
@@ -1588,7 +1652,10 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"ok": True})
 
         if route == "settings":
-            return self.send_json({"ok": True, "settings": all_settings()})
+            return self.send_json({"ok": True, "settings": all_settings(), "map_token": MAPBOX_TOKEN})
+        if route == "geocode":
+            lat, lon = float(body["lat"]), float(body["lon"])
+            return self.send_json({"ok": True, "uz": reverse_geocode(lat, lon, "uz"), "ru": reverse_geocode(lat, lon, "ru")})
         if route == "settings/save":
             s = db.kv_get("settings", {})
             for k, typ in SETTING_KEYS.items():

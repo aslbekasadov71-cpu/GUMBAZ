@@ -61,7 +61,8 @@ def used_icons(src):
 
 def build(name, out, solar, data=None, demo=False):
     base = open(os.path.join(ROOT, "src", "base.css"), encoding="utf-8").read()
-    src = open(os.path.join(ROOT, "src", name), encoding="utf-8").read().replace("/*__BASE__*/", base)
+    rd = lambda f: open(os.path.join(ROOT, "src", f), encoding="utf-8").read()
+    src = rd(name).replace("/*__BASE__*/", base).replace("/*__MAPCSS__*/", rd("map.css")).replace("/*__MAPJS__*/", rd("map.js"))
     missing = set(re.findall(r'#i-([a-z]+)', src)) - set(ICONS)
     if missing:
         raise SystemExit(f"ICONS ro'yxatida yo'q: {missing}")
