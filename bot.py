@@ -364,7 +364,7 @@ T = {
         "send_loc": "📍 Joylashuvni yuborish",
         "skip_loc": "Keyinroq kiritaman",
         "ready": "Hammasi tayyor! ✅\nPastdagi tugmani bosib menyuni oching 👇",
-        "addr": "📍 Taxminiy manzil: {a}\n\nUy raqami, kvartira va mo'ljalni menyudagi «Manzil» bo'limida aniqlashtirasiz.",
+        "addr": "📍 Manzil: {a}",
         "open": "🍔 Menyuni ochish",
         "menu_btn": "Menyu",
         "status": {"new": "🆕 Yangi", "accepted": "✅ Qabul qilindi", "cooking": "👨‍🍳 Tayyorlanmoqda",
@@ -385,7 +385,7 @@ T = {
         "send_loc": "📍 Отправить геолокацию",
         "skip_loc": "Укажу позже",
         "ready": "Всё готово! ✅\nНажмите кнопку ниже, чтобы открыть меню 👇",
-        "addr": "📍 Примерный адрес: {a}\n\nДом, квартиру и ориентир уточните в меню в разделе «Адрес».",
+        "addr": "📍 Адрес: {a}",
         "open": "🍔 Открыть меню",
         "menu_btn": "Меню",
         "status": {"new": "🆕 Новый", "accepted": "✅ Принят", "cooking": "👨‍🍳 Готовится",
@@ -534,6 +534,50 @@ def to_latin(text):
     return "".join(out)
 
 
+YANDEX_GEOCODER_KEY = (os.environ.get("YANDEX_GEOCODER_KEY") or str(CFG.get("YANDEX_GEOCODER_KEY") or "")).strip()
+
+
+def yandex_geocode(lat, lon, lang):
+    """Yandex HTTP Geocoder — Shahrisabz uchun uy raqamigacha aniq. YANDEX_GEOCODER_KEY kerak."""
+    for yl in (("uz_UZ", "ru_RU") if lang == "uz" else ("ru_RU",)):
+        url = "https://geocode-maps.yandex.ru/1.x/?" + urllib.parse.urlencode(
+            {"apikey": YANDEX_GEOCODER_KEY, "geocode": f"{lon},{lat}", "format": "json", "results": 1,
+             "kind": "house", "lang": yl})
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "GumbazExpressBot/3.3", "Referer": CFG["WEBAPP_URL"] + "/"})
+            with urllib.request.urlopen(req, timeout=8) as r:
+                d = json.loads(r.read())
+            fm = d["response"]["GeoObjectCollection"]["featureMember"]
+            if not fm:
+                return ""
+            comps = fm[0]["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["Address"]["Components"]
+            get = lambda kind: [c["name"] for c in comps if c.get("kind") == kind]
+            prov = get("province")
+            region = prov[0] if prov else ""
+            city = (get("locality") or [""])[0]
+            street = (get("street") or get("district") or [""])[0]
+            house = (get("house") or [""])[0]
+            if lang == "uz":
+                region, city, street = to_latin(region), to_latin(city), to_latin(street)
+            parts = []
+            for p in (region, city, street):
+                if p and all(p.lower() not in q.lower() for q in parts):
+                    parts.append(p)
+            addr = ", ".join(parts)
+            if house:
+                addr += f", {house}" if street else (f", {house}" if addr else house)
+            return addr
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403):
+                log.warning("Yandex geocoder: kalit noto'g'ri yoki bloklangan (%s)", e.code)
+                return ""
+            log.info("Yandex geocoder %s (%s)", e.code, yl)  # boshqa tilda qayta urinamiz
+        except Exception as e:
+            log.info("Yandex geocoder xato: %s", e)
+            return ""
+    return ""
+
+
 def reverse_geocode(lat, lon, lang="uz"):
     """Koordinatadan manzil: «Qashqadaryo viloyati, Shahrisabz, Nasaf ko'chasi, 76».
     Uy raqami faqat OpenStreetMap'da bo'lsa chiqadi — bo'lmasa mijoz o'zi yozadi."""
@@ -541,7 +585,10 @@ def reverse_geocode(lat, lon, lang="uz"):
     key = (round(lat, 5), round(lon, 5), lang)
     if key in _geo_cache:
         return _geo_cache[key]
-    res = ""
+    res = yandex_geocode(lat, lon, lang) if YANDEX_GEOCODER_KEY else ""
+    if res:
+        _geo_cache[key] = res
+        return res
     with _geo_lock:
         wait = 1.05 - (time.time() - _geo_last[0])
         if wait > 0:
