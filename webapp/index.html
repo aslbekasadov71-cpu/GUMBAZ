@@ -262,6 +262,7 @@ img.fade.ld{opacity:1}
 .gmarks{pointer-events:none;z-index:3}
 .gt{position:absolute;left:0;top:0;width:256px;height:256px;transform-origin:0 0;opacity:0;transition:opacity .3s ease;filter:saturate(.82) contrast(.97) brightness(1.03);pointer-events:none;-webkit-user-drag:none;max-width:none!important}
 .gt.ld{opacity:1}
+.mbx .gt{filter:none}
 .mapfb{position:absolute;left:24px;right:24px;top:calc(90px + env(safe-area-inset-top,0px));z-index:4;background:var(--card);border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:600;color:var(--ink);box-shadow:0 8px 24px rgba(16,24,40,.12)}
 .mshade{position:absolute;left:0;right:0;top:0;height:calc(110px + env(safe-area-inset-top,0px));background:linear-gradient(180deg,rgba(242,244,247,.92),rgba(242,244,247,0));z-index:4;pointer-events:none}
 .mtop{position:absolute;left:0;right:0;top:calc(12px + env(safe-area-inset-top,0px));z-index:6;display:flex;align-items:center;gap:10px;padding:0 max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));pointer-events:none}
@@ -763,7 +764,7 @@ function GMap(el, o) {
   const M = {lat: o.lat, lon: o.lon, z: o.zoom || 16, W: 0, H: 0, fx: 0, fy: 0, ox: 0, oy: 0, tiles: new Map(), marks: [], moving: false, loaded: 0, failed: 0, dead: false};
   const pane = document.createElement("div"); pane.className = "gpane"; el.appendChild(pane);
   const mk = document.createElement("div"); mk.className = "gmarks"; el.appendChild(mk);
-  const url = (z, x, y) => `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;  // kalitsiz, rasmiy OSM
+  const url = o.tileUrl || ((z, x, y) => `https://tile.openstreetmap.org/${z}/${x}/${y}.png`);  // standart: OSM
   const clampZ = z => Math.max(4, Math.min(19, z));
   M.center = () => MERC.px(M.lat, M.lon, M.z);
   M.toScreen = (lat, lon) => { const c = M.center(), p = MERC.px(lat, lon, M.z); return {x: p.x - c.x + M.fx, y: p.y - c.y + M.fy}; };
@@ -903,7 +904,10 @@ function openMap() {
       <button class="btn b full" id="msave">${ic("check", "s")} ${t("saveAddr")}</button></div></div>`;
   document.body.appendChild(el); updBack();
   const sheet = $("#msheet"), pin = $("#pin"), ctl = $("#mctl"), attr = $("#mattr");
+  const mbx = S.set.map_token;
+  if (mbx) { $("#gmap").classList.add("mbx"); $("#mattr").textContent = "© Mapbox · © OpenStreetMap"; }
   const map = MP.map = GMap($("#gmap"), {lat: MP.lat, lon: MP.lon, zoom: has ? 17 : 15,
+    tileUrl: mbx ? (z, x, y) => `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/${z}/${x}/${y}@2x?access_token=${encodeURIComponent(mbx)}` : null,
     focusY: H => Math.max(150, (H - sheet.offsetHeight) / 2 + 40),
     onMeasure: m => { pin.style.top = m.fy + "px"; const b = sheet.offsetHeight + 14; ctl.style.bottom = b + "px"; attr.style.bottom = (b - 4) + "px"; },
     onMoveStart: () => { el.classList.add("moving"); pin.classList.remove("drop"); pin.classList.add("lift"); hap("sel"); },

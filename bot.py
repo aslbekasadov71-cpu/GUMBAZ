@@ -96,6 +96,11 @@ def load_config():
 
 
 CFG = load_config()
+# Mapbox "public" tokeni (pk.…) — mini app xaritasi uchun. Bo'lmasa OpenStreetMap ishlatiladi.
+MAPBOX_TOKEN = (os.environ.get("MAPBOX_TOKEN") or str(CFG.get("MAPBOX_TOKEN") or "")).strip()
+if MAPBOX_TOKEN and not MAPBOX_TOKEN.startswith("pk."):
+    print("MAPBOX_TOKEN 'pk.' bilan boshlanishi kerak (public token) — e'tiborsiz qoldirildi", file=sys.stderr)
+    MAPBOX_TOKEN = ""
 CLIENT, ADMIN = "client", "admin"
 TOKENS = {CLIENT: CFG["CLIENT_BOT_TOKEN"], ADMIN: CFG["ADMIN_BOT_TOKEN"]}
 SINGLE_BOT = TOKENS[CLIENT] == TOKENS[ADMIN]
@@ -1046,7 +1051,8 @@ def client_settings():
                            "address": {"uz": s["RESTAURANT_ADDRESS_UZ"], "ru": s["RESTAURANT_ADDRESS_RU"]}},
             "support_phone": s["SUPPORT_PHONE"], "support_username": s["SUPPORT_USERNAME"],
             "work_hours": s["WORK_HOURS"] or "24/7", "min_order": int(s["MIN_ORDER"] or 0),
-            "accepting": bool(s["ACCEPTING"]), "closed_msg": {"uz": s["CLOSED_MSG_UZ"], "ru": s["CLOSED_MSG_RU"]}}
+            "accepting": bool(s["ACCEPTING"]), "closed_msg": {"uz": s["CLOSED_MSG_UZ"], "ru": s["CLOSED_MSG_RU"]},
+            "map_token": MAPBOX_TOKEN}
 
 
 def slug(s):
