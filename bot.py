@@ -258,6 +258,10 @@ class DB:
         CREATE INDEX IF NOT EXISTS ix_orders_created ON orders(created);
         CREATE INDEX IF NOT EXISTS ix_order_msgs ON order_msgs(order_id);
         """)
+        cols = {r[1] for r in self.c.execute("PRAGMA table_info(users)")}
+        for col in ("apt", "entrance", "floor", "landmark"):  # aniq manzil maydonlari (v3.1)
+            if col not in cols:
+                self.c.execute(f"ALTER TABLE users ADD COLUMN {col} TEXT")
         self.c.commit()
 
     def q(self, sql, args=(), one=False):
@@ -355,7 +359,7 @@ T = {
         "send_loc": "📍 Joylashuvni yuborish",
         "skip_loc": "Keyinroq kiritaman",
         "ready": "Hammasi tayyor! ✅\nPastdagi tugmani bosib menyuni oching 👇",
-        "addr": "📍 Manzil: {a}",
+        "addr": "📍 Taxminiy manzil: {a}\n\nUy raqami, kvartira va mo'ljalni menyudagi «Manzil» bo'limida aniqlashtirasiz.",
         "open": "🍔 Menyuni ochish",
         "menu_btn": "Menyu",
         "status": {"new": "🆕 Yangi", "accepted": "✅ Qabul qilindi", "cooking": "👨‍🍳 Tayyorlanmoqda",
@@ -376,7 +380,7 @@ T = {
         "send_loc": "📍 Отправить геолокацию",
         "skip_loc": "Укажу позже",
         "ready": "Всё готово! ✅\nНажмите кнопку ниже, чтобы открыть меню 👇",
-        "addr": "📍 Адрес: {a}",
+        "addr": "📍 Примерный адрес: {a}\n\nДом, квартиру и ориентир уточните в меню в разделе «Адрес».",
         "open": "🍔 Открыть меню",
         "menu_btn": "Меню",
         "status": {"new": "🆕 Новый", "accepted": "✅ Принят", "cooking": "👨‍🍳 Готовится",
@@ -510,6 +514,38 @@ def reverse_geocode(lat, lon, lang="uz"):
         _geo_cache[key] = res
         return res
     return f"{lat:.5f}, {lon:.5f}"
+
+
+# ═════════════════════════════ Xarita kataklari (zaxira yo'li) ═════════════════════════════
+from collections import OrderedDict
+
+_tiles, _tiles_lock = OrderedDict(), threading.Lock()
+TILE_SOURCES = ("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png")
+
+
+def get_tile(z, x, y):
+    """Mijoz brauzeri xarita serveriga to'g'ridan-to'g'ri ulana olmasa, katak shu server orqali olinadi."""
+    key = (z, x, y)
+    with _tiles_lock:
+        if key in _tiles:
+            _tiles.move_to_end(key)
+            return _tiles[key]
+    for tpl in TILE_SOURCES:
+        url = tpl.format(s="abcd"[(x + y) % 4], z=z, x=x, y=y)
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": f"GumbazExpress/3.1 (+{CFG['WEBAPP_URL']})"})
+            with urllib.request.urlopen(req, timeout=8) as r:
+                data = r.read(2 * 1024 * 1024)
+            if data[:4] == b"\x89PNG":
+                with _tiles_lock:
+                    _tiles[key] = data
+                    while len(_tiles) > 400:
+                        _tiles.popitem(last=False)
+                return data
+        except Exception as e:
+            log.info("tile %s: %s", url, e)
+    return None
 
 
 # ═════════════════════════════ Staff / permissions ═════════════════════════════
@@ -999,7 +1035,8 @@ def login_blocked(key):
 
 
 def public_user(u):
-    return {k: u.get(k) for k in ("tg_id", "phone", "name", "lang", "photo", "lat", "lon", "address")} if u else None
+    return {k: u.get(k) for k in ("tg_id", "phone", "name", "lang", "photo", "lat", "lon", "address",
+                                  "apt", "entrance", "floor", "landmark")} if u else None
 
 
 def client_settings():
@@ -1145,6 +1182,19 @@ class Handler(BaseHTTPRequestHandler):
                                    "banners": BANNERS.data, "settings": client_settings()})
         if path in ("/api/health", "/healthz"):
             return self.send_json({"ok": True})
+        m = re.match(r"^/tiles/(\d{1,2})/(\d{1,7})/(\d{1,7})\.png$", path)
+        if m:
+            z, x, y = (int(v) for v in m.groups())
+            data = get_tile(z, x, y) if z <= 19 and x < 2 ** z and y < 2 ** z else None
+            self.send_response(200 if data else 404)
+            self.send_header("Content-Type", "image/png" if data else "text/plain")
+            self.send_header("Content-Length", str(len(data or b"")))
+            if data:
+                self.send_header("Cache-Control", "public, max-age=604800")
+            self.end_headers()
+            if data:
+                self.wfile.write(data)
+            return
         return self.serve_static(path)
 
     def do_HEAD(self):
@@ -1231,8 +1281,12 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"ok": True, "user": public_user(db.upsert_user(uid, photo=fname))})
         if route == "address":
             lat, lon = float(body["lat"]), float(body["lon"])
-            addr = str(body.get("address") or "")[:300] or reverse_geocode(lat, lon, user.get("lang"))
-            return self.send_json({"ok": True, "user": public_user(db.upsert_user(uid, lat=lat, lon=lon, address=addr))})
+            if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+                raise ValueError("bad_coords")
+            addr = re.sub(r"\s+", " ", str(body.get("address") or "")).strip()[:200] or reverse_geocode(lat, lon, user.get("lang"))
+            det = {k: re.sub(r"\s+", " ", str(body.get(k) or "")).strip()[:lim] for k, lim in
+                   (("apt", 12), ("entrance", 12), ("floor", 12), ("landmark", 120))}
+            return self.send_json({"ok": True, "user": public_user(db.upsert_user(uid, lat=lat, lon=lon, address=addr, **det))})
         if route == "geocode":
             return self.send_json({"ok": True, "address": reverse_geocode(float(body["lat"]), float(body["lon"]),
                                                                           body.get("lang") or user.get("lang"))})

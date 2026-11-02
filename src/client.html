@@ -5,7 +5,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /*__BASE__*/
@@ -100,30 +99,81 @@
 .lseg{width:116px;flex:none;padding:3px}
 .lseg button{padding:7px 4px}
 /* map */
-#mapLayer{position:fixed;inset:0;z-index:50;background:var(--bg);animation:fade .2s}
-#map{position:absolute;inset:0 0 150px 0;background:#e9edf2}
-.mapfb{position:absolute;inset:0 0 150px 0;display:grid;place-items:center;text-align:center;color:var(--mute);padding:0 30px;background:repeating-linear-gradient(45deg,#eceff3 0 22px,#f2f4f7 22px 44px);z-index:2}
-.pin{position:absolute;left:50%;top:calc(50% - 75px);z-index:5;transform:translate(-50%,-100%);pointer-events:none;color:var(--b);transition:transform .2s var(--ease)}
-.pin.up{transform:translate(-50%,-118%)}
-.pin .ic{width:46px;height:46px;filter:drop-shadow(0 6px 8px rgba(16,24,40,.3))}
-.pin::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:4px;border-radius:50%;background:rgba(16,24,40,.35);transform:translateX(-50%)}
-.mtop{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:calc(12px + env(safe-area-inset-top,0px));z-index:6}
-.rbtn{width:46px;height:46px;border-radius:14px;background:var(--card);color:var(--ink);display:grid;place-items:center;border:0;box-shadow:0 4px 14px rgba(16,24,40,.12)}
-.mgps{position:absolute;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(214px + env(safe-area-inset-bottom,0px));z-index:6;color:var(--b)}
-.mcard{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-radius:24px 24px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));box-shadow:0 -10px 30px rgba(16,24,40,.12)}
-.mcard>div{max-width:528px;margin:0 auto}
+/* map — o'zimizning yengil xarita (Leaflet'siz) */
+#mapLayer{position:fixed;inset:0;z-index:50;background:#eef1ec;overflow:hidden;animation:fade .25s}
+.gmap{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:grab;background:#eef1ec;-webkit-user-select:none;user-select:none}
+.gmap:active{cursor:grabbing}
+.gpane,.gmarks{position:absolute;inset:0}
+.gmarks{pointer-events:none;z-index:3}
+.gt{position:absolute;left:0;top:0;width:256px;height:256px;transform-origin:0 0;opacity:0;transition:opacity .3s ease;pointer-events:none;-webkit-user-drag:none;max-width:none!important}
+.gt.ld{opacity:1}
+.mapfb{position:absolute;left:24px;right:24px;top:calc(90px + env(safe-area-inset-top,0px));z-index:4;background:var(--card);border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:600;color:var(--ink);box-shadow:0 8px 24px rgba(16,24,40,.12)}
+.mshade{position:absolute;left:0;right:0;top:0;height:calc(110px + env(safe-area-inset-top,0px));background:linear-gradient(180deg,rgba(242,244,247,.92),rgba(242,244,247,0));z-index:4;pointer-events:none}
+.mtop{position:absolute;left:0;right:0;top:calc(12px + env(safe-area-inset-top,0px));z-index:6;display:flex;align-items:center;gap:10px;padding:0 max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));pointer-events:none}
+.mtop>*{pointer-events:auto}
+.mtitle{flex:1;min-width:0;text-align:center;font-weight:800;font-size:17px;letter-spacing:-.01em;margin-right:46px}
+.rbtn{width:46px;height:46px;border-radius:15px;background:var(--card);color:var(--ink);display:grid;place-items:center;border:0;box-shadow:0 6px 18px rgba(16,24,40,.14);transition:transform .15s var(--ease)}
+.rbtn:active{transform:scale(.9)}
+.mctl{position:absolute;right:max(14px,env(safe-area-inset-right,0px));z-index:6;display:flex;flex-direction:column;gap:10px;transition:bottom .35s var(--ease),opacity .25s}
+.mzoom{background:var(--card);border-radius:15px;box-shadow:0 6px 18px rgba(16,24,40,.14);overflow:hidden;display:flex;flex-direction:column}
+.mzoom button{width:46px;height:44px;border:0;background:none;display:grid;place-items:center;color:var(--ink)}
+.mzoom button+button{border-top:1px solid var(--line)}
+.mzoom button:active{background:var(--bg)}
+.mctl .gps{color:var(--b)}
+.mctl .gps.busy .ic{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mattr{position:absolute;left:max(10px,env(safe-area-inset-left,0px));z-index:5;font-size:10px;font-weight:600;color:#5d6b7e;background:rgba(255,255,255,.75);padding:2px 6px;border-radius:6px;transition:bottom .35s var(--ease)}
+/* pin */
+.pinw{position:absolute;left:50%;z-index:5;pointer-events:none;width:0;height:0}
+.pinb{position:absolute;left:-24px;top:-62px;width:48px;height:60px;transition:transform .32s cubic-bezier(.3,1.5,.5,1);filter:drop-shadow(0 8px 10px rgba(11,61,44,.35))}
+.pinw.lift .pinb{transform:translateY(-16px) scale(1.05);transition:transform .22s var(--ease)}
+.pinw.drop .pinb{animation:pdrop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pdrop{0%{transform:translateY(-16px)}55%{transform:translateY(2px) scaleY(.92)}100%{transform:none}}
+.pshadow{position:absolute;left:-9px;top:-4px;width:18px;height:7px;border-radius:50%;background:rgba(16,24,40,.32);transition:transform .25s var(--ease),opacity .25s}
+.pinw.lift .pshadow{transform:scale(.55);opacity:.45}
+.pring{position:absolute;left:-28px;top:-14px;width:56px;height:28px;border-radius:50%;border:2px solid var(--b);opacity:0}
+.pinw.drop .pring{animation:pring .9s ease-out}
+@keyframes pring{0%{transform:scale(.2);opacity:.9}100%{transform:scale(1.6);opacity:0}}
+.pbub{position:absolute;left:50%;top:-104px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12.5px;font-weight:800;padding:6px 10px;border-radius:99px;white-space:nowrap;transition:opacity .2s,transform .25s var(--ease)}
+.pbub::after{content:"";position:absolute;left:50%;bottom:-4px;width:8px;height:8px;background:inherit;transform:translateX(-50%) rotate(45deg);border-radius:1px}
+.pinw.lift .pbub{opacity:0;transform:translate(-50%,-6px)}
+/* markers */
+.rmk{position:absolute;left:0;top:0;width:0;height:0}
+.rmk>div{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:0 4px 14px rgba(16,24,40,.25);display:grid;place-items:center}
+.rmk img{width:38px;height:38px;border-radius:50%}
+.rmk b{position:absolute;left:50%;top:26px;transform:translateX(-50%);white-space:nowrap;font-size:11.5px;font-weight:800;color:var(--bd);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff}
+.rmk i,.udot i{position:absolute;border-radius:50%;animation:rpulse 2.4s ease-out infinite}
+.rmk i{left:-22px;top:-22px;width:44px;height:44px;background:rgba(15,110,76,.35)}
+@keyframes rpulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.4);opacity:0}}
+.udot{position:absolute;left:0;top:0;width:0;height:0}
+.udot>span{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;background:#2b6cf6;border:3px solid #fff;box-shadow:0 2px 8px rgba(43,108,246,.5)}
+.udot i{left:-8px;top:-8px;width:16px;height:16px;background:rgba(43,108,246,.35)}
+/* bottom sheet */
+.msheet{position:absolute;left:0;right:0;bottom:0;z-index:7;background:var(--bg);border-radius:26px 26px 0 0;box-shadow:0 -12px 34px rgba(16,24,40,.16);padding:8px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));transition:transform .35s var(--ease);animation:up .4s var(--ease)}
+.msheet>div{max-width:528px;margin:0 auto}
+#mapLayer.moving .msheet{transform:translateY(calc(100% - 112px - env(safe-area-inset-bottom,0px)))}
+#mapLayer.moving .mctl{opacity:.0;pointer-events:none}
+.mhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 10px}
+.mhead h3{font-size:19px}
+.mstreet{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 6px 6px 12px;transition:border-color .15s}
+.mstreet:focus-within{border-color:var(--b)}
+.mstreet .ico{width:38px;height:38px;border-radius:12px}
+.mstreet input{border:0;padding:10px 0;background:none;font-weight:700;min-width:0;flex:1}
+.mstreet input.loading{background:linear-gradient(90deg,#e9edf2 0%,#f7f8fa 50%,#e9edf2 100%);background-size:200% 100%;animation:sk 1.1s infinite linear;border-radius:8px;color:transparent}
+.mstreet.bad{border-color:var(--red);animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0}
+.mgrid label{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 12px 2px;transition:border-color .15s}
+.mgrid label:focus-within{border-color:var(--b)}
+.mgrid small{font-size:11.5px;font-weight:700}
+.mgrid input{border:0;padding:2px 0 6px;background:none;font-weight:700}
+.mland{margin-bottom:10px}
 #splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;transition:opacity .35s}
 #splash img{width:112px;height:112px;animation:breathe 1.4s ease-in-out infinite}
 @keyframes breathe{50%{transform:scale(1.06)}}
 #splash.hide{opacity:0;pointer-events:none}
 .terms p{margin:0 0 10px;line-height:1.55;max-width:65ch}
 .terms h3{font-size:16px;margin:18px 0 6px}
-/* minimal Leaflet (agar CDN stili yuklanmasa) */
-.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-tile-container{position:absolute;left:0;top:0}
-.leaflet-container{overflow:hidden;touch-action:none}
-.leaflet-container img.leaflet-tile{max-width:none!important;width:256px;height:256px;user-select:none}
-.leaflet-tile{visibility:hidden}.leaflet-tile-loaded{visibility:inherit}
-.leaflet-control-container{display:none}
 </style>
 
 <!--__ICONS__-->
@@ -139,7 +189,6 @@
 </nav>
 <input type="file" id="avFile" accept="image/*" hidden>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 "use strict";
 const FALLBACK = /*__DATA__*/null;
@@ -148,11 +197,11 @@ uz:{deliverTo:"Yetkazish manzili",hello:"Salom",hungry:"Bugun nima yeymiz?",sear
  add:"Qo'shish",sum:"so'm",from:"dan",clear:"Tozalash",checkout:"Rasmiylashtirish",cartEmpty:"Savat hozircha bo'sh",cartEmptyText:"Menyudan sevimli taomingizni tanlang",toMenu:"Menyuga o'tish",
  items:"Mahsulotlar",total:"Jami",pcs:"ta",howDeliver:"Yetkazib berish",courier:"Gumbaz Express kuryeri",courierSub:"Narxni kuryer yetkazganda aytadi",
  yandex:"Yandex Go",yandexSub:"Yetkazish narxini Yandex kuryeri yetib borganda aytadi",pickup:"Olib ketish",pickupSub:"Bepul · o'zingiz olib ketasiz",address:"Manzil",changeOnMap:"Xaritada o'zgartirish",
- addrExtra:"Uy, kvartira, podyezd, qavat",pickupFrom:"Olib ketish manzili",payment:"To'lov",cash:"Naqd",card:"Karta",comment:"Izoh: masalan, piyozsiz",
+ addrExtra:"Kvartira, podyezd, qavat va mo'ljalni qo'shing",pickupFrom:"Olib ketish manzili",payment:"To'lov",cash:"Naqd",card:"Karta",comment:"Izoh: masalan, piyozsiz",
  delivery:"Yetkazish",courierPay:"Kuryer aytadi",yandexPay:"Kuryer aytadi",free:"Bepul",order:"Buyurtma berish",thanks:"Buyurtma qabul qilindi!",orderNo:"Buyurtma raqami",
  myOrders:"Buyurtmalarim",noOrders:"Hali buyurtma yo'q",noOrdersText:"Birinchi buyurtmangizni bering — issiq-issiq yetkazamiz",account:"Hisob",name:"Ism",language:"Til",help:"Yordam",
- support:"Xizmat ko'rsatish",writeUs:"Telegramda yozish",terms:"Foydalanish shartlari",hours:"Ish vaqti",logout:"Chiqish",moveMap:"Xaritani suring — pin manzilni belgilaydi",
- confirmAddr:"Manzilni tasdiqlash",mapOffline:"Xarita yuklanmadi. Joylashuv tugmasini bosing.",locating:"Aniqlanmoqda…",gateTitle:"Avval ro'yxatdan o'ting",
+ support:"Xizmat ko'rsatish",writeUs:"Telegramda yozish",terms:"Foydalanish shartlari",hours:"Ish vaqti",logout:"Chiqish",moveMap:"Xaritani suring — pin manzilni belgilaydi",mapTitle:"Yetkazish manzili",streetPh:"Ko'cha va uy raqami",aptL:"Kvartira",entL:"Podyezd",floorL:"Qavat",landPh:"Mo'ljal: masalan, maktab yonida",saveAddr:"Manzilni saqlash",streetNeed:"Ko'cha va uy raqamini kiriting",fromRest:"Restorandan {d}",hereDeliver:"Shu yerga",gpsErr:"Joylashuvni aniqlab bo'lmadi. Telegram'ga joylashuvga ruxsat bering yoki pinni o'zingiz qo'ying.",aptS:"kv.",entS:"podyezd",floorS:"qavat",landS:"Mo'ljal",
+ confirmAddr:"Manzilni tasdiqlash",mapOffline:"Xarita yuklanmadi. Manzilni pastda yozib saqlashingiz mumkin.",locating:"Aniqlanmoqda…",gateTitle:"Avval ro'yxatdan o'ting",
  gateText:"Botga qayting va /start ni bosing: telefon raqam va joylashuvni yuboring.",backToBot:"Botga qaytish",nothing:"Hech narsa topilmadi",soldout:"Tugagan",
  hit:"Xit",spicy:"Achchiq",newb:"Yangi",added:"Savatga qo'shildi",saved:"Saqlandi",minOrder:"Minimal buyurtma",chooseAddr:"Manzilni tanlang",logoutQ:"Hisobdan chiqasizmi?",
  logoutText:"Qayta kirish uchun botda /start ni bosasiz.",yes:"Ha, chiqish",cancel:"Bekor qilish",save:"Saqlash",editName:"Ismni o'zgartirish",
@@ -165,11 +214,11 @@ ru:{deliverTo:"Адрес доставки",hello:"Привет",hungry:"Что 
  add:"Добавить",sum:"сум",from:"от",clear:"Очистить",checkout:"Оформить",cartEmpty:"Корзина пока пуста",cartEmptyText:"Выберите любимое блюдо в меню",toMenu:"Перейти в меню",
  items:"Товары",total:"Итого",pcs:"шт",howDeliver:"Доставка",courier:"Курьер Gumbaz Express",courierSub:"Стоимость скажет курьер",
  yandex:"Яндекс Go",yandexSub:"Стоимость доставки скажет курьер Яндекс по прибытии",pickup:"Самовывоз",pickupSub:"Бесплатно · заберёте сами",address:"Адрес",changeOnMap:"Изменить на карте",
- addrExtra:"Дом, квартира, подъезд, этаж",pickupFrom:"Адрес самовывоза",payment:"Оплата",cash:"Наличные",card:"Карта",comment:"Комментарий: например, без лука",
+ addrExtra:"Добавьте квартиру, подъезд, этаж и ориентир",pickupFrom:"Адрес самовывоза",payment:"Оплата",cash:"Наличные",card:"Карта",comment:"Комментарий: например, без лука",
  delivery:"Доставка",courierPay:"Скажет курьер",yandexPay:"Скажет курьер",free:"Бесплатно",order:"Оформить заказ",thanks:"Заказ принят!",orderNo:"Номер заказа",
  myOrders:"Мои заказы",noOrders:"Заказов пока нет",noOrdersText:"Сделайте первый заказ — привезём горячим",account:"Аккаунт",name:"Имя",language:"Язык",help:"Помощь",
- support:"Служба поддержки",writeUs:"Написать в Telegram",terms:"Условия использования",hours:"Время работы",logout:"Выйти",moveMap:"Двигайте карту — пин отмечает адрес",
- confirmAddr:"Подтвердить адрес",mapOffline:"Карта не загрузилась. Нажмите кнопку геолокации.",locating:"Определяем…",gateTitle:"Сначала зарегистрируйтесь",
+ support:"Служба поддержки",writeUs:"Написать в Telegram",terms:"Условия использования",hours:"Время работы",logout:"Выйти",moveMap:"Двигайте карту — пин отмечает адрес",mapTitle:"Адрес доставки",streetPh:"Улица и номер дома",aptL:"Квартира",entL:"Подъезд",floorL:"Этаж",landPh:"Ориентир: например, возле школы",saveAddr:"Сохранить адрес",streetNeed:"Укажите улицу и номер дома",fromRest:"{d} от ресторана",hereDeliver:"Сюда",gpsErr:"Не удалось определить местоположение. Разрешите доступ в Telegram или поставьте пин вручную.",aptS:"кв.",entS:"подъезд",floorS:"этаж",landS:"Ориентир",
+ confirmAddr:"Подтвердить адрес",mapOffline:"Карта не загрузилась. Адрес можно ввести ниже и сохранить.",locating:"Определяем…",gateTitle:"Сначала зарегистрируйтесь",
  gateText:"Вернитесь в бот и нажмите /start: отправьте номер и геолокацию.",backToBot:"Вернуться в бот",nothing:"Ничего не найдено",soldout:"Нет в наличии",
  hit:"Хит",spicy:"Острое",newb:"Новинка",added:"Добавлено в корзину",saved:"Сохранено",minOrder:"Минимальный заказ",chooseAddr:"Выберите адрес",logoutQ:"Выйти из аккаунта?",
  logoutText:"Чтобы войти снова, нажмите /start в боте.",yes:"Да, выйти",cancel:"Отмена",save:"Сохранить",editName:"Изменить имя",
@@ -187,7 +236,7 @@ ru:`<p>Используя приложение Gumbaz Express в Telegram, вы 
 const tg = window.Telegram && window.Telegram.WebApp;
 const INIT = tg && tg.initData ? tg.initData : "";
 const S = {demo: !INIT && !!FALLBACK, lang: "uz", user: null, cats: [], prods: [], banners: [], set: {}, cart: [], delivery: "courier", payment: "cash",
-  view: "home", stack: [], orders: null, q: "", addrExtra: "", comment: ""};
+  view: "home", stack: [], orders: null, q: "", comment: ""};
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const t = k => (I18N[S.lang] && I18N[S.lang][k] != null ? I18N[S.lang][k] : I18N.uz[k] != null ? I18N.uz[k] : k);
 const L = o => o ? (o[S.lang] || o.uz || "") : "";
@@ -289,7 +338,7 @@ function vHome() {
   const cats = S.cats.filter(c => S.prods.some(p => p.cat === c.id));
   const closed = S.set.accepting === false;
   return `<div class="hi"><img class="logo" src="img/logo.png" alt="">
-    <button class="addr" onclick="openMap()"><small>${ic("delivery", "xs")}${t("deliverTo")}</small><b><span>${esc(S.user.address || t("chooseAddr"))}</span>${ic("down", "s")}</b></button>
+    <button class="addr" onclick="openMap()"><small>${ic("delivery", "xs")}${t("deliverTo")}</small><b><span>${esc(isCoords(S.user.address) ? t("chooseAddr") : (S.user.address || t("chooseAddr")))}</span>${ic("down", "s")}</b></button>
     <button class="av" onclick="go('profile')" aria-label="${t("profile")}">${avatar(S.user)}</button></div>
     <div class="greet"><small>${t("hello")}, ${esc((S.user.name || "").split(" ")[0])} 👋</small><h1>${t("hungry")}</h1></div>
     ${closed ? `<div class="banner bad closed">${ic("clock")}<div>${t("closedTitle")}<small>${esc(L(S.set.closed_msg))}</small></div></div>` : ""}
@@ -438,8 +487,7 @@ function vCheckout() {
     <h2>${t("howDeliver")}</h2>
     ${opts.map(([id, i, n, s]) => `<button class="card opt ${S.delivery === id ? "on" : ""}" data-deliv="${id}"><div class="ico ${i ? "" : "ya"}">${i ? ic(i) : "Go"}</div><div class="grow"><b>${n}</b><small id="sub-${id}">${s}</small></div><span class="radio"></span></button>`).join("")}
     ${S.delivery !== "pickup" ? `<h2>${t("address")}</h2>
-      <button class="card" onclick="openMap()"><div class="ico">${ic("pin")}</div><div class="grow"><b style="white-space:normal">${esc(S.user.address || t("chooseAddr"))}</b><small>${t("changeOnMap")}</small></div>${ic("right", "chev")}</button>
-      <input id="ax" maxlength="120" placeholder="${t("addrExtra")}" value="${esc(S.addrExtra)}" oninput="S.addrExtra=this.value" autocomplete="off">`
+      <button class="card" onclick="openMap()"><div class="ico">${ic("pin")}</div><div class="grow"><b style="white-space:normal">${esc(isCoords(S.user.address) ? t("chooseAddr") : (S.user.address || t("chooseAddr")))}</b><small style="white-space:normal">${esc(addrDetails(S.user)) || t("addrExtra")}</small></div>${ic("pen", "chev")}</button>`
     : `<h2>${t("pickupFrom")}</h2><div class="card"><div class="ico">${ic("shop")}</div><div class="grow"><b>${esc(r.name || "Gumbaz Express")}</b><small>${esc(L(r.address))}</small></div></div>`}
     <h2>${t("payment")}</h2>
     <div class="seg" style="margin-bottom:10px"><button data-pay="cash" class="${S.payment === "cash" ? "on" : ""}">${t("cash")}</button><button data-pay="card" class="${S.payment === "card" ? "on" : ""}">${t("card")}</button></div>
@@ -456,7 +504,7 @@ async function placeOrder() {
   if (S.delivery !== "pickup" && S.user.lat == null) return openMap();
   placing = true; const b = $("#po"); b.disabled = true; b.innerHTML = `<span class="skel" style="width:110px;height:14px;display:inline-block;background-color:rgba(255,255,255,.4)"></span>`;
   let res;
-  const body = {items: S.cart.map(c => ({pid: c.pid, vid: c.vid, qty: c.qty})), delivery: S.delivery, payment: S.payment, lat: S.user.lat, lon: S.user.lon, address: S.user.address, address_extra: S.addrExtra.trim(), comment: S.comment.trim()};
+  const body = {items: S.cart.map(c => ({pid: c.pid, vid: c.vid, qty: c.qty})), delivery: S.delivery, payment: S.payment, lat: S.user.lat, lon: S.user.lon, address: S.user.address, address_extra: addrDetails(S.user), comment: S.comment.trim()};
   if (S.demo) {
     await new Promise(r => setTimeout(r, 650));
     const id = store.get("demoSeq", 1040) + 1; store.set("demoSeq", id);
@@ -470,7 +518,7 @@ async function placeOrder() {
     const M = {too_fast: t("tooFast"), item_unavailable: t("unavailable"), min_order: t("minOrder") + ": " + money(S.set.min_order || 0), no_address: t("chooseAddr"), closed: t("closedTitle")};
     toast(M[res.error] || t("err"), "danger"); if (res.error === "item_unavailable" || res.error === "closed") reloadMenu(); return;
   }
-  hap("ok"); lastOrder = res; S.cart = []; saveCart(); S.comment = ""; S.addrExtra = ""; S.orders = null;
+  hap("ok"); lastOrder = res; S.cart = []; saveCart(); S.comment = ""; S.orders = null;
   go("success", true); S.stack = [];
 }
 function vSuccess() {
@@ -509,7 +557,7 @@ function vProfile() {
       <div class="sp" id="pstat">${pstat()}</div></div>
     <h2>${t("account")}</h2>
     <button class="card" onclick="editName()"><div class="ico">${ic("user")}</div><div class="grow"><small>${t("name")}</small><b>${esc(u.name || "—")}</b></div>${ic("pen", "chev")}</button>
-    <button class="card" onclick="openMap()"><div class="ico">${ic("pin")}</div><div class="grow"><small>${t("address")}</small><b>${esc(u.address || t("chooseAddr"))}</b></div>${ic("right", "chev")}</button>
+    <button class="card" onclick="openMap()"><div class="ico">${ic("pin")}</div><div class="grow"><small>${t("address")}</small><b style="white-space:normal">${esc(isCoords(u.address) ? t("chooseAddr") : (u.address || t("chooseAddr")))}</b>${addrDetails(u) ? `<small style="white-space:normal">${esc(addrDetails(u))}</small>` : ""}</div>${ic("pen", "chev")}</button>
     <div class="card"><div class="ico">${ic("globe")}</div><div class="grow"><b>${t("language")}</b></div><div class="seg lseg"><button data-lang="uz" class="${S.lang === "uz" ? "on" : ""}">UZ</button><button data-lang="ru" class="${S.lang === "ru" ? "on" : ""}">RU</button></div></div>
     <h2>${t("help")}</h2>
     <button class="card" onclick="support()"><div class="ico">${ic("phone")}</div><div class="grow"><b>${t("support")}</b><small class="num">${esc(S.set.support_phone || "")}</small></div>${ic("right", "chev")}</button>
@@ -548,45 +596,213 @@ $("#avFile").onchange = e => { const f = e.target.files[0]; e.target.value = "";
     render(); toast(t("photoSaved")); hap("ok"); };
   im.onerror = () => toast(t("err"), "danger"); im.src = url; };
 
-/* ───────── map ───────── */
-let map = null, mpos = null, maddr = "", gT, gR = 0;
-function openMap() {
-  const r = S.set.restaurant || {lat: 39.0578, lon: 66.8342}, st = S.user.lat != null ? [S.user.lat, S.user.lon] : [r.lat, r.lon];
-  mpos = {lat: st[0], lon: st[1]}; maddr = S.user.address || "";
-  const el = document.createElement("div"); el.id = "mapLayer";
-  el.innerHTML = `<div id="map"></div><div class="mapfb" id="mfb" hidden><p>${t("mapOffline")}</p></div><div class="pin" id="pin">${ic("pin")}</div>
-    <div class="mtop"><button class="rbtn" onclick="closeMap()" aria-label="Back">${ic("left")}</button></div>
-    <button class="rbtn mgps" onclick="locate()" aria-label="GPS">${ic("gps")}</button>
-    <div class="mcard"><div><div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:14px;min-height:42px"><div class="ico" style="width:40px;height:40px">${ic("pin", "s")}</div><div style="min-width:0"><b id="ma" style="font-weight:800">${esc(maddr || t("locating"))}</b><small>${t("moveMap")}</small></div></div>
-    <button class="btn b full" id="msave">${t("confirmAddr")}</button></div></div>`;
-  document.body.appendChild(el); $("#msave").onclick = saveAddr; updBack();
-  if (!window.L) { $("#mfb").hidden = false; return; }
-  map = L.map("map", {zoomControl: false, attributionControl: false}).setView(st, 16);
-  const tl = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {subdomains: "abcd", maxZoom: 19, detectRetina: true});
-  let ok = false, errs = 0; tl.on("tileload", () => { ok = true; $("#mfb") && ($("#mfb").hidden = true); }); tl.on("tileerror", () => { if (!ok && ++errs > 3 && $("#mfb")) $("#mfb").hidden = false; });
-  tl.addTo(map);
-  map.on("movestart", () => $("#pin").classList.add("up"));
-  map.on("moveend", () => { $("#pin").classList.remove("up"); const c = map.getCenter(); mpos = {lat: c.lat, lon: c.lng}; geo(); });
-  if (S.user.lat == null) locate();
+/* ───────── map: o'zimizning yengil xarita (tashqi kutubxonasiz) ───────── */
+const TILE = 256;
+const MERC = {
+  px(lat, lon, z) { const s = TILE * Math.pow(2, z), si = Math.sin(Math.max(-85.0511, Math.min(85.0511, lat)) * Math.PI / 180);
+    return {x: (lon + 180) / 360 * s, y: (0.5 - Math.log((1 + si) / (1 - si)) / (4 * Math.PI)) * s}; },
+  ll(x, y, z) { const s = TILE * Math.pow(2, z), n = Math.PI - 2 * Math.PI * y / s;
+    return {lat: 180 / Math.PI * Math.atan(Math.sinh(n)), lon: x / s * 360 - 180}; }
+};
+function GMap(el, o) {
+  const M = {lat: o.lat, lon: o.lon, z: o.zoom || 16, W: 0, H: 0, fx: 0, fy: 0, ox: 0, oy: 0, tiles: new Map(), marks: [], moving: false, loaded: 0, failed: 0, dead: false};
+  const pane = document.createElement("div"); pane.className = "gpane"; el.appendChild(pane);
+  const mk = document.createElement("div"); mk.className = "gmarks"; el.appendChild(mk);
+  const url = (z, x, y) => `https://${"abcd"[(x + y) % 4]}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}@2x.png`;
+  const clampZ = z => Math.max(4, Math.min(19, z));
+  M.center = () => MERC.px(M.lat, M.lon, M.z);
+  M.toScreen = (lat, lon) => { const c = M.center(), p = MERC.px(lat, lon, M.z); return {x: p.x - c.x + M.fx, y: p.y - c.y + M.fy}; };
+  M.toLatLon = (sx, sy) => { const c = M.center(); return MERC.ll(c.x + sx - M.fx, c.y + sy - M.fy, M.z); };
+  M.setCenter = (lat, lon) => { M.lat = Math.max(-85, Math.min(85, lat)); M.lon = ((lon + 540) % 360) - 180; M.draw(); };
+  M.panBy = (dx, dy) => { const c = M.center(), p = MERC.ll(c.x - dx, c.y - dy, M.z); M.setCenter(p.lat, p.lon); };
+  M.zoomAround = (z, sx, sy) => { const a = M.toLatLon(sx, sy); M.z = clampZ(z); const p = MERC.px(a.lat, a.lon, M.z), c = MERC.ll(p.x - (sx - M.fx), p.y - (sy - M.fy), M.z); M.setCenter(c.lat, c.lon); };
+  M.measure = () => { const r = el.getBoundingClientRect(); M.W = r.width; M.H = r.height; M.ox = r.left; M.oy = r.top; M.fx = M.W / 2; M.fy = o.focusY ? o.focusY(M.H) : M.H / 2; o.onMeasure && o.onMeasure(M); M.draw(); };
+  M.addMarker = (lat, lon, node) => { const m = {lat, lon, el: node}; mk.appendChild(node); M.marks.push(m); M.draw(); return m; };
+  let raf = 0; M.draw = () => { if (!raf && !M.dead) raf = requestAnimationFrame(render); };
+  function render() {
+    raf = 0; if (!M.W) return;
+    const tz = Math.round(clampZ(M.z)), n = Math.pow(2, tz), want = new Set(); let pending = 0;
+    const place = (t, z) => { const s = Math.pow(2, M.z - z), c = MERC.px(M.lat, M.lon, z), x = (t.x * TILE - c.x) * s + M.fx, y = (t.y * TILE - c.y) * s + M.fy;
+      t.el.style.transform = `translate3d(${x}px,${y}px,0) scale(${s * 1.004})`; return {x, y, sz: TILE * s}; };
+    const c = MERC.px(M.lat, M.lon, tz), s = Math.pow(2, M.z - tz);
+    const x0 = Math.floor((c.x - M.fx / s) / TILE), x1 = Math.floor((c.x + (M.W - M.fx) / s) / TILE);
+    const y0 = Math.max(0, Math.floor((c.y - M.fy / s) / TILE)), y1 = Math.min(n - 1, Math.floor((c.y + (M.H - M.fy) / s) / TILE));
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) {
+      const wx = ((tx % n) + n) % n, key = tz + "/" + tx + "/" + ty; want.add(key);
+      let t = M.tiles.get(key);
+      if (!t) {
+        const im = new Image(); im.className = "gt"; im.alt = ""; im.decoding = "async"; im.draggable = false;
+        t = {z: tz, x: tx, y: ty, el: im, ok: false, tries: 0};
+        im.onload = () => { t.ok = true; im.classList.add("ld"); M.loaded++; M.draw(); o.onTileOk && o.onTileOk(); };
+        im.onerror = () => { if (t.tries++ === 0) im.src = `tiles/${tz}/${wx}/${ty}.png`; else { M.failed++; if (!M.loaded && M.failed > 3) o.onTileFail && o.onTileFail(); } };
+        im.src = url(tz, wx, ty); M.tiles.set(key, t); pane.appendChild(im);
+      }
+      t.el.style.zIndex = 2; place(t, tz); if (!t.ok) pending++;
+    }
+    M.tiles.forEach((t, key) => {
+      if (want.has(key)) return;
+      if (!(pending && t.ok && Math.abs(t.z - tz) <= 2)) { t.el.remove(); M.tiles.delete(key); return; }
+      const r = place(t, t.z); t.el.style.zIndex = 1;
+      if (r.x > M.W || r.y > M.H || r.x + r.sz < 0 || r.y + r.sz < 0) { t.el.remove(); M.tiles.delete(key); }
+    });
+    M.marks.forEach(m => { const p = M.toScreen(m.lat, m.lon); m.el.style.transform = `translate3d(${p.x}px,${p.y}px,0)`; });
+  }
+  /* harakat */
+  let anim = 0, inert = 0;
+  const startMove = () => { if (!M.moving) { M.moving = true; o.onMoveStart && o.onMoveStart(); } };
+  const endMove = () => { if (M.moving) { M.moving = false; o.onMoveEnd && o.onMoveEnd(); } };
+  const stopAnim = () => { cancelAnimationFrame(anim); cancelAnimationFrame(inert); anim = inert = 0; };
+  const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+  M.flyTo = (lat, lon, z = M.z, ms = 700) => {
+    stopAnim(); startMove();
+    const f = {lat: M.lat, lon: M.lon, z: M.z}, t0 = performance.now(), dz = clampZ(z) - f.z;
+    const far = Math.hypot(M.toScreen(lat, lon).x - M.fx, M.toScreen(lat, lon).y - M.fy) > M.W * 1.5;
+    const step = now => { const k = Math.min(1, (now - t0) / ms), e = ease(k);
+      M.lat = f.lat + (lat - f.lat) * e; M.lon = f.lon + (lon - f.lon) * e;
+      M.z = f.z + dz * e - (far ? Math.sin(Math.PI * k) * 1.5 : 0); M.draw();
+      if (k < 1) anim = requestAnimationFrame(step); else { anim = 0; endMove(); } };
+    anim = requestAnimationFrame(step);
+  };
+  M.zoomTo = (z, sx = M.fx, sy = M.fy) => { const a = M.toLatLon(sx, sy), zz = clampZ(z), p = MERC.px(a.lat, a.lon, zz), c = MERC.ll(p.x - (sx - M.fx), p.y - (sy - M.fy), zz); M.flyTo(c.lat, c.lon, zz, 380); };
+  const pts = new Map(); let pinch = null, moved = false, lastT = 0, vel = {x: 0, y: 0}, tapT = 0, tapP = null;
+  el.addEventListener("pointerdown", e => {
+    if (e.target.closest("button,input,.msheet")) return;
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+    stopAnim(); pts.set(e.pointerId, {x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY}); moved = false; lastT = performance.now(); vel = {x: 0, y: 0};
+    if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = {d: Math.hypot(a.x - b.x, a.y - b.y) || 1, z: M.z, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2}; }
+  });
+  el.addEventListener("pointermove", e => {
+    const p = pts.get(e.pointerId); if (!p) return;
+    if (pts.size === 1) {
+      if (!moved && Math.hypot(e.clientX - p.sx, e.clientY - p.sy) < 4) return;
+      moved = true; startMove();
+      const dx = e.clientX - p.x, dy = e.clientY - p.y, now = performance.now(), dt = Math.max(1, now - lastT);
+      M.panBy(dx, dy); vel = {x: .75 * dx / dt + .25 * vel.x, y: .75 * dy / dt + .25 * vel.y}; lastT = now;
+    }
+    p.x = e.clientX; p.y = e.clientY;
+    if (pts.size === 2 && pinch) {
+      moved = true; startMove();
+      const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      M.panBy(mx - pinch.mx, my - pinch.my); pinch.mx = mx; pinch.my = my;
+      M.zoomAround(pinch.z + Math.log2(d / pinch.d), mx - M.ox, my - M.oy);
+    }
+  });
+  const up = e => {
+    if (!pts.has(e.pointerId)) return; pts.delete(e.pointerId);
+    if (pts.size === 1) { pinch = null; const q = [...pts.values()][0]; q.sx = q.x; q.sy = q.y; lastT = performance.now(); vel = {x: 0, y: 0}; return; }
+    if (pts.size) return;
+    if (!moved) {
+      const now = performance.now();
+      if (now - tapT < 320 && tapP && Math.hypot(tapP.x - e.clientX, tapP.y - e.clientY) < 30) { tapT = 0; M.zoomTo(Math.round(M.z) + 1, e.clientX - M.ox, e.clientY - M.oy); }
+      else { tapT = now; tapP = {x: e.clientX, y: e.clientY}; }
+      return;
+    }
+    pinch = null;
+    if (performance.now() - lastT > 70) vel = {x: 0, y: 0};
+    let t0 = performance.now();
+    const step = now => { const dt = Math.min(40, now - t0); t0 = now; const f = Math.pow(.93, dt / 16); vel.x *= f; vel.y *= f;
+      if (Math.hypot(vel.x, vel.y) < .03) { inert = 0; return endMove(); }
+      M.panBy(vel.x * dt, vel.y * dt); inert = requestAnimationFrame(step); };
+    inert = requestAnimationFrame(step);
+  };
+  el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+  let wT; el.addEventListener("wheel", e => { e.preventDefault(); stopAnim(); startMove(); M.zoomAround(M.z - e.deltaY / 250, e.clientX - M.ox, e.clientY - M.oy); clearTimeout(wT); wT = setTimeout(endMove, 220); }, {passive: false});
+  M.onResize = () => M.measure(); window.addEventListener("resize", M.onResize);
+  M.destroy = () => { M.dead = true; stopAnim(); cancelAnimationFrame(raf); window.removeEventListener("resize", M.onResize); };
+  requestAnimationFrame(M.measure);
+  return M;
 }
-function closeMap() { const m = $("#mapLayer"); if (map) { map.remove(); map = null; } if (m) m.remove(); updBack(); }
-function geo() {
-  clearTimeout(gT); $("#ma").textContent = t("locating"); $("#msave").disabled = true;
-  gT = setTimeout(async () => { const my = ++gR, p = mpos; let a = "";
-    if (!S.demo) { const r = await api("geocode", {lat: p.lat, lon: p.lon, lang: S.lang}); if (r.ok) a = r.address; }
-    if (my !== gR || !$("#ma")) return; maddr = a || `${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`; $("#ma").textContent = maddr; $("#msave").disabled = false; }, 450);
+const dist = (a, b, c, d) => { const R = 6371, r = Math.PI / 180, x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
+const kmTxt = km => km < 1 ? `${Math.round(km * 1000 / 10) * 10} m` : `${km.toFixed(1).replace(".", ",")} km`;
+const isCoords = a => /^\s*-?\d+\.\d+,\s*-?\d+\.\d+\s*$/.test(a || "");
+function addrDetails(u) {
+  if (!u) return "";
+  const p = [];
+  if (u.apt) p.push(`${t("aptS")} ${u.apt}`); if (u.entrance) p.push(`${u.entrance}-${t("entS")}`); if (u.floor) p.push(`${u.floor}-${t("floorS")}`);
+  let s = p.join(", "); if (u.landmark) s += (s ? " · " : "") + `${t("landS")}: ${u.landmark}`;
+  return s;
+}
+const PIN_SVG = `<svg viewBox="0 0 48 60" width="48" height="60" aria-hidden="true"><defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16875e"/><stop offset="1" stop-color="#0b3d2c"/></linearGradient></defs><path d="M24 2C12.4 2 3 11.2 3 22.6c0 14.6 17.4 32.3 19.4 34.3a2.3 2.3 0 0 0 3.2 0C27.6 54.9 45 37.2 45 22.6 45 11.2 35.6 2 24 2z" fill="url(#pg)"/><circle cx="24" cy="22.5" r="10.5" fill="#fff"/><circle cx="24" cy="22.5" r="5" fill="#c9a95e"/></svg>`;
+
+let MP = null;   // xarita oynasi holati
+function openMap() {
+  if ($("#mapLayer")) return;
+  const r = S.set.restaurant || {lat: 39.0578, lon: 66.8342}, u = S.user, has = u.lat != null;
+  const street0 = isCoords(u.address) ? "" : (u.address || "");  // koordinata — manzil emas
+  MP = {lat: has ? u.lat : r.lat, lon: has ? u.lon : r.lon, sug: street0, req: 0, gT: 0, map: null};
+  const el = document.createElement("div"); el.id = "mapLayer";
+  el.innerHTML = `<div class="gmap" id="gmap"></div><div class="mshade"></div>
+    <div class="mapfb" id="mfb" hidden>${ic("info", "s")}<span>${t("mapOffline")}</span></div>
+    <div class="pinw" id="pin"><i class="pshadow"></i><i class="pring"></i><div class="pinb">${PIN_SVG}</div><div class="pbub" id="pbub">${t("hereDeliver")}</div></div>
+    <div class="mtop"><button class="rbtn" onclick="closeMap()" aria-label="${t("cancel")}">${ic("left")}</button><div class="mtitle">${t("mapTitle")}</div></div>
+    <div class="mctl" id="mctl"><div class="mzoom"><button id="zin" aria-label="+">${ic("plus")}</button><button id="zout" aria-label="−">${ic("minus")}</button></div>
+      <button class="rbtn gps" id="mgps" aria-label="GPS">${ic("gps")}</button></div>
+    <div class="mattr" id="mattr">© OpenStreetMap · © CARTO</div>
+    <div class="msheet" id="msheet"><div><div class="grab"></div>
+      <div class="mhead"><h3>${t("mapTitle")}</h3><span class="pill" id="mdist" hidden></span></div>
+      <label class="mstreet" id="mst"><span class="ico">${ic("pin", "s")}</span><input id="ma" maxlength="200" placeholder="${t("streetPh")}" value="${esc(street0)}" autocomplete="street-address" enterkeyhint="next"></label>
+      <div class="mgrid"><label><small>${t("aptL")}</small><input id="m_apt" maxlength="12" inputmode="text" value="${esc(u.apt || "")}"></label>
+        <label><small>${t("entL")}</small><input id="m_ent" maxlength="12" inputmode="numeric" value="${esc(u.entrance || "")}"></label>
+        <label><small>${t("floorL")}</small><input id="m_flo" maxlength="12" inputmode="numeric" value="${esc(u.floor || "")}"></label></div>
+      <input class="mland" id="m_land" maxlength="120" placeholder="${t("landPh")}" value="${esc(u.landmark || "")}">
+      <button class="btn b full" id="msave">${ic("check", "s")} ${t("saveAddr")}</button></div></div>`;
+  document.body.appendChild(el); updBack();
+  const sheet = $("#msheet"), pin = $("#pin"), ctl = $("#mctl"), attr = $("#mattr");
+  const map = MP.map = GMap($("#gmap"), {lat: MP.lat, lon: MP.lon, zoom: has ? 17 : 15,
+    focusY: H => Math.max(150, (H - sheet.offsetHeight) / 2 + 40),
+    onMeasure: m => { pin.style.top = m.fy + "px"; const b = sheet.offsetHeight + 14; ctl.style.bottom = b + "px"; attr.style.bottom = (b - 4) + "px"; },
+    onMoveStart: () => { el.classList.add("moving"); pin.classList.remove("drop"); pin.classList.add("lift"); hap("sel"); },
+    onMoveEnd: () => { el.classList.remove("moving"); pin.classList.remove("lift"); void pin.offsetWidth; pin.classList.add("drop"); hap("light"); onPin(); },
+    onTileFail: () => { $("#mfb") && ($("#mfb").hidden = false); }, onTileOk: () => { $("#mfb") && ($("#mfb").hidden = true); }});
+  const rm = document.createElement("div"); rm.className = "rmk"; rm.innerHTML = `<i></i><div><img src="img/logo.png" alt=""></div><b>Gumbaz Express</b>`;
+  map.addMarker(r.lat, r.lon, rm);
+  $("#zin").onclick = () => { hap("sel"); map.zoomTo(Math.round(map.z) + 1); };
+  $("#zout").onclick = () => { hap("sel"); map.zoomTo(Math.round(map.z) - 1); };
+  $("#mgps").onclick = locate;
+  $("#msave").onclick = saveAddr;
+  $("#ma").addEventListener("input", () => $("#mst").classList.remove("bad"));
+  [["#ma", "#m_apt"], ["#m_apt", "#m_ent"], ["#m_ent", "#m_flo"], ["#m_flo", "#m_land"]].forEach(([a, b]) => $(a).addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $(b).focus(); } }));
+  $("#m_land").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } });
+  setTimeout(() => { pin.classList.add("drop"); onPin(true); }, 60);
+  if (!has) locate();
+}
+function closeMap() { const m = $("#mapLayer"); if (MP && MP.map) MP.map.destroy(); MP = null; if (m) { m.style.transition = "opacity .2s"; m.style.opacity = "0"; setTimeout(() => m.remove(), 200); } setTimeout(updBack, 0); }
+function onPin(initial) {
+  if (!MP) return; const map = MP.map, r = S.set.restaurant || {lat: 39.0578, lon: 66.8342};
+  MP.lat = map.lat; MP.lon = map.lon;
+  const km = dist(r.lat, r.lon, MP.lat, MP.lon), d = $("#mdist");
+  d.hidden = false; d.innerHTML = `${ic("delivery", "xs")}${t("fromRest").replace("{d}", kmTxt(km))}`; $("#pbub").textContent = kmTxt(km);
+  if (initial && $("#ma").value.trim()) return;  // saqlangan manzil — tegmaymiz
+  const inp = $("#ma"), cur = inp.value.trim(), canFill = !cur || cur === MP.sug;
+  clearTimeout(MP.gT);
+  if (canFill) inp.classList.add("loading");
+  MP.gT = setTimeout(async () => {
+    const my = ++MP.req; let a = "";
+    if (!S.demo) { const res = await api("geocode", {lat: MP.lat, lon: MP.lon, lang: S.lang}); if (res.ok) a = res.address; }
+    if (!MP || my !== MP.req) return;
+    inp.classList.remove("loading");
+    if (a && !isCoords(a)) { const now = inp.value.trim(); if (!now || now === MP.sug) { inp.value = a; } MP.sug = a; }
+  }, 420);
 }
 function locate() {
-  hap(); const goTo = (a, b) => { if (map) map.setView([a, b], 17); else { mpos = {lat: a, lon: b}; geo(); } };
-  const br = () => navigator.geolocation ? navigator.geolocation.getCurrentPosition(p => goTo(p.coords.latitude, p.coords.longitude), () => toast(t("err"), "danger"), {enableHighAccuracy: true, timeout: 10000}) : toast(t("err"), "danger");
+  hap(); const b = $("#mgps"); b && b.classList.add("busy");
+  const done = () => b && b.classList.remove("busy");
+  const goTo = (a, c) => { done(); if (!MP) return; MP.map.flyTo(a, c, 17, 900);
+    if (!MP.udot) { const d = document.createElement("div"); d.className = "udot"; d.innerHTML = "<i></i><span></span>"; MP.udot = MP.map.addMarker(a, c, d); } else { MP.udot.lat = a; MP.udot.lon = c; } };
+  const fail = () => { done(); toast(t("gpsErr"), "danger"); };
+  const br = () => navigator.geolocation ? navigator.geolocation.getCurrentPosition(p => goTo(p.coords.latitude, p.coords.longitude), fail, {enableHighAccuracy: true, timeout: 12000, maximumAge: 30000}) : fail();
   const lm = tg && tg.LocationManager;
-  if (lm && tg.isVersionAtLeast("8.0")) lm.init(() => { if (!lm.isLocationAvailable) return br(); lm.getLocation(d => { if (d) goTo(d.latitude, d.longitude); else if (lm.isAccessRequested && !lm.isAccessGranted) lm.openSettings(); else br(); }); });
+  if (lm && tg.isVersionAtLeast && tg.isVersionAtLeast("8.0")) lm.init(() => { if (!lm.isLocationAvailable) return br(); lm.getLocation(d => { if (d) goTo(d.latitude, d.longitude); else if (lm.isAccessRequested && !lm.isAccessGranted) { done(); lm.openSettings(); } else br(); }); });
   else br();
 }
 async function saveAddr() {
-  if (!mpos) return; const b = $("#msave"); b.disabled = true;
-  if (S.demo) { Object.assign(S.user, {lat: mpos.lat, lon: mpos.lon, address: maddr}); store.set("demoUser", S.user); }
-  else { const r = await api("address", {lat: mpos.lat, lon: mpos.lon, address: maddr}); if (!r.ok) { b.disabled = false; return toast(t("err"), "danger"); } S.user = r.user; }
+  if (!MP) return;
+  const street = $("#ma").value.trim();
+  if (street.length < 3) { const st = $("#mst"); st.classList.remove("bad"); void st.offsetWidth; st.classList.add("bad"); hap("err"); toast(t("streetNeed"), "danger"); return $("#ma").focus(); }
+  const body = {lat: MP.map.lat, lon: MP.map.lon, address: street, apt: $("#m_apt").value.trim(), entrance: $("#m_ent").value.trim(), floor: $("#m_flo").value.trim(), landmark: $("#m_land").value.trim()};
+  const b = $("#msave"); b.disabled = true;
+  if (S.demo) { Object.assign(S.user, body); store.set("demoUser", S.user); }
+  else { const r = await api("address", body); if (!r.ok) { b.disabled = false; hap("err"); return toast(t("err"), "danger"); } S.user = r.user; }
   hap("ok"); toast(t("saved")); closeMap(); render();
 }
 
