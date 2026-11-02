@@ -520,8 +520,8 @@ def reverse_geocode(lat, lon, lang="uz"):
 from collections import OrderedDict
 
 _tiles, _tiles_lock = OrderedDict(), threading.Lock()
-TILE_SOURCES = ("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
-                "https://tile.openstreetmap.org/{z}/{x}/{y}.png")
+TILE_SOURCES = (  # CARTO endi kalit talab qiladi — faqat OpenStreetMap manbalari"https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png")
 
 
 def get_tile(z, x, y):
@@ -532,9 +532,10 @@ def get_tile(z, x, y):
             _tiles.move_to_end(key)
             return _tiles[key]
     for tpl in TILE_SOURCES:
-        url = tpl.format(s="abcd"[(x + y) % 4], z=z, x=x, y=y)
+        url = tpl.format(s="abc"[(x + y) % 3], z=z, x=x, y=y)
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": f"GumbazExpress/3.1 (+{CFG['WEBAPP_URL']})"})
+            req = urllib.request.Request(url, headers={"User-Agent": f"GumbazExpress/3.1 (+{CFG['WEBAPP_URL']})",
+                                                       "Referer": CFG["WEBAPP_URL"] + "/"})
             with urllib.request.urlopen(req, timeout=8) as r:
                 data = r.read(2 * 1024 * 1024)
             if data[:4] == b"\x89PNG":

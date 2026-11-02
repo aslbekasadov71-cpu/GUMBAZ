@@ -105,7 +105,7 @@
 .gmap:active{cursor:grabbing}
 .gpane,.gmarks{position:absolute;inset:0}
 .gmarks{pointer-events:none;z-index:3}
-.gt{position:absolute;left:0;top:0;width:256px;height:256px;transform-origin:0 0;opacity:0;transition:opacity .3s ease;pointer-events:none;-webkit-user-drag:none;max-width:none!important}
+.gt{position:absolute;left:0;top:0;width:256px;height:256px;transform-origin:0 0;opacity:0;transition:opacity .3s ease;filter:saturate(.82) contrast(.97) brightness(1.03);pointer-events:none;-webkit-user-drag:none;max-width:none!important}
 .gt.ld{opacity:1}
 .mapfb{position:absolute;left:24px;right:24px;top:calc(90px + env(safe-area-inset-top,0px));z-index:4;background:var(--card);border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:600;color:var(--ink);box-shadow:0 8px 24px rgba(16,24,40,.12)}
 .mshade{position:absolute;left:0;right:0;top:0;height:calc(110px + env(safe-area-inset-top,0px));background:linear-gradient(180deg,rgba(242,244,247,.92),rgba(242,244,247,0));z-index:4;pointer-events:none}
@@ -608,7 +608,7 @@ function GMap(el, o) {
   const M = {lat: o.lat, lon: o.lon, z: o.zoom || 16, W: 0, H: 0, fx: 0, fy: 0, ox: 0, oy: 0, tiles: new Map(), marks: [], moving: false, loaded: 0, failed: 0, dead: false};
   const pane = document.createElement("div"); pane.className = "gpane"; el.appendChild(pane);
   const mk = document.createElement("div"); mk.className = "gmarks"; el.appendChild(mk);
-  const url = (z, x, y) => `https://${"abcd"[(x + y) % 4]}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}@2x.png`;
+  const url = (z, x, y) => `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;  // kalitsiz, rasmiy OSM
   const clampZ = z => Math.max(4, Math.min(19, z));
   M.center = () => MERC.px(M.lat, M.lon, M.z);
   M.toScreen = (lat, lon) => { const c = M.center(), p = MERC.px(lat, lon, M.z); return {x: p.x - c.x + M.fx, y: p.y - c.y + M.fy}; };
@@ -737,7 +737,7 @@ function openMap() {
     <div class="mtop"><button class="rbtn" onclick="closeMap()" aria-label="${t("cancel")}">${ic("left")}</button><div class="mtitle">${t("mapTitle")}</div></div>
     <div class="mctl" id="mctl"><div class="mzoom"><button id="zin" aria-label="+">${ic("plus")}</button><button id="zout" aria-label="−">${ic("minus")}</button></div>
       <button class="rbtn gps" id="mgps" aria-label="GPS">${ic("gps")}</button></div>
-    <div class="mattr" id="mattr">© OpenStreetMap · © CARTO</div>
+    <div class="mattr" id="mattr">© OpenStreetMap</div>
     <div class="msheet" id="msheet"><div><div class="grab"></div>
       <div class="mhead"><h3>${t("mapTitle")}</h3><span class="pill" id="mdist" hidden></span></div>
       <label class="mstreet" id="mst"><span class="ico">${ic("pin", "s")}</span><input id="ma" maxlength="200" placeholder="${t("streetPh")}" value="${esc(street0)}" autocomplete="street-address" enterkeyhint="next"></label>
