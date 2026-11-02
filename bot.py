@@ -1148,7 +1148,14 @@ class Handler(BaseHTTPRequestHandler):
         return self.serve_static(path)
 
     def do_HEAD(self):
-        return self.serve_static(urllib.parse.urlparse(self.path).path, head=True)
+        path = urllib.parse.urlparse(self.path).path
+        if path in ("/api/health", "/healthz", "/api/menu"):  # monitoring (UptimeRobot) HEAD yuboradi
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        return self.serve_static(path, head=True)
 
     def do_POST(self):
         path = urllib.parse.urlparse(self.path).path
