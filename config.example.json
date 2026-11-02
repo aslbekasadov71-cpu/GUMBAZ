@@ -1,6 +1,6 @@
 {
-  "CLIENT_BOT_TOKEN": "111111111:AAAA-mijozlar-boti-BotFather-token",
-  "ADMIN_BOT_TOKEN": "222222222:BBBB-admin-boti-BotFather-token",
+  "CLIENT_BOT_TOKEN": "BotFather-dan-olingan-mijozlar-boti-tokeni",
+  "ADMIN_BOT_TOKEN": "BotFather-dan-olingan-admin-boti-tokeni",
   "WEBAPP_URL": "https://gumbaz.example.uz",
   "ADMIN_IDS": [
     123456789
