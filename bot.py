@@ -120,6 +120,7 @@ class Backup:
         self.dirty = False
         self.last = 0.0
         self.msg_id = None
+        self.fails = 0
         self.lock = threading.Lock()
 
     def mark(self):
@@ -192,12 +193,18 @@ class Backup:
                         ok = True
                 if ok:
                     self.last = time.time()
+                    self.fails = 0
                     log.info("Zaxira saqlandi (%d KB)", len(data) // 1024)
                 else:
                     self.dirty = True
-                    log.warning("Zaxira yuborilmadi — rahbar admin botga /start yozganmi?")
+                    self.fails += 1
+                    self.last = time.time() + min(300, 15 * self.fails)  # orqaga chekinish, 5 daqiqagacha
+                    if self.fails in (1, 10) or self.fails % 50 == 0:
+                        log.warning("Zaxira yuborilmadi — rahbar admin botga /start yozganmi?")
             except Exception:
                 self.dirty = True
+                self.fails += 1
+                self.last = time.time() + min(300, 15 * self.fails)
                 log.error("Zaxira xato:\n%s", traceback.format_exc())
 
     def loop(self):
@@ -835,7 +842,8 @@ def admin_message(msg):
         who = "Rahbar" if owner else esc(staff["name"] or staff["login"])
         tg(ADMIN, "sendMessage", chat_id=chat, parse_mode="HTML", reply_markup=kb,
            text=f"Salom, <b>{who}</b>! 👋\n\nYangi buyurtmalar shu chatga keladi.\nHozir kutilayotgan: <b>{new}</b> ta.")
-        if owner and BACKUP.on and not BACKUP.msg_id:
+        if owner and BACKUP.on and (not BACKUP.msg_id or BACKUP.fails):
+            BACKUP.fails = 0
             threading.Thread(target=BACKUP.run, kwargs={"force": True}, daemon=True).start()
     else:
         tg(ADMIN, "sendMessage", chat_id=chat, parse_mode="HTML", reply_markup=kb,
