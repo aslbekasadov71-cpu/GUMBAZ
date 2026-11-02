@@ -1,0 +1,15 @@
+[Unit]
+Description=Gumbaz Express — mijozlar va admin botlari
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/opt/gumbaz
+ExecStart=/usr/bin/python3 /opt/gumbaz/bot.py
+Environment=TZ=Asia/Tashkent
+Environment=PYTHONUNBUFFERED=1
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

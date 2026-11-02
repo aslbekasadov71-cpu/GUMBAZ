@@ -1,0 +1,7 @@
+config.json
+data/gumbaz.db*
+data/*.tmp
+webapp/uploads/*
+!webapp/uploads/.keep
+__pycache__/
+*.pyc

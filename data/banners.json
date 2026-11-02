@@ -1,0 +1,6 @@
+[
+  {"id": "b1", "type": "image", "src": "banners/banner1.jpg", "product": "p_assorti"},
+  {"id": "b2", "type": "video", "src": "banners/promo.mp4", "poster": "banners/promo.jpg", "product": "p_pepperoni"},
+  {"id": "b3", "type": "image", "src": "banners/banner2.jpg", "category": "burger"},
+  {"id": "b4", "type": "image", "src": "banners/banner3.jpg", "product": "l_klassik"}
+]

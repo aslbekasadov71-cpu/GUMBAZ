@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: gumbaz-express
+    runtime: python
+    region: frankfurt
+    plan: free
+    buildCommand: echo ok
+    startCommand: python3 bot.py
+    healthCheckPath: /healthz
+    envVars:
+      - key: CLIENT_BOT_TOKEN
+        sync: false
+      - key: ADMIN_BOT_TOKEN
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: OWNER_PASSWORD
+        sync: false

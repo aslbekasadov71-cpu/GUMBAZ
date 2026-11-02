@@ -1,0 +1,938 @@
+{
+ "categories": [
+  {
+   "id": "pizza",
+   "name": {
+    "uz": "Pitsa",
+    "ru": "Пицца"
+   }
+  },
+  {
+   "id": "lavash",
+   "name": {
+    "uz": "Lavash",
+    "ru": "Лаваш"
+   }
+  },
+  {
+   "id": "donar",
+   "name": {
+    "uz": "Donar",
+    "ru": "Донар"
+   }
+  },
+  {
+   "id": "burger",
+   "name": {
+    "uz": "Burger",
+    "ru": "Бургер"
+   }
+  },
+  {
+   "id": "hotdog",
+   "name": {
+    "uz": "Hot-dog",
+    "ru": "Хот-дог"
+   }
+  },
+  {
+   "id": "drinks",
+   "name": {
+    "uz": "Ichimliklar",
+    "ru": "Напитки"
+   }
+  },
+  {
+   "id": "tea",
+   "name": {
+    "uz": "Choy va kofe",
+    "ru": "Чай и кофе"
+   }
+  }
+ ],
+ "products": [
+  {
+   "id": "p_goshtli",
+   "cat": "pizza",
+   "img": "img/p_goshtli.jpg",
+   "name": {
+    "uz": "Go'shtli pitsa",
+    "ru": "Мясная пицца"
+   },
+   "desc": {
+    "uz": "Mol go'shti, bolgar qalampiri, pishloq, ketchup",
+    "ru": "Говядина, болгарский перец, сыр, кетчуп"
+   },
+   "variants": [
+    {
+     "id": "s",
+     "name": {
+      "uz": "Kichik",
+      "ru": "Маленькая"
+     },
+     "price": 70000
+    },
+    {
+     "id": "m",
+     "name": {
+      "uz": "O'rta",
+      "ru": "Средняя"
+     },
+     "price": 80000
+    },
+    {
+     "id": "l",
+     "name": {
+      "uz": "Katta",
+      "ru": "Большая"
+     },
+     "price": 90000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "p_tovuqli",
+   "cat": "pizza",
+   "img": "img/p_tovuqli.jpg",
+   "name": {
+    "uz": "Tovuqli pitsa",
+    "ru": "Куриная пицца"
+   },
+   "desc": {
+    "uz": "Tovuq go'shti, mozzarella, maxsus sous",
+    "ru": "Курица, моцарелла, фирменный соус"
+   },
+   "variants": [
+    {
+     "id": "s",
+     "name": {
+      "uz": "Kichik",
+      "ru": "Маленькая"
+     },
+     "price": 60000
+    },
+    {
+     "id": "m",
+     "name": {
+      "uz": "O'rta",
+      "ru": "Средняя"
+     },
+     "price": 70000
+    },
+    {
+     "id": "l",
+     "name": {
+      "uz": "Katta",
+      "ru": "Большая"
+     },
+     "price": 80000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "p_qazili",
+   "cat": "pizza",
+   "img": "img/p_qazili.jpg",
+   "name": {
+    "uz": "Qazili pitsa",
+    "ru": "Пицца с казы"
+   },
+   "desc": {
+    "uz": "Qazi, qo'ziqorin, zaytun, pishloq",
+    "ru": "Казы, грибы, маслины, сыр"
+   },
+   "variants": [
+    {
+     "id": "s",
+     "name": {
+      "uz": "Kichik",
+      "ru": "Маленькая"
+     },
+     "price": 70000
+    },
+    {
+     "id": "m",
+     "name": {
+      "uz": "O'rta",
+      "ru": "Средняя"
+     },
+     "price": 80000
+    },
+    {
+     "id": "l",
+     "name": {
+      "uz": "Katta",
+      "ru": "Большая"
+     },
+     "price": 90000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "p_assorti",
+   "cat": "pizza",
+   "img": "img/p_assorti.jpg",
+   "name": {
+    "uz": "Gumbaz Assorti",
+    "ru": "Гумбаз Ассорти"
+   },
+   "desc": {
+    "uz": "Firma pitsasi: go'sht assorti, zaytun, rayhon",
+    "ru": "Фирменная: мясное ассорти, маслины, базилик"
+   },
+   "badge": "hit",
+   "variants": [
+    {
+     "id": "s",
+     "name": {
+      "uz": "Kichik",
+      "ru": "Маленькая"
+     },
+     "price": 90000
+    },
+    {
+     "id": "m",
+     "name": {
+      "uz": "O'rta",
+      "ru": "Средняя"
+     },
+     "price": 110000
+    },
+    {
+     "id": "l",
+     "name": {
+      "uz": "Katta",
+      "ru": "Большая"
+     },
+     "price": 130000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "p_4fasl",
+   "cat": "pizza",
+   "img": "img/p_4fasl.jpg",
+   "name": {
+    "uz": "4 fasl",
+    "ru": "4 сезона"
+   },
+   "desc": {
+    "uz": "To'rt xil ta'm bitta pitsada",
+    "ru": "Четыре вкуса в одной пицце"
+   },
+   "variants": [
+    {
+     "id": "s",
+     "name": {
+      "uz": "Kichik",
+      "ru": "Маленькая"
+     },
+     "price": 65000
+    },
+    {
+     "id": "m",
+     "name": {
+      "uz": "O'rta",
+      "ru": "Средняя"
+     },
+     "price": 75000
+    },
+    {
+     "id": "l",
+     "name": {
+      "uz": "Katta",
+      "ru": "Большая"
+     },
+     "price": 85000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "p_margarita",
+   "cat": "pizza",
+   "img": "img/p_margarita.jpg",
+   "name": {
+    "uz": "Margarita",
+    "ru": "Маргарита"
+   },
+   "desc": {
+    "uz": "Pomidor, mozzarella, pomidor sousi",
+    "ru": "Томаты, моцарелла, томатный соус"
+   },
+   "variants": [
+    {
+     "id": "s",
+     "name": {
+      "uz": "Kichik",
+      "ru": "Маленькая"
+     },
+     "price": 60000
+    },
+    {
+     "id": "m",
+     "name": {
+      "uz": "O'rta",
+      "ru": "Средняя"
+     },
+     "price": 70000
+    },
+    {
+     "id": "l",
+     "name": {
+      "uz": "Katta",
+      "ru": "Большая"
+     },
+     "price": 80000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "p_kombo",
+   "cat": "pizza",
+   "img": "img/p_kombo.jpg",
+   "name": {
+    "uz": "Kombo",
+    "ru": "Комбо"
+   },
+   "desc": {
+    "uz": "Kolbasa, vetchina, zaytun, tuzlangan bodring",
+    "ru": "Колбаса, ветчина, маслины, огурцы"
+   },
+   "variants": [
+    {
+     "id": "s",
+     "name": {
+      "uz": "Kichik",
+      "ru": "Маленькая"
+     },
+     "price": 70000
+    },
+    {
+     "id": "m",
+     "name": {
+      "uz": "O'rta",
+      "ru": "Средняя"
+     },
+     "price": 80000
+    },
+    {
+     "id": "l",
+     "name": {
+      "uz": "Katta",
+      "ru": "Большая"
+     },
+     "price": 90000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "p_pepperoni",
+   "cat": "pizza",
+   "img": "img/p_pepperoni.jpg",
+   "name": {
+    "uz": "Pepperoni",
+    "ru": "Пепперони"
+   },
+   "desc": {
+    "uz": "Pepperoni, mozzarella, pomidor sousi",
+    "ru": "Пепперони, моцарелла, томатный соус"
+   },
+   "badge": "hit",
+   "variants": [
+    {
+     "id": "s",
+     "name": {
+      "uz": "Kichik",
+      "ru": "Маленькая"
+     },
+     "price": 65000
+    },
+    {
+     "id": "m",
+     "name": {
+      "uz": "O'rta",
+      "ru": "Средняя"
+     },
+     "price": 75000
+    },
+    {
+     "id": "l",
+     "name": {
+      "uz": "Katta",
+      "ru": "Большая"
+     },
+     "price": 85000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "l_mini",
+   "cat": "lavash",
+   "img": "img/l_mini.jpg",
+   "name": {
+    "uz": "Lavash Mini",
+    "ru": "Лаваш Мини"
+   },
+   "desc": {
+    "uz": "Kichik porsiya: go'sht, pomidor, sous",
+    "ru": "Малая порция: мясо, томаты, соус"
+   },
+   "price": 30000,
+   "available": true
+  },
+  {
+   "id": "l_klassik",
+   "cat": "lavash",
+   "img": "img/l_klassik.jpg",
+   "name": {
+    "uz": "Lavash Klassik",
+    "ru": "Лаваш Классик"
+   },
+   "desc": {
+    "uz": "Go'sht, pomidor, chips, maxsus sous",
+    "ru": "Мясо, томаты, чипсы, фирменный соус"
+   },
+   "badge": "hit",
+   "price": 35000,
+   "available": true
+  },
+  {
+   "id": "l_pishloqli",
+   "cat": "lavash",
+   "img": "img/l_pishloqli.jpg",
+   "name": {
+    "uz": "Pishloqli lavash",
+    "ru": "Лаваш с сыром"
+   },
+   "desc": {
+    "uz": "Klassik lavash + pishloq",
+    "ru": "Классический лаваш + сыр"
+   },
+   "price": 37000,
+   "available": true
+  },
+  {
+   "id": "l_ostriy",
+   "cat": "lavash",
+   "img": "img/l_ostriy.jpg",
+   "name": {
+    "uz": "Achchiq lavash",
+    "ru": "Острый лаваш"
+   },
+   "desc": {
+    "uz": "Achchiq qalampir va sous bilan",
+    "ru": "С острым перцем и соусом"
+   },
+   "badge": "spicy",
+   "price": 35000,
+   "available": true
+  },
+  {
+   "id": "l_tandir",
+   "cat": "lavash",
+   "img": "img/l_tandir.jpg",
+   "name": {
+    "uz": "Tandir lavash",
+    "ru": "Тандыр лаваш"
+   },
+   "desc": {
+    "uz": "Kunjutli tandir non ichida",
+    "ru": "В тандырной лепёшке с кунжутом"
+   },
+   "price": 35000,
+   "available": true
+  },
+  {
+   "id": "d_shaurma",
+   "cat": "donar",
+   "img": "img/d_shaurma.jpg",
+   "name": {
+    "uz": "Shaurma",
+    "ru": "Шаурма"
+   },
+   "desc": {
+    "uz": "Donar go'shti, yangi sabzavotlar",
+    "ru": "Мясо донар, свежие овощи"
+   },
+   "price": 38000,
+   "available": true
+  },
+  {
+   "id": "d_haggi",
+   "cat": "donar",
+   "img": "img/d_haggi.jpg",
+   "name": {
+    "uz": "Haggi",
+    "ru": "Хагги"
+   },
+   "desc": {
+    "uz": "Bulka ichida donar go'shti va piyoz",
+    "ru": "Донар с луком в булке"
+   },
+   "price": 38000,
+   "available": true
+  },
+  {
+   "id": "d_klab_g",
+   "cat": "donar",
+   "img": "img/d_klab_g.jpg",
+   "name": {
+    "uz": "Klab sendvich go'shtli",
+    "ru": "Клаб сэндвич мясной"
+   },
+   "desc": {
+    "uz": "Tost non, go'sht, sabzavotlar",
+    "ru": "Тост, мясо, овощи"
+   },
+   "price": 40000,
+   "available": true
+  },
+  {
+   "id": "d_klab_t",
+   "cat": "donar",
+   "img": "img/d_klab_t.jpg",
+   "name": {
+    "uz": "Klab sendvich tovuqli",
+    "ru": "Клаб сэндвич куриный"
+   },
+   "desc": {
+    "uz": "Tost non, tovuq, kartoshka fri bilan",
+    "ru": "Тост, курица, с картофелем фри"
+   },
+   "price": 35000,
+   "available": true
+  },
+  {
+   "id": "b_gamburger",
+   "cat": "burger",
+   "img": "img/b_gamburger.jpg",
+   "name": {
+    "uz": "Gamburger",
+    "ru": "Гамбургер"
+   },
+   "desc": {
+    "uz": "Mol go'shti kotleti, sabzavotlar",
+    "ru": "Говяжья котлета, овощи"
+   },
+   "price": 30000,
+   "available": true
+  },
+  {
+   "id": "b_chizburger",
+   "cat": "burger",
+   "img": "img/b_chizburger.jpg",
+   "name": {
+    "uz": "Chizburger",
+    "ru": "Чизбургер"
+   },
+   "desc": {
+    "uz": "Kotlet, cheddar pishlog'i, sabzavotlar",
+    "ru": "Котлета, чеддер, овощи"
+   },
+   "price": 33000,
+   "available": true
+  },
+  {
+   "id": "b_double",
+   "cat": "burger",
+   "img": "img/b_double.jpg",
+   "name": {
+    "uz": "Double burger",
+    "ru": "Дабл бургер"
+   },
+   "desc": {
+    "uz": "Ikki qavat kotlet",
+    "ru": "Две котлеты"
+   },
+   "price": 38000,
+   "available": true
+  },
+  {
+   "id": "b_doublecheese",
+   "cat": "burger",
+   "img": "img/b_doublecheese.jpg",
+   "name": {
+    "uz": "Double chizburger",
+    "ru": "Дабл чизбургер"
+   },
+   "desc": {
+    "uz": "Ikki kotlet, ikki qavat pishloq",
+    "ru": "Две котлеты, двойной сыр"
+   },
+   "price": 40000,
+   "available": true
+  },
+  {
+   "id": "b_samiy",
+   "cat": "burger",
+   "img": "img/b_samiy.jpg",
+   "name": {
+    "uz": "Samiy vkusniy",
+    "ru": "Самый вкусный"
+   },
+   "desc": {
+    "uz": "Uch kotlet, pishloq, firma sousi",
+    "ru": "Три котлеты, сыр, фирменный соус"
+   },
+   "badge": "hit",
+   "price": 55000,
+   "available": true
+  },
+  {
+   "id": "b_chicken",
+   "cat": "burger",
+   "img": "img/b_chicken.jpg",
+   "name": {
+    "uz": "Chikenburger",
+    "ru": "Чикенбургер"
+   },
+   "desc": {
+    "uz": "Qarsildoq tovuq file",
+    "ru": "Хрустящее куриное филе"
+   },
+   "price": 30000,
+   "available": true
+  },
+  {
+   "id": "h_hotdog",
+   "cat": "hotdog",
+   "img": "img/h_hotdog.jpg",
+   "name": {
+    "uz": "Hot-dog",
+    "ru": "Хот-дог"
+   },
+   "desc": {
+    "uz": "Sosiska, ketchup, xantal",
+    "ru": "Сосиска, кетчуп, горчица"
+   },
+   "price": 15000,
+   "available": true
+  },
+  {
+   "id": "h_hotlet",
+   "cat": "hotdog",
+   "img": "img/h_hotlet.jpg",
+   "name": {
+    "uz": "Hot-let",
+    "ru": "Хот-лет"
+   },
+   "desc": {
+    "uz": "Kotlet, sabzavotlar, ketchup",
+    "ru": "Котлета, овощи, кетчуп"
+   },
+   "price": 30000,
+   "available": true
+  },
+  {
+   "id": "h_amerikano",
+   "cat": "hotdog",
+   "img": "img/h_amerikano.jpg",
+   "name": {
+    "uz": "Amerikano",
+    "ru": "Американо"
+   },
+   "desc": {
+    "uz": "Sosiska, qovurilgan piyoz, souslar",
+    "ru": "Сосиска, жареный лук, соусы"
+   },
+   "price": 30000,
+   "available": true
+  },
+  {
+   "id": "h_korolevskiy",
+   "cat": "hotdog",
+   "img": "img/h_korolevskiy.jpg",
+   "name": {
+    "uz": "Korolevskiy",
+    "ru": "Королевский"
+   },
+   "desc": {
+    "uz": "Katta sosiska, salat bargi, souslar",
+    "ru": "Большая сосиска, салат, соусы"
+   },
+   "price": 25000,
+   "available": true
+  },
+  {
+   "id": "h_steyk",
+   "cat": "hotdog",
+   "img": "img/h_steyk.jpg",
+   "name": {
+    "uz": "Steyk",
+    "ru": "Стейк"
+   },
+   "desc": {
+    "uz": "Go'sht bo'laklari, qalampir, pishloq",
+    "ru": "Кусочки мяса, перец, сыр"
+   },
+   "price": 35000,
+   "available": true
+  },
+  {
+   "id": "i_pepsi",
+   "cat": "drinks",
+   "img": "img/i_pepsi.jpg",
+   "name": {
+    "uz": "Pepsi",
+    "ru": "Pepsi"
+   },
+   "variants": [
+    {
+     "id": "05",
+     "name": {
+      "uz": "0,5 L",
+      "ru": "0,5 л"
+     },
+     "price": 8000
+    },
+    {
+     "id": "1",
+     "name": {
+      "uz": "1 L",
+      "ru": "1 л"
+     },
+     "price": 13000
+    },
+    {
+     "id": "15",
+     "name": {
+      "uz": "1,5 L",
+      "ru": "1,5 л"
+     },
+     "price": 17000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "i_fanta",
+   "cat": "drinks",
+   "img": "img/i_fanta.jpg",
+   "name": {
+    "uz": "Fanta",
+    "ru": "Fanta"
+   },
+   "variants": [
+    {
+     "id": "05",
+     "name": {
+      "uz": "0,5 L",
+      "ru": "0,5 л"
+     },
+     "price": 8000
+    },
+    {
+     "id": "1",
+     "name": {
+      "uz": "1 L",
+      "ru": "1 л"
+     },
+     "price": 13000
+    },
+    {
+     "id": "15",
+     "name": {
+      "uz": "1,5 L",
+      "ru": "1,5 л"
+     },
+     "price": 17000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "i_kola",
+   "cat": "drinks",
+   "img": "img/i_kola.jpg",
+   "name": {
+    "uz": "Coca-Cola",
+    "ru": "Coca-Cola"
+   },
+   "variants": [
+    {
+     "id": "05",
+     "name": {
+      "uz": "0,5 L",
+      "ru": "0,5 л"
+     },
+     "price": 8000
+    },
+    {
+     "id": "1",
+     "name": {
+      "uz": "1 L",
+      "ru": "1 л"
+     },
+     "price": 13000
+    },
+    {
+     "id": "15",
+     "name": {
+      "uz": "1,5 L",
+      "ru": "1,5 л"
+     },
+     "price": 17000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "i_nestle",
+   "cat": "drinks",
+   "img": "img/i_nestle.jpg",
+   "name": {
+    "uz": "Nestle suv",
+    "ru": "Вода Nestle"
+   },
+   "variants": [
+    {
+     "id": "05",
+     "name": {
+      "uz": "0,5 L",
+      "ru": "0,5 л"
+     },
+     "price": 3000
+    },
+    {
+     "id": "1",
+     "name": {
+      "uz": "1 L",
+      "ru": "1 л"
+     },
+     "price": 5000
+    }
+   ],
+   "available": true
+  },
+  {
+   "id": "i_bliss",
+   "cat": "drinks",
+   "img": "img/i_bliss.jpg",
+   "name": {
+    "uz": "Sok Bliss",
+    "ru": "Сок Bliss"
+   },
+   "desc": {
+    "uz": "1 L",
+    "ru": "1 л"
+   },
+   "price": 16000,
+   "available": true
+  },
+  {
+   "id": "i_moxito",
+   "cat": "drinks",
+   "img": "img/i_moxito.jpg",
+   "name": {
+    "uz": "Moxito",
+    "ru": "Мохито"
+   },
+   "desc": {
+    "uz": "Yalpiz, laym, muzli",
+    "ru": "Мята, лайм, со льдом"
+   },
+   "price": 18000,
+   "available": true
+  },
+  {
+   "id": "i_grafin",
+   "cat": "drinks",
+   "img": "img/i_grafin.jpg",
+   "name": {
+    "uz": "Moxito grafin",
+    "ru": "Мохито графин"
+   },
+   "desc": {
+    "uz": "Butun kompaniya uchun",
+    "ru": "На всю компанию"
+   },
+   "price": 35000,
+   "available": true
+  },
+  {
+   "id": "t_kofe",
+   "cat": "tea",
+   "img": "img/i_kofe.jpg",
+   "name": {
+    "uz": "Kofe",
+    "ru": "Кофе"
+   },
+   "price": 8000,
+   "available": true
+  },
+  {
+   "id": "t_qora",
+   "cat": "tea",
+   "img": "img/i_choy.jpg",
+   "name": {
+    "uz": "Qora choy",
+    "ru": "Чёрный чай"
+   },
+   "price": 8000,
+   "available": true
+  },
+  {
+   "id": "t_kok",
+   "cat": "tea",
+   "img": "img/i_choy.jpg",
+   "name": {
+    "uz": "Ko'k choy",
+    "ru": "Зелёный чай"
+   },
+   "price": 8000,
+   "available": true
+  },
+  {
+   "id": "t_limon",
+   "cat": "tea",
+   "img": "img/i_choy.jpg",
+   "name": {
+    "uz": "Limon choy",
+    "ru": "Чай с лимоном"
+   },
+   "price": 15000,
+   "available": true
+  },
+  {
+   "id": "t_kivi",
+   "cat": "tea",
+   "img": "img/i_choy.jpg",
+   "name": {
+    "uz": "Kivili choy",
+    "ru": "Чай с киви"
+   },
+   "price": 20000,
+   "available": true
+  },
+  {
+   "id": "t_malina",
+   "cat": "tea",
+   "img": "img/i_choy.jpg",
+   "name": {
+    "uz": "Malinali choy",
+    "ru": "Малиновый чай"
+   },
+   "price": 20000,
+   "available": true
+  },
+  {
+   "id": "t_qulupnay",
+   "cat": "tea",
+   "img": "img/i_choy.jpg",
+   "name": {
+    "uz": "Qulupnayli choy",
+    "ru": "Клубничный чай"
+   },
+   "price": 20000,
+   "available": true
+  }
+ ]
+}

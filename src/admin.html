@@ -1,0 +1,663 @@
+<title>Gumbaz Admin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f2f4f7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+/*__BASE__*/
+/* ── admin ── */
+.app{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.app.nonav{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.bars{display:flex;gap:8px;height:150px;align-items:flex-end;background:var(--card);border-radius:18px;padding:14px 14px 10px;margin-bottom:8px}
+.bars div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;min-width:0}
+.bars i{width:100%;background:var(--bl);border-radius:8px 8px 4px 4px;min-height:4px;transition:height .5s var(--ease)}
+.bars div.today i{background:var(--b)}
+.bars small{font-size:11px;font-weight:700}
+.bars em{font-style:normal;font-size:10.5px;font-weight:800;color:var(--ink);white-space:nowrap}
+.rank{width:30px;height:30px;border-radius:10px;background:var(--bl);color:var(--b);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.pbar{height:6px;border-radius:99px;background:var(--bl);margin-top:6px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--b);border-radius:99px;transition:width .6s var(--ease)}
+.acc{display:flex;align-items:center;gap:12px}
+.oc{align-items:flex-start;position:relative}
+.oc.fresh::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--warn)}
+.oc .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.oc .hd b{font-size:16px;font-weight:800}
+.oc .ft{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
+.oc .ft b{font-weight:800}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.acts .btn.big{grid-column:1/-1}
+.pr-row .ico.im{width:58px;height:48px;border-radius:12px}
+.pr-row .grow b{white-space:nowrap}
+.pr-row.off .ico.im img{filter:grayscale(1);opacity:.6}
+.mv{display:flex;flex-direction:column;gap:2px;flex:none}
+.mv button{width:34px;height:26px;border-radius:8px;border:0;background:var(--bg);color:var(--b);display:grid;place-items:center}
+.mv button:disabled{opacity:.3}
+.photo{aspect-ratio:4/3;border-radius:18px;background:var(--card);border:2px dashed var(--line);display:grid;place-items:center;overflow:hidden;position:relative;width:100%;padding:0;color:var(--mute);max-width:100%}
+.photo img,.photo video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo .ov{position:absolute;right:10px;bottom:10px;background:rgba(16,24,40,.6);color:#fff;border-radius:99px;padding:6px 10px;font-size:12.5px;font-weight:700;display:flex;gap:5px;align-items:center}
+.photo.wide{aspect-ratio:2/1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vrow{display:grid;grid-template-columns:1fr 1fr 110px 36px;gap:6px;margin-bottom:6px;align-items:center}
+.vrow input{padding:11px 10px;font-size:14px}
+.vrow button{height:42px;border-radius:12px;border:0;background:var(--redl);color:var(--red);display:grid;place-items:center}
+.bn-row .ico.im{width:96px;height:48px;border-radius:12px}
+.cnt-dot{min-width:20px;height:20px;border-radius:10px;background:var(--red);color:#fff;font-size:11.5px;font-weight:800;display:inline-grid;place-items:center;padding:0 6px}
+.loader{height:3px;position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:90;overflow:hidden;pointer-events:none}
+.loader i{display:block;height:100%;width:40%;background:var(--b);border-radius:3px;animation:ld 1s infinite var(--ease)}
+@keyframes ld{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+#splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;transition:opacity .35s}
+#splash img{width:96px;height:96px;animation:breathe 1.4s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.06)}}
+#splash.hide{opacity:0;pointer-events:none}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 15px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
+</style>
+
+<!--__ICONS__-->
+<div id="splash"><img src="img/logo.png" alt=""></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div class="loader" id="loader" hidden><i></i></div>
+<main class="app" id="app"></main>
+<nav class="tabs" id="nav">
+  <button data-tab="dash" class="on"><svg class="ic"><use href="#i-chart"/></svg><span>Asosiy</span></button>
+  <button data-tab="orders"><svg class="ic"><use href="#i-orders"/></svg><span>Buyurtmalar</span><i class="bdg num" id="bdg" hidden></i></button>
+  <button data-tab="menu"><svg class="ic"><use href="#i-box"/></svg><span>Menyu</span></button>
+  <button data-tab="more"><svg class="ic"><use href="#i-widget"/></svg><span>Boshqaruv</span></button>
+</nav>
+<input type="file" id="fileIn" hidden>
+
+<script>
+"use strict";
+const DEMO_DATA = /*__DATA__*/null;
+const tg = window.Telegram && window.Telegram.WebApp;
+const INIT = tg && tg.initData ? tg.initData : "";
+const DEMO = !!DEMO_DATA;  // demo faqat demo-yig'ilmada; serverda brauzerdan login bilan kiriladi
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ic = (n, c = "") => `<svg class="ic ${c}"><use href="#i-${n}"/></svg>`;
+const money = n => (Math.round(n) + "").replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm";
+const short = n => n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(".0", "") + " mln" : n >= 1e3 ? Math.round(n / 1e3) + " ming" : String(n);
+const hap = k => { try { const h = tg && tg.HapticFeedback; if (!h) return; k === "ok" ? h.notificationOccurred("success") : k === "err" ? h.notificationOccurred("error") : k === "warn" ? h.notificationOccurred("warning") : k === "sel" ? h.selectionChanged() : h.impactOccurred(k || "light"); } catch (e) {} };
+let tT; function toast(m, i = "check") { const e = $("#toast"); e.innerHTML = ic(i, "s") + esc(m); e.classList.add("show"); clearTimeout(tT); tT = setTimeout(() => e.classList.remove("show"), 2300); }
+const ST = {new: "Yangi", accepted: "Qabul qilindi", cooking: "Tayyorlanmoqda", on_way: "Yo'lda", ready: "Tayyor", done: "Yetkazildi", cancelled: "Bekor qilindi"};
+const NEXTL = {accepted: ["Qabul qilish", "check"], cooking: ["Tayyorlanmoqda", "chef"], on_way: ["Yo'lga chiqdi", "scooter"], ready: ["Tayyor", "box"], done: ["Yetkazildi", "flag"], cancelled: ["Bekor qilish", "close"]};
+const DELIV = {courier: ["Kuryer", "scooter"], yandex: ["Yandex Go", "delivery"], pickup: ["Olib ketish", "shop"]};
+const ERR = {bad_login: "Login yoki parol noto'g'ri", too_many: "Ko'p urinish. 10 daqiqadan keyin qayta urinib ko'ring", login_taken: "Bu login band", bad_login_format: "Login: 3–32 ta lotin harf, raqam, _ . -", short_password: "Parol kamida 6 ta belgidan iborat bo'lsin", too_large_20: "Fayl 19 MB dan katta bo'lmasin", login_required: "Qayta kiring", category_not_empty: "Avval bo'limdagi mahsulotlarni o'chiring yoki ko'chiring", bad_price: "Narxni to'g'ri kiriting", name_required: "Nomini kiriting", bad_category: "Bo'limni tanlang", too_fast: "Biroz kuting", forbidden: "Ruxsat yo'q", network: "Internet aloqasi yo'q", bad_type: "Faqat JPG, PNG, WEBP yoki MP4", too_large: "Fayl juda katta (25 MB gacha)", already: "Allaqachon admin"};
+const A = {me: null, view: "dash", stack: [], menu: null, cat: "all", sortMode: false, ordFilter: "active", orders: null, oq: "", activeCount: 0};
+const L = o => o ? (o.uz || o.ru || "") : "";
+const ago = s => { const d = Date.now() / 1000 - s; if (d < 60) return "hozir"; if (d < 3600) return Math.floor(d / 60) + " daq oldin"; if (d < 86400) return Math.floor(d / 3600) + " soat oldin"; return new Date(s * 1000).toLocaleDateString("ru-RU", {day: "2-digit", month: "2-digit"}) + " " + new Date(s * 1000).toLocaleTimeString("ru-RU", {hour: "2-digit", minute: "2-digit"}); };
+const img = (src) => src ? `<img class="fade" src="${esc(src)}" alt="" loading="lazy" onload="this.classList.add('ld')" onerror="this.classList.add('ld')">` : "";
+
+/* ───────── API (demo rejimida — brauzer ichidagi soxta server) ───────── */
+let busy = 0; const load = on => { busy += on ? 1 : -1; $("#loader").hidden = busy <= 0; };
+async function api(route, body = {}, raw, silent) {
+  if (DEMO) return mock(route, body, raw);
+  if (!silent) load(true);
+  try {
+    const H = {"X-Init-Data": INIT, "X-Admin-Token": getTok()};
+    const opt = raw ? {method: "POST", headers: Object.assign(H, {"Content-Type": raw.type, "X-Kind": raw.kind || ""}), body: raw.blob}
+      : {method: "POST", headers: Object.assign(H, {"Content-Type": "application/json"}), body: JSON.stringify(body)};
+    const r = await fetch("api/admin/" + route, opt); const j = await r.json().catch(() => ({ok: false, error: "server_error"}));
+    if (!r.ok && j.ok !== false) j.ok = false;
+    if (j.error === "login_required" && route !== "me" && route !== "login") { setTok(""); setTimeout(() => location.reload(), 600); }
+    return j;
+  } catch (e) { return {ok: false, error: "network"}; } finally { if (!silent) load(false); }
+}
+function getTok() { try { return localStorage.getItem("gx_admin_tok") || ""; } catch (e) { return A.tok || ""; } }
+function setTok(v) { A.tok = v; try { v ? localStorage.setItem("gx_admin_tok", v) : localStorage.removeItem("gx_admin_tok"); } catch (e) {} }
+const can = p => !!(A.me && (A.me.owner || (A.me.perms || []).includes(p)));
+const fail = r => { hap("err"); toast(ERR[r.error] || r.error || "Xatolik", "danger"); };
+
+/* ───────── boot ───────── */
+async function boot() {
+  if (tg) { try { tg.ready(); tg.expand(); if (tg.isVersionAtLeast("7.7")) tg.disableVerticalSwipes(); if (tg.isVersionAtLeast("6.1")) { tg.setHeaderColor("#f2f4f7"); tg.setBackgroundColor("#f2f4f7"); } tg.BackButton.onClick(back); } catch (e) {} }
+  const me = await api("me");
+  splashOff();
+  if (!me.ok) {
+    if (me.error === "login_required") return loginView();
+    $("#nav").hidden = true;
+    $("#app").innerHTML = `<div class="empty view" style="padding-top:14vh"><div class="ei" style="background:var(--redl);color:var(--red)">${ic("danger", "xl")}</div>
+      <b>Aloqa yo'q</b><p>Internetni tekshirib, qayta urinib ko'ring.</p>
+      <button class="btn b" style="margin:22px auto 0" onclick="location.reload()">${ic("refresh", "s")} Qayta urinish</button></div>`;
+    return;
+  }
+  A.me = me;
+  $$("#nav button").forEach(b => b.hidden = !tabAllowed(b.dataset.tab));
+  const h = (location.hash || "").match(/^#order-(\d+)$/);
+  go(TABS.find(tabAllowed) || "more", true);
+  if (h && can("orders")) { go("orders"); openOrder(+h[1]); }
+  if (can("orders")) { pollOrders(); setInterval(pollOrders, 15000); }
+}
+const tabAllowed = t => t === "more" || (t === "dash" && can("stats")) || (t === "orders" && can("orders")) || (t === "menu" && (can("menu") || can("stock")));
+function loginView(err) {
+  $("#nav").hidden = true;
+  $("#app").innerHTML = `<div class="view" style="padding-top:8vh">
+    <img src="img/logo.png" alt="" style="width:72px;height:72px;border-radius:50%;margin-bottom:18px">
+    <h1 style="font-size:34px;margin-bottom:6px">Xodimlar paneli</h1><p class="mute" style="margin-bottom:22px">Rahbar bergan login va parol bilan kiring.</p>
+    <form id="lf" autocomplete="on">
+      <label class="field" style="margin-bottom:10px">${ic("user")}<input id="lu" name="username" autocomplete="username" placeholder="Login" autocapitalize="none" spellcheck="false" required></label>
+      <label class="field" style="margin-bottom:6px">${ic("shield")}<input id="lp" name="password" type="password" autocomplete="current-password" placeholder="Parol" required></label>
+      <div id="le" class="red" style="min-height:22px;font-weight:700;font-size:14px;margin:4px 2px 8px">${esc(err || "")}</div>
+      <button class="btn b full" id="lb" type="submit">Kirish</button>
+    </form>
+    ${INIT ? `<small style="text-align:center;margin-top:16px">Kirganingizdan keyin buyurtma xabarlari shu Telegram chatga keladi.</small>` : ""}</div>`;
+  $("#lf").onsubmit = async e => { e.preventDefault(); const b = $("#lb"); b.disabled = true;
+    const r = await api("login", {login: $("#lu").value.trim(), password: $("#lp").value}); b.disabled = false;
+    if (!r.ok) { hap("err"); $("#le").textContent = ERR[r.error] || "Xatolik"; return; }
+    setTok(r.token); hap("ok"); location.reload(); };
+}
+function splashOff() { setTimeout(() => $("#splash").classList.add("hide"), 150); setTimeout(() => { const s = $("#splash"); s && s.remove(); }, 600); }
+
+/* ───────── navigation ───────── */
+const TABS = ["dash", "orders", "menu", "more"];
+function go(v, replace) {
+  if (TABS.includes(v)) A.stack = []; else if (!replace && A.view !== v) A.stack.push(A.view);
+  if (v !== "menu") A.sortMode = false;
+  A.view = v; closeModal(true); render(); window.scrollTo(0, 0); updBack();
+}
+function back() {
+  if ($(".modal")) return closeModal();
+  if (A.sortMode) { A.sortMode = false; return render(); }
+  if (A.stack.length) { A.view = A.stack.pop(); render(); window.scrollTo(0, 0); return updBack(); }
+  if (A.view !== "dash") go("dash");
+}
+function updBack() { try { (!!$(".modal") || A.stack.length || A.view !== "dash" || A.sortMode) ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {} }
+const VIEWS = {dash: vDash, orders: vOrders, menu: vMenu, more: vMore, cats: vCats, banners: vBanners, customers: vCustomers, broadcast: vBroadcast, settings: vSettings, staff: vStaff};
+async function render() {
+  const v = A.view;
+  $("#nav").hidden = !TABS.includes(v);
+  $$("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
+  $("#app").className = "app" + (TABS.includes(v) ? "" : " nonav");
+  const html = await VIEWS[v]();
+  if (A.view !== v) return;
+  $("#app").innerHTML = `<div class="view">${html}</div>`;
+  if (VIEWS[v].after) VIEWS[v].after();
+}
+const titleBar = (title, right = "") => `<div class="top"><div class="grow" style="display:flex;align-items:center;gap:10px">${A.stack.length ? `<button class="ico" style="border:0;background:var(--card);color:var(--ink)" onclick="back()" aria-label="Orqaga">${ic("left")}</button>` : ""}<h1>${title}</h1></div>${right}</div>`;
+
+/* ───────── modal ───────── */
+function modal(html) {
+  closeModal(true);
+  const m = document.createElement("div"); m.className = "modal";
+  m.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div>`;
+  m.addEventListener("click", e => { if (e.target === m) closeModal(); });
+  document.body.appendChild(m);
+  const sh = m.firstElementChild; let y0 = null;
+  sh.addEventListener("touchstart", e => { y0 = sh.scrollTop <= 0 && !e.target.closest("input,textarea,select") ? e.touches[0].clientY : null; }, {passive: true});
+  sh.addEventListener("touchmove", e => { if (y0 == null) return; const d = e.touches[0].clientY - y0; if (d > 0) { sh.style.transition = "none"; sh.style.transform = `translateY(${d}px)`; } }, {passive: true});
+  sh.addEventListener("touchend", e => { if (y0 == null) return; const d = e.changedTouches[0].clientY - y0; sh.style.transition = "transform .2s"; sh.style.transform = ""; y0 = null; if (d > 110) closeModal(); });
+  updBack(); return m;
+}
+function closeModal(now) { const m = $(".modal"); if (!m) return; if (now) m.remove(); else { m.classList.add("out"); setTimeout(() => m.remove(), 210); } setTimeout(updBack, 0); }
+function confirmBox(title, text, okText, danger) {
+  return new Promise(res => {
+    modal(`<div class="empty" style="padding:6px 0 14px"><div class="ei" style="${danger ? "background:var(--redl);color:var(--red)" : ""}">${ic(danger ? "trash" : "info", "l")}</div><b>${title}</b><p>${text}</p></div>
+      <div class="row"><button class="btn" id="cfN">Bekor qilish</button><button class="btn ${danger ? "red" : "b"}" id="cfY">${okText}</button></div>`);
+    $("#cfN").onclick = () => { closeModal(); res(false); }; $("#cfY").onclick = () => { closeModal(); res(true); };
+  });
+}
+
+/* ───────── DASHBOARD ───────── */
+async function vDash() {
+  const [d, s] = await Promise.all([api("dashboard", {days: 7}), api("settings")]);
+  if (!d.ok) return errBox(d);
+  A.settings = s.settings || {};
+  const td = d.today, y = d.yesterday, delta = y.revenue ? Math.round((td.revenue - y.revenue) / y.revenue * 100) : null;
+  const max = Math.max(1, ...d.by_day.map(x => x.revenue)), wd = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"];
+  const topMax = Math.max(1, ...d.top.map(x => x.qty)), dt = d.delivery, dsum = Math.max(1, dt.courier + dt.yandex + dt.pickup);
+  const acc = A.settings.ACCEPTING !== false;
+  return `<div class="top"><div class="grow"><small>Salom, ${esc(A.me.name || "admin")} 👋</small><h1>Bugun</h1></div>${DEMO ? `<span class="pill gold">DEMO</span>` : `<button class="pill" onclick="render()">${ic("refresh", "xs")}</button>`}</div>
+    <div class="card" style="margin-bottom:10px"><div class="ico ${acc ? "okb" : "red"}">${ic(acc ? "shop" : "clock")}</div><div class="grow"><b>${acc ? "Buyurtma qabul qilinmoqda" : "Buyurtma qabul yopiq"}</b><small>${acc ? "Mijozlar buyurtma bera oladi" : "Mijozlar menyuni ko'radi, lekin buyurtma bera olmaydi"}</small></div>${can("settings") ? `<button class="sw ${acc ? "on" : ""}" id="accSw" aria-label="Qabul"></button>` : ""}</div>
+    <div class="stat"><small>Bugungi savdo</small><div class="big num">${money(td.revenue)}</div>
+      ${delta != null ? `<small style="position:relative;z-index:1;margin-top:2px">${delta >= 0 ? "▲" : "▼"} ${Math.abs(delta)}% kechagiga nisbatan</small>` : ""}
+      <div class="sp"><div><small>Buyurtmalar</small><b class="num">${td.orders}</b></div><div><small>O'rtacha chek</small><b class="num">${short(td.avg)}</b></div></div></div>
+    <div class="dtiles"><button class="dtile card tap" style="display:block;margin:0" onclick="if(can('orders')){A.ordFilter='active';go('orders')}"><small>${ic("clock", "xs")} Faol</small><b class="num" style="color:var(--warn)">${d.active}</b></button>
+      <button class="dtile card tap" style="display:block;margin:0" onclick="if(can('customers'))go('customers')"><small>${ic("users", "xs")} Mijozlar</small><b class="num">${d.customers}${d.new_customers ? `<span style="font-size:13px;color:#16a34a"> +${d.new_customers}</span>` : ""}</b></button></div>
+    <h2>Oxirgi 7 kun</h2>
+    <div class="bars">${d.by_day.map((x, i) => `<div class="${i === d.by_day.length - 1 ? "today" : ""}"><em class="num">${x.revenue ? short(x.revenue).replace(" ming", "k").replace(" mln", "M") : ""}</em><i style="height:${Math.max(3, x.revenue / max * 100)}%"></i><small>${wd[new Date(x.day * 1000).getDay()]}</small></div>`).join("")}</div>
+    <h2>Eng ko'p sotilgan</h2>
+    ${d.top.length ? `<div class="box">${d.top.map((x, i) => `<div class="acc" style="${i ? "margin-top:12px" : ""}"><span class="rank">${i + 1}</span><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px"><b style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(L(x.name))}</b><b class="num" style="font-weight:800;flex:none">${x.qty} ta</b></div><div class="pbar"><i style="width:${x.qty / topMax * 100}%"></i></div></div></div>`).join("")}</div>` : `<div class="box mute" style="text-align:center">Hali sotuv yo'q</div>`}
+    <h2>Yetkazish usuli</h2>
+    <div class="dtiles">${Object.entries(DELIV).map(([k, [n, i]]) => `<div class="dtile"><small>${ic(i, "xs")} ${n}</small><b class="num">${Math.round(dt[k] / dsum * 100)}%</b></div>`).join("")}</div>`;
+}
+vDash.after = () => { const sw = $("#accSw"); if (sw) sw.onclick = async () => { const on = !sw.classList.contains("on"); sw.classList.toggle("on", on); hap("medium"); const r = await api("settings/save", {settings: {ACCEPTING: on}}); if (!r.ok) { sw.classList.toggle("on", !on); return fail(r); } A.settings = r.settings; toast(on ? "Buyurtma qabul ochildi" : "Buyurtma qabul yopildi"); render(); }; };
+const errBox = r => `<div class="empty"><div class="ei" style="background:var(--redl);color:var(--red)">${ic("danger", "xl")}</div><b>${esc(ERR[r.error] || "Yuklab bo'lmadi")}</b><button class="btn b" style="margin:18px auto 0" onclick="render()">Qayta urinish</button></div>`;
+
+/* ───────── ORDERS ───────── */
+async function pollOrders() {
+  const r = await api("orders", {status: "active"}, null, true); if (!r.ok) return;
+  const n = Object.values(r.active_counts || {}).reduce((a, b) => a + b, 0), fresh = (r.active_counts || {}).new || 0;
+  if (fresh > (A.lastNew || 0) && A.lastNew != null) { hap("warn"); toast("Yangi buyurtma keldi!", "bell"); if (A.view === "orders" && !$(".modal")) render(); }
+  A.lastNew = fresh; const b = $("#bdg"); b.hidden = !fresh; b.textContent = fresh;
+}
+async function vOrders() {
+  const r = await api("orders", {status: A.ordFilter, q: A.oq});
+  if (!r.ok) return errBox(r);
+  A.orders = r.orders; const ac = r.active_counts || {}, an = Object.values(ac).reduce((a, b) => a + b, 0);
+  const F = [["active", "Faol", an], ["new", "Yangi", ac.new || 0], ["done", "Yetkazildi"], ["cancelled", "Bekor"]];
+  return `${titleBar("Buyurtmalar")}
+    <label class="field" style="margin-bottom:10px">${ic("search")}<input id="oq" type="search" placeholder="Raqam, telefon yoki ism" value="${esc(A.oq)}" enterkeyhint="search"></label>
+    <div class="chips" style="margin-bottom:12px">${F.map(([k, n, c]) => `<button class="chip ${A.ordFilter === k ? "on" : ""}" data-of="${k}">${n}${c ? `<span class="n num">${c}</span>` : ""}</button>`).join("")}</div>
+    <div id="olist">${r.orders.length ? r.orders.map(orderCard).join("") : `<div class="empty"><div class="ei">${ic("orders", "xl")}</div><b>Buyurtma yo'q</b><p>${A.ordFilter === "active" ? "Yangi buyurtma kelsa, shu yerda va botda ko'rinadi." : "Bu bo'limda hozircha hech narsa yo'q."}</p></div>`}</div>`;
+}
+vOrders.after = () => {
+  const q = $("#oq"); q.onkeydown = e => { if (e.key === "Enter") { A.oq = q.value.trim(); q.blur(); render(); } };
+  q.onsearch = () => { A.oq = q.value.trim(); render(); };
+};
+function orderCard(o, i) {
+  const [dn, di] = DELIV[o.delivery];
+  return `<button class="card oc rise ${o.status === "new" ? "fresh" : ""}" style="animation-delay:${Math.min(i || 0, 8) * 25}ms" data-o="${o.id}"><div class="ico ${o.status === "new" ? "gold" : ""}">${ic(di)}</div>
+    <div class="grow"><div class="hd"><b class="num">#${o.id}</b><span class="tag ${o.status}">${ST[o.status]}</span></div>
+    <small style="margin-top:2px">${esc(o.uname || "Mijoz")} · ${esc(o.uphone || "")}</small>
+    <small style="white-space:nowrap">${o.items.map(x => esc(L(x.name)) + " ×" + x.qty).join(", ")}</small>
+    <div class="ft"><small>${ago(o.created)} · ${dn}</small><b class="num">${money(o.total)}</b></div></div></button>`;
+}
+async function openOrder(id) {
+  const r = await api("order", {id}); if (!r.ok) return fail(r);
+  const o = r.order, [dn, di] = DELIV[o.delivery], tel = String(o.uphone || "").replace(/[^\d+]/g, "");
+  modal(`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h1 class="num">#${o.id}</h1><span class="tag ${o.status}" style="font-size:13px;padding:5px 12px">${ST[o.status]}</span></div>
+    <div class="card"><div class="ico">${ic("user")}</div><div class="grow"><b>${esc(o.uname || "Mijoz")}</b><small class="num">${esc(o.uphone || "")}${o.uusername ? " · @" + esc(o.uusername) : ""}</small></div>
+      ${tel ? `<a class="ico okb" href="tel:${esc(tel)}" aria-label="Qo'ng'iroq">${ic("phone")}</a>` : ""}${o.uusername ? `<button class="ico" style="border:0" onclick="openTg('${esc(o.uusername)}')" aria-label="Telegram">${ic("chat")}</button>` : ""}</div>
+    <div class="card" style="align-items:flex-start"><div class="ico">${ic(di)}</div><div class="grow"><b>${dn}</b><small style="white-space:normal">${o.delivery === "pickup" ? "Mijoz o'zi olib ketadi" : esc(o.address)}</small>
+      ${o.lat ? `<div style="display:flex;gap:6px;margin-top:8px"><button class="pill" onclick="openExt('https://maps.google.com/?q=${o.lat},${o.lon}')">${ic("pin", "xs")}Google</button><button class="pill" onclick="openExt('https://yandex.uz/maps/?pt=${o.lon},${o.lat}&z=17&l=map')">${ic("pin", "xs")}Yandex</button></div>` : ""}</div></div>
+    <div class="box">${o.items.map(x => `<div class="line"><span>${esc(L(x.name))}${x.variant ? " · " + esc(L(x.variant)) : ""} × ${x.qty}</span><span class="num">${money(x.price * x.qty)}</span></div>`).join("")}
+      <div class="line"><span>To'lov</span><span>${o.payment === "card" ? "Karta" : "Naqd"}</span></div>
+      <div class="line total"><span>Jami</span><span class="num">${money(o.total)}</span></div></div>
+    ${o.comment ? `<div class="banner" style="margin-bottom:8px">${ic("chat")}<div>${esc(o.comment)}</div></div>` : ""}
+    <small style="text-align:center;margin:6px 0">${new Date(o.created * 1000).toLocaleString("ru-RU")}</small>
+    ${o.next.length ? `<div class="acts">${o.next.map((s, i) => { const [n, ii] = NEXTL[s]; const label = s === "done" && o.delivery === "pickup" ? "Berildi" : n;
+      return `<button class="btn ${s === "cancelled" ? "red" : "b"} ${o.next.length === 1 || (i === 0 && o.next.length === 2 && false) ? "big" : ""}" data-st="${s}" data-oid="${o.id}">${ic(ii, "s")} ${label}</button>`; }).join("")}</div>` : ""}`);
+}
+async function setStatus(id, st) {
+  if (st === "cancelled" && !(await confirmBox("Buyurtmani bekor qilasizmi?", `#${id} bekor qilinadi va mijozga xabar boradi.`, "Bekor qilish", true))) return;
+  const r = await api("order/status", {id, status: st}); if (!r.ok) return fail(r);
+  hap("ok"); toast(`#${id}: ${ST[st]}`); closeModal(); pollOrders(); if (A.view === "orders") render(); else if (A.view === "dash") render();
+}
+function openExt(u) { try { if (tg && tg.openLink) return tg.openLink(u); } catch (e) {} window.open(u, "_blank"); }
+function openTg(u) { const url = "https://t.me/" + u; try { tg.openTelegramLink(url); } catch (e) { openExt(url); } }
+
+/* ───────── MENU ───────── */
+async function getMenu(force) { if (!A.menu || force) { const r = await api("menu"); if (!r.ok) return null; A.menu = r; } return A.menu; }
+async function vMenu() {
+  const m = await getMenu(true); if (!m) return errBox({error: "network"});
+  const cats = m.categories, list = m.products.filter(p => A.cat === "all" || p.cat === A.cat);
+  const offN = m.products.filter(p => !p.available).length;
+  if (A.sortMode && A.cat === "all") A.sortMode = false;
+  const full = can("menu");
+  return `${titleBar("Menyu", full ? `<button class="btn b sm" onclick="editProduct()">${ic("add", "s")} Mahsulot</button>` : "")}
+    ${offN ? `<div class="banner" style="margin-bottom:10px">${ic("danger")}<div>${offN} ta mahsulot tugagan deb belgilangan<small>Mijozlar ularni "Tugagan" deb ko'radi</small></div></div>` : ""}
+    <div class="chips" style="margin-bottom:10px"><button class="chip ${A.cat === "all" ? "on" : ""}" data-mc="all">Hammasi<span class="n num">${m.products.length}</span></button>
+      ${cats.map(c => `<button class="chip ${A.cat === c.id ? "on" : ""}" data-mc="${c.id}">${esc(L(c.name))}</button>`).join("")}</div>
+    ${!full ? `<small style="margin:0 4px 10px">Sizda faqat "sotuvda / tugagan" belgilash ruxsati bor</small>` : A.cat !== "all" ? `<div style="display:flex;gap:8px;margin-bottom:10px">${A.sortMode ? `<button class="btn b sm" style="flex:1" id="sortDone">${ic("check", "s")} Tartibni saqlash</button><button class="btn sm" onclick="A.sortMode=false;render()">Bekor</button>`
+      : `<button class="btn sm" style="flex:1" onclick="A.sortMode=true;render();updBack()">${ic("sort", "s")} Saralash</button>`}</div>` : `<small style="margin:0 4px 10px">Tartibni o'zgartirish uchun bo'limni tanlang</small>`}
+    <div id="plist">${list.map((p, i) => prodRow(p, i, list.length)).join("") || `<div class="empty"><div class="ei">${ic("box", "xl")}</div><b>Bo'limda mahsulot yo'q</b><button class="btn b" style="margin:18px auto 0" onclick="editProduct()">${ic("add", "s")} Qo'shish</button></div>`}</div>`;
+}
+vMenu.after = () => { const b = $("#sortDone"); if (b) b.onclick = saveSort; };
+function priceLabel(p) { return p.variants ? p.variants.map(v => short(v.price).replace(" ming", "k")).join(" / ") : money(p.price); }
+function prodRow(p, i, n) {
+  const cat = (A.menu.categories.find(c => c.id === p.cat) || {}).name;
+  return `<div class="card pr-row ${p.available ? "" : "off"}" data-pid="${p.id}">${A.sortMode ? `<div class="mv"><button data-mv="-1" ${i === 0 ? "disabled" : ""} aria-label="Yuqoriga">${ic("up", "s")}</button><button data-mv="1" ${i === n - 1 ? "disabled" : ""} aria-label="Pastga">${ic("down", "s")}</button></div>` : ""}
+    <div class="ico im">${img(p.img)}</div><div class="grow" ${A.sortMode || !can("menu") ? "" : `data-edit="${p.id}" role="button" tabindex="0"`}><b>${esc(L(p.name))}</b><small class="num">${priceLabel(p)}${A.cat === "all" && cat ? " · " + esc(L(cat)) : ""}</small>
+    ${p.available ? (p.badge ? `<span class="tag" style="margin-top:4px;${p.badge === "spicy" ? "background:var(--redl);color:var(--red)" : p.badge === "hit" ? "background:var(--gl);color:var(--gd)" : ""}">${{hit: "Xit", spicy: "Achchiq", new: "Yangi"}[p.badge]}</span>` : "") : `<span class="tag off" style="margin-top:4px">Tugagan</span>`}</div>
+    ${A.sortMode ? "" : `<button class="sw ${p.available ? "on" : ""}" data-tog="${p.id}" aria-label="Sotuvda"></button>`}</div>`;
+}
+async function toggleProd(id, sw) {
+  const p = A.menu.products.find(x => x.id === id), on = !p.available;
+  p.available = on; sw.classList.toggle("on", on); sw.closest(".pr-row").classList.toggle("off", !on); hap("medium");
+  const r = await api("product/toggle", {id, available: on});
+  if (!r.ok) { p.available = !on; sw.classList.toggle("on", !on); return fail(r); }
+  toast(on ? "Sotuvga qaytarildi" : "Tugagan deb belgilandi", on ? "check" : "close");
+}
+function moveRow(id, d) {
+  const prods = A.menu.products, inCat = prods.filter(p => p.cat === A.cat), i = inCat.findIndex(p => p.id === id), j = i + d;
+  if (j < 0 || j >= inCat.length) return;
+  [inCat[i], inCat[j]] = [inCat[j], inCat[i]];
+  const slots = prods.map((p, k) => p.cat === A.cat ? k : -1).filter(k => k >= 0); slots.forEach((s, k) => prods[s] = inCat[k]);
+  hap("sel"); $("#plist").innerHTML = inCat.map((p, k) => prodRow(p, k, inCat.length)).join("");
+  const el = $(`[data-pid="${id}"]`); if (el) { el.style.background = "var(--bl)"; setTimeout(() => el.style.background = "", 400); }
+}
+async function saveSort() {
+  const ids = A.menu.products.filter(p => p.cat === A.cat).map(p => p.id);
+  const r = await api("sort", {kind: "products", ids}); if (!r.ok) return fail(r);
+  hap("ok"); toast("Tartib saqlandi"); A.sortMode = false; render(); updBack();
+}
+
+/* product editor */
+let ed = null;
+async function editProduct(id) {
+  const m = await getMenu(); if (!m) return;
+  const p = id ? JSON.parse(JSON.stringify(m.products.find(x => x.id === id))) : {cat: A.cat !== "all" ? A.cat : (m.categories[0] || {}).id, name: {uz: "", ru: ""}, desc: {uz: "", ru: ""}, price: "", available: true, img: ""};
+  p.desc = p.desc || {uz: "", ru: ""}; ed = p; ed.multi = !!p.variants;
+  drawEditor();
+}
+function drawEditor() {
+  const p = ed, m = A.menu;
+  modal(`<h3 style="margin-bottom:12px">${p.id ? "Mahsulotni tahrirlash" : "Yangi mahsulot"}</h3>
+    <button class="photo" id="phBtn">${p.img ? img(p.img) + `<span class="ov">${ic("camera", "xs")} Almashtirish</span>` : `<div style="text-align:center">${ic("gallery", "xl")}<small style="margin-top:6px">Rasm yuklash (4:3)</small></div>`}</button>
+    <label class="lbl">Nomi</label><div class="two"><input id="nUz" placeholder="O'zbekcha" value="${esc(p.name.uz)}" maxlength="80"><input id="nRu" placeholder="Русский" value="${esc(p.name.ru)}" maxlength="80"></div>
+    <label class="lbl">Tavsif (tarkibi)</label><div class="two"><textarea id="dUz" rows="2" placeholder="O'zbekcha" maxlength="240">${esc(p.desc.uz)}</textarea><textarea id="dRu" rows="2" placeholder="Русский" maxlength="240">${esc(p.desc.ru)}</textarea></div>
+    <label class="lbl">Bo'lim</label><select id="cSel">${m.categories.map(c => `<option value="${c.id}" ${c.id === p.cat ? "selected" : ""}>${esc(L(c.name))}</option>`).join("")}</select>
+    <label class="lbl">Narx</label><div class="seg" style="margin-bottom:8px"><button data-pm="0" class="${p.multi ? "" : "on"}">Bitta narx</button><button data-pm="1" class="${p.multi ? "on" : ""}">O'lchamlar bilan</button></div>
+    <div id="priceBox"></div>
+    <label class="lbl">Belgi</label><div class="seg" id="bdSeg">${[["", "Yo'q"], ["hit", "Xit"], ["spicy", "Achchiq"], ["new", "Yangi"]].map(([k, n]) => `<button data-bd="${k}" class="${(p.badge || "") === k ? "on" : ""}">${n}</button>`).join("")}</div>
+    <div class="card" style="margin-top:12px"><div class="ico okb">${ic("shop")}</div><div class="grow"><b>Sotuvda</b><small>O'chirilsa "Tugagan" bo'lib ko'rinadi</small></div><button class="sw ${p.available ? "on" : ""}" id="avSw"></button></div>
+    <button class="btn b full" id="pSave" style="margin-top:10px">${ic("check", "s")} Saqlash</button>
+    ${p.id ? `<button class="link" id="pDel" style="color:var(--red)">${ic("trash", "s")} Mahsulotni o'chirish</button>` : ""}`);
+  drawPrice();
+  const sync = () => { p.name = {uz: $("#nUz").value, ru: $("#nRu").value}; p.desc = {uz: $("#dUz").value, ru: $("#dRu").value}; p.cat = $("#cSel").value; readPrice(); };
+  $("#phBtn").onclick = () => pickFile("image/*", async f => { const blob = await resizeImg(f, 960, 720); const r = await upload(blob, "product"); if (r) { sync(); p.img = r; drawEditor(); } });
+  $$("[data-pm]").forEach(b => b.onclick = () => { sync(); p.multi = b.dataset.pm === "1"; if (p.multi && !(p.variants || []).length) p.variants = [{id: "s", name: {uz: "Kichik", ru: "Маленькая"}, price: p.price || ""}, {id: "m", name: {uz: "O'rta", ru: "Средняя"}, price: ""}, {id: "l", name: {uz: "Katta", ru: "Большая"}, price: ""}]; hap("sel"); $$("[data-pm]").forEach(x => x.classList.toggle("on", x === b)); drawPrice(); });
+  $$("[data-bd]").forEach(b => b.onclick = () => { p.badge = b.dataset.bd || undefined; hap("sel"); $$("[data-bd]").forEach(x => x.classList.toggle("on", x === b)); });
+  $("#avSw").onclick = e => { p.available = !p.available; e.currentTarget.classList.toggle("on", p.available); hap("sel"); };
+  $("#pSave").onclick = async () => { sync(); await saveProduct(); };
+  if (p.id) $("#pDel").onclick = async () => { if (!(await confirmBox("O'chirasizmi?", `"${esc(L(p.name))}" menyudan butunlay o'chadi.`, "O'chirish", true))) return; const r = await api("product/delete", {id: p.id}); if (!r.ok) return fail(r); hap("ok"); toast("O'chirildi"); A.menu = null; render(); };
+}
+function drawPrice() {
+  const p = ed, box = $("#priceBox");
+  if (!p.multi) { box.innerHTML = `<div class="field"><input id="pr1" inputmode="numeric" placeholder="Masalan: 35000" value="${esc(p.price || "")}"><span class="mute" style="font-weight:700">so'm</span></div>`; return; }
+  box.innerHTML = `${(p.variants || []).map((v, i) => `<div class="vrow" data-vi="${i}"><input class="vu" placeholder="Nomi (uz)" value="${esc(v.name.uz)}" maxlength="30"><input class="vr" placeholder="Название" value="${esc(v.name.ru)}" maxlength="30"><input class="vp num" inputmode="numeric" placeholder="Narx" value="${esc(v.price)}"><button data-vdel="${i}" aria-label="O'chirish">${ic("close", "s")}</button></div>`).join("")}
+    <button class="btn soft sm full" id="vAdd">${ic("add", "s")} O'lcham qo'shish</button>`;
+  $("#vAdd").onclick = () => { readPrice(); p.variants.push({id: "v" + Date.now().toString(36).slice(-4), name: {uz: "", ru: ""}, price: ""}); drawPrice(); };
+  $$("[data-vdel]").forEach(b => b.onclick = () => { readPrice(); p.variants.splice(+b.dataset.vdel, 1); drawPrice(); });
+}
+function readPrice() {
+  const p = ed, num = v => parseInt(String(v).replace(/\D/g, "")) || "";
+  if (!p.multi) { const i = $("#pr1"); if (i) p.price = num(i.value); }
+  else p.variants = $$(".vrow").map((r, i) => ({id: (p.variants[i] || {}).id || "v" + i, name: {uz: r.querySelector(".vu").value, ru: r.querySelector(".vr").value}, price: num(r.querySelector(".vp").value)}));
+}
+async function saveProduct() {
+  const p = ed;
+  if (!p.name.uz.trim() && !p.name.ru.trim()) return toast("Nomini kiriting", "danger");
+  if (p.multi ? !p.variants.length || p.variants.some(v => !v.price || !(v.name.uz || v.name.ru)) : !p.price) return toast("Narxlarni to'liq kiriting", "danger");
+  const out = {id: p.id, cat: p.cat, name: p.name, desc: p.desc, img: p.img, badge: p.badge, available: p.available};
+  if (p.multi) out.variants = p.variants; else out.price = p.price;
+  const b = $("#pSave"); b.disabled = true;
+  const r = await api("product/save", {product: out}); b.disabled = false;
+  if (!r.ok) return fail(r);
+  hap("ok"); toast(p.id ? "Saqlandi" : "Mahsulot qo'shildi"); A.menu = null; closeModal(); if (A.view === "menu") render();
+}
+
+/* uploads */
+function pickFile(accept, cb) { const i = $("#fileIn"); i.accept = accept; i.value = ""; i.onchange = () => { const f = i.files[0]; if (f) cb(f); }; i.click(); }
+function resizeImg(file, W, H) {
+  return new Promise((res, rej) => { const im = new Image(), u = URL.createObjectURL(file);
+    im.onload = () => { const r = Math.max(W / im.width, H / im.height), sw = W / r, sh = H / r, c = document.createElement("canvas"); c.width = W; c.height = H;
+      const x = c.getContext("2d"); x.fillStyle = "#f4f4f3"; x.fillRect(0, 0, W, H); x.drawImage(im, (im.width - sw) / 2, (im.height - sh) / 2, sw, sh, 0, 0, W, H); URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(), "image/jpeg", .86); };
+    im.onerror = () => { URL.revokeObjectURL(u); rej(); }; im.src = u; });
+}
+async function upload(blob, kind) {
+  if (blob.size > 25 * 1024 * 1024) { toast(ERR.too_large, "danger"); return null; }
+  toast("Yuklanmoqda…", "upload");
+  const r = await api("upload", {}, {blob, type: blob.type || "image/jpeg", kind}); if (!r.ok) { fail(r); return null; }
+  toast("Yuklandi"); return r.src;
+}
+
+/* ───────── MORE ───────── */
+function vMore() {
+  const it = (v, i, n, s, cls = "") => `<button class="card" onclick="go('${v}')"><div class="ico ${cls}">${ic(i)}</div><div class="grow"><b>${n}</b><small>${s}</small></div>${ic("right", "chev")}</button>`;
+  const g1 = (can("banners") ? it("banners", "gallery", "Reklama bannerlari", "Rasm va video, tartib, havola") : "") + (can("menu") ? it("cats", "list", "Bo'limlar", "Qo'shish, nomini o'zgartirish, tartib") : "");
+  const g2 = (can("customers") ? it("customers", "users", "Mijozlar ro'yxati", "Telefon, buyurtmalar soni, xarid summasi") : "") + (can("broadcast") ? it("broadcast", "bell", "Xabar yuborish", "Aksiya va yangiliklar barcha mijozlarga", "gold") : "");
+  const g3 = (can("settings") ? it("settings", "settings", "Sozlamalar", "Telefon, manzil, minimal buyurtma, ish vaqti") : "") + (A.me.owner ? it("staff", "shield", "Xodimlar", "Login, parol va ruxsatlar") : "");
+  return `<div class="top"><div class="grow"><small>${A.me.owner ? "Rahbar" : "Xodim"}</small><h1>${esc(A.me.name || "Boshqaruv")}</h1></div>${DEMO ? `<span class="pill gold">DEMO</span>` : ""}</div>
+    ${g1 ? `<h2>Menyu</h2>${g1}` : ""}${g2 ? `<h2>Mijozlar</h2>${g2}` : ""}${g3 ? `<h2>Tizim</h2>${g3}` : ""}
+    ${!A.me.owner ? `<h2>Ruxsatlaringiz</h2><div class="box" style="display:flex;flex-wrap:wrap;gap:6px">${A.me.perms.map(p => `<span class="tag">${PL[p][0]}</span>`).join("") || `<span class="mute">Ruxsat berilmagan</span>`}</div>` : ""}
+    ${getTok() ? `<button class="card" style="margin-top:12px" onclick="logout()"><div class="ico red">${ic("logout")}</div><div class="grow"><b class="red">Chiqish</b><small>Bu qurilmada hisobdan chiqish</small></div></button>` : ""}
+    <small style="text-align:center;margin-top:18px">Gumbaz Express Admin · v3.0${DEMO ? " · demo" : ""}</small>`;
+}
+
+async function logout() { if (!(await confirmBox("Chiqasizmi?", "Qayta kirish uchun login va parol kerak bo'ladi.", "Chiqish", true))) return; await api("logout"); setTok(""); location.reload(); }
+
+/* categories */
+async function vCats() {
+  const m = await getMenu(true); if (!m) return errBox({error: "network"});
+  const cnt = id => m.products.filter(p => p.cat === id).length;
+  return `${titleBar("Bo'limlar", `<button class="btn b sm" onclick="editCat()">${ic("add", "s")} Bo'lim</button>`)}
+    <small style="margin:0 4px 10px">Mijoz ilovasida bo'limlar shu tartibda chiqadi</small>
+    <div id="clist">${m.categories.map((c, i) => `<div class="card" data-cid="${c.id}"><div class="mv"><button data-cmv="-1" ${i === 0 ? "disabled" : ""} aria-label="Yuqoriga">${ic("up", "s")}</button><button data-cmv="1" ${i === m.categories.length - 1 ? "disabled" : ""} aria-label="Pastga">${ic("down", "s")}</button></div>
+      <div class="grow"><b>${esc(c.name.uz)}</b><small>${esc(c.name.ru)} · ${cnt(c.id)} ta mahsulot</small></div><button class="ico" style="border:0" onclick="editCat('${c.id}')" aria-label="Tahrirlash">${ic("pen", "s")}</button></div>`).join("")}</div>`;
+}
+async function moveCat(id, d) {
+  const c = A.menu.categories, i = c.findIndex(x => x.id === id), j = i + d; if (j < 0 || j >= c.length) return;
+  [c[i], c[j]] = [c[j], c[i]]; hap("sel");
+  const r = await api("sort", {kind: "categories", ids: c.map(x => x.id)}); if (!r.ok) return fail(r);
+  render();
+}
+function editCat(id) {
+  const c = id ? A.menu.categories.find(x => x.id === id) : {name: {uz: "", ru: ""}}, n = id ? A.menu.products.filter(p => p.cat === id).length : 0;
+  modal(`<h3 style="margin-bottom:12px">${id ? "Bo'limni tahrirlash" : "Yangi bo'lim"}</h3>
+    <label class="lbl">O'zbekcha</label><input id="cu" value="${esc(c.name.uz)}" maxlength="40" placeholder="Masalan: Salatlar">
+    <label class="lbl">Русский</label><input id="cr" value="${esc(c.name.ru)}" maxlength="40" placeholder="Например: Салаты">
+    <button class="btn b full" id="cs" style="margin-top:14px">${ic("check", "s")} Saqlash</button>
+    ${id ? `<button class="link" id="cd" style="color:var(--red)">${ic("trash", "s")} Bo'limni o'chirish${n ? ` (${n} ta mahsulot bor)` : ""}</button>` : ""}`);
+  $("#cs").onclick = async () => { const r = await api("category/save", {id, name: {uz: $("#cu").value, ru: $("#cr").value}}); if (!r.ok) return fail(r); hap("ok"); toast("Saqlandi"); closeModal(); render(); };
+  if (id) $("#cd").onclick = async () => { if (n) return toast(ERR.category_not_empty, "danger"); if (!(await confirmBox("Bo'limni o'chirasizmi?", esc(c.name.uz), "O'chirish", true))) return; const r = await api("category/delete", {id}); if (!r.ok) return fail(r); toast("O'chirildi"); render(); };
+}
+
+/* banners */
+async function vBanners() {
+  const m = await getMenu(true); if (!m) return errBox({error: "network"});
+  const link = b => b.product ? "→ " + L((m.products.find(p => p.id === b.product) || {}).name) : b.category ? "→ " + L((m.categories.find(c => c.id === b.category) || {}).name) : "Havolasiz";
+  return `${titleBar("Bannerlar", `<button class="btn b sm" onclick="editBanner()">${ic("add", "s")} Banner</button>`)}
+    <div class="banner info" style="margin-bottom:10px">${ic("info")}<div>Rasm yoki video (MP4, 25 MB gacha). Eng yaxshi nisbat — 2:1, masalan 1200×600.<small>Video ovozsiz aylanadi, tugagach keyingisiga o'tadi.</small></div></div>
+    ${m.banners.length ? m.banners.map((b, i) => `<div class="card bn-row" data-bid="${b.id}"><div class="mv"><button data-bmv="-1" ${i === 0 ? "disabled" : ""} aria-label="Yuqoriga">${ic("up", "s")}</button><button data-bmv="1" ${i === m.banners.length - 1 ? "disabled" : ""} aria-label="Pastga">${ic("down", "s")}</button></div>
+      <div class="ico im">${b.type === "video" ? `<video src="${esc(b.src)}" ${b.poster ? `poster="${esc(b.poster)}"` : ""} muted playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>` : img(b.src)}</div>
+      <div class="grow" role="button" tabindex="0" onclick="editBanner('${b.id}')"><b>${b.type === "video" ? "Video" : "Rasm"} · ${i + 1}</b><small>${esc(link(b))}</small></div>
+      <button class="ico red" style="border:0" data-bdel="${b.id}" aria-label="O'chirish">${ic("trash", "s")}</button></div>`).join("")
+      : `<div class="empty"><div class="ei">${ic("gallery", "xl")}</div><b>Banner yo'q</b><p>Birinchi reklama bannerini qo'shing</p></div>`}`;
+}
+async function moveBanner(id, d) {
+  const b = A.menu.banners, i = b.findIndex(x => x.id === id), j = i + d; if (j < 0 || j >= b.length) return;
+  [b[i], b[j]] = [b[j], b[i]]; hap("sel");
+  const r = await api("sort", {kind: "banners", ids: b.map(x => x.id)}); if (!r.ok) return fail(r); render();
+}
+let bed = null;
+function editBanner(id) {
+  const m = A.menu, b = id ? Object.assign({}, m.banners.find(x => x.id === id)) : {src: "", type: "image"}; bed = b;
+  const draw = () => {
+    modal(`<h3 style="margin-bottom:12px">${id ? "Bannerni tahrirlash" : "Yangi banner"}</h3>
+      <button class="photo wide" id="bf">${b.src ? (/\.(mp4|mov)$/i.test(b.src) || b.type === "video" ? `<video src="${esc(b.src)}" muted autoplay loop playsinline></video>` : img(b.src)) + `<span class="ov">${ic("upload", "xs")} Almashtirish</span>` : `<div style="text-align:center">${ic("upload", "xl")}<small style="margin-top:6px">Rasm yoki video tanlang</small></div>`}</button>
+      <label class="lbl">Bosilganda nima ochilsin</label>
+      <select id="bl"><option value="">Hech narsa</option><optgroup label="Bo'lim">${m.categories.map(c => `<option value="c:${c.id}" ${b.category === c.id ? "selected" : ""}>${esc(L(c.name))}</option>`).join("")}</optgroup>
+        <optgroup label="Mahsulot">${m.products.map(p => `<option value="p:${p.id}" ${b.product === p.id ? "selected" : ""}>${esc(L(p.name))}</option>`).join("")}</optgroup></select>
+      <button class="btn b full" id="bs" style="margin-top:14px" ${b.src ? "" : "disabled"}>${ic("check", "s")} Saqlash</button>`);
+    $("#bf").onclick = () => pickFile("image/*,video/mp4,video/quicktime", async f => {
+      const isV = /^video\//.test(f.type); const blob = isV ? f : await resizeImg(f, 1200, 600);
+      const lk = $("#bl").value; const r = await upload(blob, "banner"); if (!r) return;
+      b.src = r; b.type = isV ? "video" : "image"; b.product = lk.startsWith("p:") ? lk.slice(2) : undefined; b.category = lk.startsWith("c:") ? lk.slice(2) : undefined; draw(); });
+    $("#bs").onclick = async () => { const lk = $("#bl").value; const out = {id: b.id, src: b.src, product: lk.startsWith("p:") ? lk.slice(2) : null, category: lk.startsWith("c:") ? lk.slice(2) : null};
+      const r = await api("banner/save", {banner: out}); if (!r.ok) return fail(r); hap("ok"); toast("Banner saqlandi"); closeModal(); render(); };
+  };
+  draw();
+}
+async function delBanner(id) { if (!(await confirmBox("Bannerni o'chirasizmi?", "Mijoz ilovasidan darhol yo'qoladi.", "O'chirish", true))) return; const r = await api("banner/delete", {id}); if (!r.ok) return fail(r); hap("ok"); toast("O'chirildi"); render(); }
+
+/* customers */
+async function vCustomers() {
+  const r = await api("customers"); if (!r.ok) return errBox(r);
+  return `${titleBar("Mijozlar")}
+    <div class="stat"><small>Ro'yxatdan o'tgan mijozlar</small><div class="big num">${r.total}</div><div class="sp"><div><small>Buyurtma berganlar</small><b class="num">${r.customers.filter(c => c.orders).length}</b></div><div><small>Jami savdo</small><b class="num">${short(r.customers.reduce((a, c) => a + c.spent, 0))}</b></div></div></div>
+    <h2>Eng faol mijozlar</h2>
+    ${r.customers.map((c, i) => `<div class="card rise" style="animation-delay:${Math.min(i, 10) * 20}ms"><span class="rank">${i + 1}</span><div class="grow"><b>${esc(c.name || "—")}</b><small class="num">${esc(c.phone)}${c.username ? " · @" + esc(c.username) : ""}</small></div><div class="right"><b class="num" style="font-weight:800">${short(c.spent)}</b><small class="num">${c.orders} buyurtma</small></div></div>`).join("") || `<div class="empty"><b>Hali mijoz yo'q</b></div>`}`;
+}
+
+/* broadcast */
+function vBroadcast() {
+  return `${titleBar("Xabar yuborish")}
+    <div class="banner info" style="margin-bottom:12px">${ic("bell")}<div>Xabar mijozlar botidan barcha ro'yxatdan o'tgan mijozlarga boradi.<small>Masalan: "Bugun barcha pitsalarga 20% chegirma! 🍕"</small></div></div>
+    <textarea id="bcT" rows="6" maxlength="3500" placeholder="Xabar matni…"></textarea>
+    <small id="bcN" style="text-align:right;margin:6px 4px 12px">0 / 3500</small>
+    <button class="btn b full" id="bcS" disabled>${ic("send", "s")} Hammaga yuborish</button>`;
+}
+vBroadcast.after = () => { const ta = $("#bcT"), b = $("#bcS"); ta.oninput = () => { $("#bcN").textContent = ta.value.length + " / 3500"; b.disabled = !ta.value.trim(); };
+  b.onclick = async () => { if (!(await confirmBox("Yuborilsinmi?", "Xabar barcha mijozlarga yuboriladi. Buni qaytarib bo'lmaydi.", "Yuborish"))) return; const r = await api("broadcast", {text: ta.value.trim()}); if (!r.ok) return fail(r); hap("ok"); toast(`${r.queued} ta mijozga yuborilmoqda`); ta.value = ""; b.disabled = true; }; };
+
+/* settings */
+const SF = [["Restoran", [["RESTAURANT_NAME", "Nomi"], ["RESTAURANT_ADDRESS_UZ", "Manzil (o'zbekcha)"], ["RESTAURANT_ADDRESS_RU", "Manzil (ruscha)"], ["RESTAURANT_LAT", "Kenglik (lat)", "decimal"], ["RESTAURANT_LON", "Uzunlik (lon)", "decimal"]]],
+  ["Mijozlar uchun", [["SUPPORT_PHONE", "Xizmat ko'rsatish raqami", "tel"], ["SUPPORT_USERNAME", "Telegram username (@ siz)"], ["WORK_HOURS", "Ish vaqti"], ["MIN_ORDER", "Minimal buyurtma (so'm)", "numeric"]]],
+  ["Yopiq paytdagi xabar", [["CLOSED_MSG_UZ", "O'zbekcha"], ["CLOSED_MSG_RU", "Ruscha"]]]];
+async function vSettings() {
+  const r = await api("settings"); if (!r.ok) return errBox(r); A.settings = r.settings; const s = r.settings;
+  return `${titleBar("Sozlamalar")}
+    <div class="card"><div class="ico ${s.ACCEPTING !== false ? "okb" : "red"}">${ic("shop")}</div><div class="grow"><b>Buyurtma qabul qilish</b><small>O'chirilsa, mijozlar buyurtma bera olmaydi</small></div><button class="sw ${s.ACCEPTING !== false ? "on" : ""}" id="sAcc"></button></div>
+    ${SF.map(([g, fs]) => `<h2>${g}</h2><div class="box">${fs.map(([k, n, im]) => `<label class="lbl" style="margin-top:${fs[0][0] === k ? 0 : 12}px">${n}</label><input data-sk="${k}" value="${esc(s[k] == null ? "" : s[k])}" ${im ? `inputmode="${im}"` : ""}>`).join("")}</div>`).join("")}
+    <div class="banner info" style="margin-top:4px">${ic("pin")}<div>Koordinata: Google Maps'da restoranni bosib turing — raqamlar chiqadi.<small>Yandex Go marshruti shu nuqtadan boshlanadi.</small></div></div>
+    <button class="btn b full" id="sSave" style="margin-top:14px">${ic("check", "s")} Saqlash</button>`;
+}
+vSettings.after = () => {
+  $("#sAcc").onclick = e => { e.currentTarget.classList.toggle("on"); hap("sel"); };
+  $("#sSave").onclick = async () => { const out = {ACCEPTING: $("#sAcc").classList.contains("on")}; $$("[data-sk]").forEach(i => out[i.dataset.sk] = i.value.trim());
+    const r = await api("settings/save", {settings: out}); if (!r.ok) return fail(r); hap("ok"); toast("Sozlamalar saqlandi"); };
+};
+
+/* staff (faqat rahbar) */
+const PL = {stats: ["Statistika", "Savdo, grafik, eng ko'p sotilganlar"], orders: ["Buyurtmalar", "Ko'rish va holatini o'zgartirish, botga xabar keladi"],
+  stock: ["Tugagan / sotuvda", "Mahsulotni stop-listga qo'yish"], menu: ["Menyu tahriri", "Mahsulot, narx, rasm, bo'lim, saralash"],
+  banners: ["Bannerlar", "Reklama rasmi va videolari"], customers: ["Mijozlar", "Mijozlar ro'yxati va telefonlari"],
+  broadcast: ["Xabar yuborish", "Barcha mijozlarga reklama"], settings: ["Sozlamalar", "Telefon, manzil, qabulni yopish"]};
+const PRESETS = [["Kassir", ["orders", "stock"]], ["Oshpaz", ["orders", "stock"]], ["Menejer", ["stats", "orders", "stock", "menu", "banners", "customers"]], ["Hammasi", Object.keys(PL)]];
+async function vStaff() {
+  const r = await api("staff"); if (!r.ok) return errBox(r); A.staff = r.staff;
+  return `${titleBar("Xodimlar", `<button class="btn b sm" onclick="editStaff()">${ic("add", "s")} Xodim</button>`)}
+    <div class="banner info" style="margin-bottom:10px">${ic("info")}<div>Xodimga login va parol bering. U admin botni ochib, shu login bilan kiradi — shundan keyin buyurtma xabarlari unga ham keladi.</div></div>
+    <div class="card"><div class="ico gold">${ic("crown")}</div><div class="grow"><b>Rahbar</b><small class="num">Telegram ID ${r.owner_ids.join(", ")} · barcha ruxsatlar</small></div></div>
+    ${r.staff.map(x => `<button class="card" style="align-items:flex-start" data-sid="${x.id}"><div class="ico ${x.active ? "" : "red"}">${ic("user")}</div><div class="grow"><b>${esc(x.name || x.login)}</b>
+      <small>@${esc(x.login)}${x.telegram ? " · Telegram ulangan" : ""}${x.active ? "" : " · bloklangan"}</small>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${x.perms.map(p => `<span class="tag">${PL[p][0]}</span>`).join("") || `<span class="tag off">Ruxsat yo'q</span>`}</div></div>${ic("right", "chev")}</button>`).join("")
+      || `<div class="empty"><div class="ei">${ic("users", "xl")}</div><b>Hali xodim yo'q</b><p>Kassir, oshpaz yoki menejer qo'shing va ruxsatlarini belgilang.</p></div>`}`;
+}
+function genPw() { const a = "abcdefghjkmnpqrstuvwxyz23456789"; let s = ""; const r = crypto.getRandomValues(new Uint32Array(8)); r.forEach(x => s += a[x % a.length]); return s; }
+function editStaff(id) {
+  const x = id ? Object.assign({}, A.staff.find(s => s.id === id)) : {login: "", name: "", perms: ["orders", "stock"], active: true};
+  const perms = new Set(x.perms);
+  modal(`<h3 style="margin-bottom:12px">${id ? "Xodimni tahrirlash" : "Yangi xodim"}</h3>
+    <label class="lbl">Ismi</label><input id="sn" maxlength="40" placeholder="Masalan: Dilshod (kassir)" value="${esc(x.name)}">
+    <label class="lbl">Login</label><input id="sl" maxlength="32" placeholder="masalan: dilshod" autocapitalize="none" spellcheck="false" value="${esc(x.login)}">
+    <label class="lbl">${id ? "Yangi parol (o'zgartirmasangiz bo'sh qoldiring)" : "Parol"}</label>
+    <div class="row"><input id="sp" maxlength="64" placeholder="${id ? "••••••" : "kamida 6 belgi"}" autocapitalize="none" spellcheck="false" autocomplete="new-password"><button class="btn soft auto" id="sg" type="button">${ic("refresh", "s")} Yaratish</button></div>
+    <label class="lbl">Tayyor shablon</label><div class="chips" style="flex-wrap:wrap">${PRESETS.map(([n], i) => `<button class="chip" data-pre="${i}" type="button">${n}</button>`).join("")}</div>
+    <label class="lbl">Ruxsatlar</label>
+    <div class="box" style="padding:4px 14px">${Object.entries(PL).map(([k, [n, d]]) => `<div class="acc" style="padding:10px 0;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0"><b style="font-weight:700">${n}</b><small>${d}</small></div><button class="sw ${perms.has(k) ? "on" : ""}" data-perm="${k}" type="button" aria-label="${n}"></button></div>`).join("")}</div>
+    ${id ? `<div class="card" style="margin-top:4px"><div class="ico ${x.active ? "okb" : "red"}">${ic("shield")}</div><div class="grow"><b>Faol</b><small>O'chirilsa, xodim panelga kira olmaydi</small></div><button class="sw ${x.active ? "on" : ""}" id="sa" type="button"></button></div>` : ""}
+    <button class="btn b full" id="ss" style="margin-top:12px">${ic("check", "s")} Saqlash</button>
+    ${id ? `<button class="link" id="sd" style="color:var(--red)">${ic("trash", "s")} Xodimni o'chirish</button>` : ""}`);
+  const syncSw = () => $$("[data-perm]").forEach(b => b.classList.toggle("on", perms.has(b.dataset.perm)));
+  $$("[data-perm]").forEach(b => b.onclick = () => { const k = b.dataset.perm; perms.has(k) ? perms.delete(k) : perms.add(k); hap("sel"); syncSw(); });
+  $$("[data-pre]").forEach(b => b.onclick = () => { perms.clear(); PRESETS[+b.dataset.pre][1].forEach(p => perms.add(p)); hap("sel"); syncSw(); });
+  $("#sg").onclick = () => { $("#sp").value = genPw(); hap("sel"); };
+  if (id) $("#sa").onclick = e => { x.active = !x.active; e.currentTarget.classList.toggle("on", x.active); hap("sel"); };
+  $("#ss").onclick = async () => {
+    const out = {id, name: $("#sn").value.trim(), login: $("#sl").value.trim().toLowerCase(), password: $("#sp").value, perms: [...perms], active: x.active};
+    if (!out.login) return toast("Loginni kiriting", "danger"); if (!id && out.password.length < 6) return toast(ERR.short_password, "danger");
+    const r = await api("staff/save", {staff: out}); if (!r.ok) return fail(r); hap("ok"); closeModal(); render();
+    if (out.password) showCreds(out.login, out.password, out.name); else toast("Saqlandi");
+  };
+  if (id) $("#sd").onclick = async () => { if (!(await confirmBox("Xodimni o'chirasizmi?", esc(x.name || x.login) + " panelga kira olmay qoladi.", "O'chirish", true))) return; const r = await api("staff/delete", {id}); if (!r.ok) return fail(r); toast("O'chirildi"); render(); };
+}
+function showCreds(login, pw, name) {
+  const txt = `Gumbaz Express — xodimlar paneli\nLogin: ${login}\nParol: ${pw}\n\nAdmin botni oching va shu login bilan kiring.`;
+  modal(`<div class="empty" style="padding:6px 0 10px"><div class="ei" style="background:var(--okl);color:#079455">${ic("check", "l")}</div><b>${esc(name || login)} uchun kirish ma'lumoti</b><p>Shu ma'lumotni xodimga yuboring. Parol keyin ko'rsatilmaydi.</p></div>
+    <div class="box"><div class="line"><span>Login</span><b class="num" style="user-select:all">${esc(login)}</b></div><div class="line"><span>Parol</span><b class="num" style="user-select:all">${esc(pw)}</b></div></div>
+    <button class="btn b full" id="cc" style="margin-top:6px">${ic("doc", "s")} Nusxalash</button>`);
+  $("#cc").onclick = () => { const ok = () => { toast("Nusxalandi"); }; navigator.clipboard ? navigator.clipboard.writeText(txt).then(ok, ok) : ok(); };
+}
+
+/* ───────── events ───────── */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-tab],[data-of],[data-o],[data-st],[data-mc],[data-tog],[data-edit],[data-mv],[data-cmv],[data-bmv],[data-bdel],[data-sid]"); if (!el) return;
+  const d = el.dataset;
+  if (d.tab) { hap("sel"); return go(d.tab); }
+  if (d.of) { A.ordFilter = d.of; hap("sel"); return render(); }
+  if (d.st) return setStatus(+d.oid, d.st);
+  if (d.o) { hap(); return openOrder(+d.o); }
+  if (d.mc) { A.cat = d.mc; A.sortMode = false; hap("sel"); return render(); }
+  if (d.tog) { e.stopPropagation(); return toggleProd(d.tog, el); }
+  if (d.edit) { hap(); return editProduct(d.edit); }
+  if (d.mv) return moveRow(el.closest("[data-pid]").dataset.pid, +d.mv);
+  if (d.cmv) return moveCat(el.closest("[data-cid]").dataset.cid, +d.cmv);
+  if (d.bmv) return moveBanner(el.closest("[data-bid]").dataset.bid, +d.bmv);
+  if (d.bdel) return delBanner(d.bdel);
+  if (d.sid) { hap(); return editStaff(+d.sid); }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") back(); if (e.key === "Enter" && e.target.matches("[data-edit]")) editProduct(e.target.dataset.edit); });
+
+/* ───────── DEMO: brauzer ichidagi soxta server (faqat Telegram'dan tashqarida) ───────── */
+let MK = null;
+function mockInit() {
+  const d = JSON.parse(JSON.stringify(DEMO_DATA || {categories: [], products: [], banners: []}));
+  d.products.forEach(p => p.available = p.available !== false);
+  const names = ["Jasur Karimov", "Madina Aliyeva", "Sardor Rahimov", "Dilnoza Yusupova", "Bekzod Toshev", "Nilufar Qodirova", "Aziz Ergashev", "Shahnoza Ismoilova"];
+  const users = names.map((n, i) => ({tg_id: 1000 + i, name: n, phone: "+99890" + (1234567 + i * 7919), username: i % 3 ? null : n.split(" ")[0].toLowerCase(), created: Date.now() / 1000 - 86400 * (i * 3 + 1)}));
+  const now = Date.now() / 1000 | 0, orders = []; let id = 1000;
+  const sts = ["done", "done", "done", "done", "cancelled", "done"], dl = ["courier", "courier", "yandex", "pickup"];
+  let seed = 7; const rnd = n => { seed = (seed * 16807) % 2147483647; return seed % n; };
+  for (let day = 6; day >= 0; day--) {
+    const n = 6 + rnd(9);
+    for (let k = 0; k < n; k++) {
+      const created = now - day * 86400 - rnd(day ? 80000 : Math.max(600, (now % 86400) - 600)), items = [];
+      for (let j = 0, m = 1 + rnd(3); j < m; j++) { const p = d.products[rnd(d.products.length)], v = p.variants ? p.variants[rnd(p.variants.length)] : null; items.push({pid: p.id, name: p.name, variant: v ? v.name : null, price: v ? v.price : p.price, qty: 1 + rnd(2)}); }
+      const u = users[rnd(users.length)];
+      orders.push({id: ++id, tg_id: u.tg_id, items, total: items.reduce((a, x) => a + x.price * x.qty, 0), delivery: dl[rnd(4)], payment: rnd(2) ? "cash" : "card", address: "Shahrisabz, Ipak yo'li ko'chasi, " + (5 + rnd(60)), lat: 39.06 + rnd(100) / 10000, lon: 66.83 + rnd(100) / 10000, comment: rnd(4) ? "" : "Piyozsiz bo'lsin", status: day ? sts[rnd(sts.length)] : "done", created});
+    }
+  }
+  orders.sort((a, b) => a.id - b.id); orders.forEach((o, i) => o.id = 1001 + i);
+  const last = orders.slice(-5); ["new", "new", "accepted", "cooking", "on_way"].forEach((s, i) => { last[i].status = s; last[i].created = now - (5 - i) * 420; });
+  MK = {menu: d, users, orders, settings: {RESTAURANT_NAME: "Gumbaz Express", RESTAURANT_ADDRESS_UZ: "Shahrisabz, Kunchiqar chorraxa", RESTAURANT_ADDRESS_RU: "Шахрисабз, перекрёсток Кунчикар", RESTAURANT_LAT: 39.0578, RESTAURANT_LON: 66.8342, SUPPORT_PHONE: "+998 77 501 03 03", SUPPORT_USERNAME: "gumbaz_express", WORK_HOURS: "24/7", MIN_ORDER: 20000, ACCEPTING: true, CLOSED_MSG_UZ: "Hozir buyurtma qabul qilmayapmiz.", CLOSED_MSG_RU: "Сейчас мы не принимаем заказы."},
+    staff: [{id: 1, login: "dilshod", name: "Dilshod (kassir)", perms: ["orders", "stock"], active: true, telegram: true}, {id: 2, login: "malika", name: "Malika (menejer)", perms: ["stats", "orders", "stock", "menu", "banners", "customers"], active: true, telegram: false}]};
+}
+const NX = {new: ["accepted", "cancelled"], accepted: ["cooking", "cancelled"], cooking: ["on_way", "cancelled"], on_way: ["done"], ready: ["done"]};
+const nextOf = o => (NX[o.status] || []).map(s => o.delivery === "pickup" && s === "on_way" ? "ready" : s);
+async function mock(route, b, raw) {
+  if (!MK) mockInit();
+  await new Promise(r => setTimeout(r, route === "upload" ? 400 : 90));
+  const ok = x => Object.assign({ok: true}, x), d0 = (() => { const x = new Date(); x.setHours(0, 0, 0, 0); return x / 1000; })();
+  const withU = o => { const u = MK.users.find(x => x.tg_id === o.tg_id) || {}; return Object.assign({}, o, {uname: u.name, uphone: u.phone, uusername: u.username, next: nextOf(o)}); };
+  const live = MK.orders.filter(o => o.status !== "cancelled");
+  switch (route) {
+    case "me": return ok({name: "Rahbar", owner: true, perms: Object.keys(PL)});
+    case "login": return ok({token: "demo"});
+    case "logout": return ok({});
+    case "dashboard": {
+      const start = d0 - 6 * 86400, by = [...Array(7)].map((_, i) => ({day: start + i * 86400, revenue: 0, orders: 0})), top = {}, dv = {courier: 0, yandex: 0, pickup: 0};
+      live.filter(o => o.created >= start).forEach(o => { const i = Math.min(6, Math.floor((o.created - start) / 86400)); by[i].revenue += o.total; by[i].orders++; dv[o.delivery]++; o.items.forEach(x => { const t = top[x.pid] = top[x.pid] || {pid: x.pid, name: x.name, qty: 0}; t.qty += x.qty; }); });
+      const td = live.filter(o => o.created >= d0), ye = live.filter(o => o.created >= d0 - 86400 && o.created < d0), rev = td.reduce((a, o) => a + o.total, 0);
+      return ok({today: {orders: td.length, revenue: rev, avg: td.length ? rev / td.length | 0 : 0}, yesterday: {revenue: ye.reduce((a, o) => a + o.total, 0), orders: ye.length}, by_day: by,
+        top: Object.values(top).sort((a, b) => b.qty - a.qty).slice(0, 5), delivery: dv, active: MK.orders.filter(o => NX[o.status]).length, customers: MK.users.length, new_customers: 1});
+    }
+    case "orders": {
+      const G = {active: ["new", "accepted", "cooking", "on_way", "ready"], done: ["done"], cancelled: ["cancelled"], new: ["new"]};
+      let l = MK.orders.filter(o => (G[b.status] || G.active).includes(o.status)).map(withU);
+      if (b.q) { const q = b.q.toLowerCase().replace("#", ""); l = l.filter(o => String(o.id).includes(q) || (o.uphone || "").includes(q) || (o.uname || "").toLowerCase().includes(q)); }
+      const ac = {}; MK.orders.filter(o => NX[o.status]).forEach(o => ac[o.status] = (ac[o.status] || 0) + 1);
+      return ok({orders: l.reverse().slice(0, 40), active_counts: ac});
+    }
+    case "order": { const o = MK.orders.find(x => x.id === b.id); return o ? ok({order: withU(o)}) : {ok: false, error: "not_found"}; }
+    case "order/status": { const o = MK.orders.find(x => x.id === b.id); if (!o || !nextOf(o).includes(b.status)) return {ok: false, error: "Bu holatga o'tkazib bo'lmaydi"}; o.status = b.status; return ok({status: o.status}); }
+    case "menu": return ok(JSON.parse(JSON.stringify(MK.menu)));
+    case "product/toggle": { const p = MK.menu.products.find(x => x.id === b.id); p.available = b.available; return ok({}); }
+    case "product/delete": MK.menu.products = MK.menu.products.filter(x => x.id !== b.id); return ok({});
+    case "product/save": { const p = b.product; if (p.id) { const i = MK.menu.products.findIndex(x => x.id === p.id); MK.menu.products[i] = p; } else { p.id = "p" + Date.now(); const idx = MK.menu.products.map(x => x.cat).lastIndexOf(p.cat); MK.menu.products.splice(idx + 1, 0, p); } if (!p.variants) delete p.variants; return ok({product: p}); }
+    case "sort": {
+      if (b.kind === "categories") MK.menu.categories = b.ids.map(i => MK.menu.categories.find(c => c.id === i));
+      if (b.kind === "banners") MK.menu.banners = b.ids.map(i => MK.menu.banners.find(c => c.id === i));
+      if (b.kind === "products") { const pr = MK.menu.products, slots = pr.map((p, k) => b.ids.includes(p.id) ? k : -1).filter(k => k >= 0), m = Object.fromEntries(pr.map(p => [p.id, p])); slots.forEach((s, k) => pr[s] = m[b.ids[k]]); }
+      return ok({});
+    }
+    case "category/save": { if (b.id) MK.menu.categories.find(c => c.id === b.id).name = {uz: b.name.uz || b.name.ru, ru: b.name.ru || b.name.uz}; else { if (!b.name.uz && !b.name.ru) return {ok: false, error: "name_required"}; MK.menu.categories.push({id: "c" + Date.now(), name: {uz: b.name.uz || b.name.ru, ru: b.name.ru || b.name.uz}}); } return ok({}); }
+    case "category/delete": if (MK.menu.products.some(p => p.cat === b.id)) return {ok: false, error: "category_not_empty"}; MK.menu.categories = MK.menu.categories.filter(c => c.id !== b.id); return ok({});
+    case "upload": return ok({src: URL.createObjectURL(raw.blob)});
+    case "banner/save": { const x = b.banner, item = {id: x.id || "b" + Date.now(), src: x.src, type: /^blob:/.test(x.src) ? (bed && bed.type) || "image" : /\.(mp4|mov)$/i.test(x.src) ? "video" : "image"}; if (x.product) item.product = x.product; if (x.category) item.category = x.category; if (x.id) { const i = MK.menu.banners.findIndex(y => y.id === x.id); item.poster = MK.menu.banners[i].poster; MK.menu.banners[i] = item; } else MK.menu.banners.unshift(item); return ok({banner: item}); }
+    case "banner/delete": MK.menu.banners = MK.menu.banners.filter(x => x.id !== b.id); return ok({});
+    case "settings": return ok({settings: Object.assign({}, MK.settings)});
+    case "settings/save": Object.assign(MK.settings, b.settings); return ok({settings: Object.assign({}, MK.settings)});
+    case "customers": { const l = MK.users.map(u => { const os = live.filter(o => o.tg_id === u.tg_id); return Object.assign({}, u, {orders: os.length, spent: os.reduce((a, o) => a + o.total, 0)}); }).sort((a, b) => b.spent - a.spent); return ok({customers: l, total: l.length}); }
+    case "broadcast": return ok({queued: MK.users.length});
+    case "staff": return ok({staff: MK.staff, owner_ids: [8515369931]});
+    case "staff/save": { const x = b.staff; if (MK.staff.some(s => s.login === x.login && s.id !== x.id)) return {ok: false, error: "login_taken"};
+      if (x.id) Object.assign(MK.staff.find(s => s.id === x.id), {login: x.login, name: x.name, perms: x.perms, active: x.active}); else MK.staff.push({id: Date.now(), login: x.login, name: x.name, perms: x.perms, active: true, telegram: false}); return ok({}); }
+    case "staff/delete": MK.staff = MK.staff.filter(s => s.id !== b.id); return ok({});
+  }
+  return {ok: false, error: "not_found"};
+}
+boot();
+</script>

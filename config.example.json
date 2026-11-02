@@ -1,0 +1,25 @@
+{
+  "CLIENT_BOT_TOKEN": "111111111:AAAA-mijozlar-boti-BotFather-token",
+  "ADMIN_BOT_TOKEN": "222222222:BBBB-admin-boti-BotFather-token",
+  "WEBAPP_URL": "https://gumbaz.example.uz",
+  "ADMIN_IDS": [
+    123456789
+  ],
+  "ADMIN_CHAT_ID": 0,
+  "RESTAURANT_NAME": "Gumbaz Express",
+  "RESTAURANT_ADDRESS_UZ": "Shahrisabz, Kunchiqar chorraxa",
+  "RESTAURANT_ADDRESS_RU": "Шахрисабз, перекрёсток Кунчикар",
+  "RESTAURANT_LAT": 39.0578,
+  "RESTAURANT_LON": 66.8342,
+  "SUPPORT_PHONE": "+998 77 501 03 03",
+  "SUPPORT_USERNAME": "gumbaz_express",
+  "WORK_HOURS": "24/7",
+  "MIN_ORDER": 20000,
+  "ACCEPTING": true,
+  "CLOSED_MSG_UZ": "Hozir buyurtma qabul qilmayapmiz. Birozdan keyin urinib ko'ring.",
+  "CLOSED_MSG_RU": "Сейчас мы не принимаем заказы. Попробуйте чуть позже.",
+  "HOST": "0.0.0.0",
+  "PORT": 8080,
+  "OWNER_LOGIN": "rahbar",
+  "OWNER_PASSWORD": ""
+}
