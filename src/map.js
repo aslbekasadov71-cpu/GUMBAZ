@@ -127,3 +127,61 @@ function tileFn(token, style) {
   return (z, x, y) => `https://api.mapbox.com/styles/v1/${MAP_STYLES[style] || MAP_STYLES.sat}/tiles/256/${z}/${x}/${y}@2x?access_token=${encodeURIComponent(token)}`;
 }
 function mapStyle(v) { try { if (v) localStorage.setItem("gx_mapstyle", v); return localStorage.getItem("gx_mapstyle") || "sat"; } catch (e) { return v || "sat"; } }
+/* ───────── Yandex xaritasi (JS API 2.1) — kalit berilsa: uylar va uy raqamlari bilan ───────── */
+let _ymP = null;
+function loadYmaps(key) {
+  if (window.ymaps && window.ymaps.Map) return Promise.resolve(window.ymaps);
+  if (_ymP) return _ymP;
+  _ymP = new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://api-maps.yandex.ru/2.1/?apikey=" + encodeURIComponent(key) + "&lang=ru_RU";
+    s.onload = () => window.ymaps ? window.ymaps.ready(() => res(window.ymaps), rej) : rej("noymaps");
+    s.onerror = () => rej("load");
+    document.head.appendChild(s); setTimeout(() => rej("timeout"), 15000);
+  }).catch(e => { _ymP = null; throw e; });
+  return _ymP;
+}
+const YTYPE = v => v === "sat" ? "yandex#hybrid" : "yandex#map";
+function YMap(el, o) {
+  const M = {lat: o.lat, lon: o.lon, z: o.zoom || 16, W: 0, H: 0, fx: 0, fy: 0, ym: null, q: [], marks: [], dead: false, yandex: true, moving: false};
+  const box = document.createElement("div"); box.className = "ybox"; el.appendChild(box);
+  el.classList.add("ymode");
+  M.measure = () => { if (M.dead) return; const r = el.getBoundingClientRect(); M.W = r.width; M.H = r.height; M.fx = M.W / 2;
+    M.fy = Math.min(M.H / 2, o.focusY ? o.focusY(M.H) : M.H / 2); box.style.height = Math.round(2 * M.fy) + "px";
+    o.onMeasure && o.onMeasure(M); if (M.ym) M.ym.container.fitToViewport(); };
+  const run = f => { if (M.ym) f(M.ym); else M.q.push(f); };
+  const sync = () => { const c = M.ym.getCenter(); M.lat = c[0]; M.lon = c[1]; M.z = M.ym.getZoom(); };
+  loadYmaps(o.ykey).then(ymaps => {
+    if (M.dead) return;
+    const map = M.ym = new ymaps.Map(box, {center: [M.lat, M.lon], zoom: Math.round(M.z), controls: [], type: YTYPE(o.ystyle)},
+      {suppressMapOpenBlock: true, yandexMapDisablePoiInteractivity: true});
+    map.events.add("actionbegin", () => { if (!M.moving) { M.moving = true; o.onMoveStart && o.onMoveStart(); } });
+    map.events.add("actionend", () => { sync(); if (M.moving) { M.moving = false; o.onMoveEnd && o.onMoveEnd(); } });
+    M.q.splice(0).forEach(f => f(map)); M.measure(); o.onTileOk && o.onTileOk();
+  }).catch(() => {  // Yandex yuklanmasa — o'zimizning xaritaga o'tamiz
+    if (M.dead) return; box.remove(); el.classList.remove("ymode");
+    const g = GMap(el, Object.assign({}, o, {lat: M.lat, lon: M.lon, zoom: M.z}));
+    ["lat", "lon", "z", "W", "H", "fx", "fy", "moving"].forEach(k => Object.defineProperty(M, k, {get: () => g[k], set: v => { g[k] = v; }, configurable: true}));
+    Object.keys(g).forEach(k => { if (typeof g[k] === "function") M[k] = g[k]; });
+    M.yandex = false; M.setType = () => {}; M.marks.forEach(m => g.addMarker(m.lat, m.lon, m.el));
+  });
+  M.flyTo = (lat, lon, z = M.z, ms = 600) => run(map => { o.onMoveStart && !M.moving && o.onMoveStart(); M.moving = true;
+    map.setCenter([lat, lon], Math.round(z), {duration: ms}).then(() => { sync(); if (M.moving) { M.moving = false; o.onMoveEnd && o.onMoveEnd(); } }); });
+  M.zoomTo = z => run(map => map.setZoom(Math.max(4, Math.min(19, Math.round(z))), {duration: 250}));
+  M.setTiles = () => {};
+  M.setType = v => run(map => map.setType(YTYPE(v)));
+  M.addMarker = (lat, lon, node) => {
+    const m = {lat, lon, el: node}; M.marks.push(m);
+    run(map => { const geo = /udot/.test(node.className);
+      const cap = (node.querySelector && node.querySelector("b") || {}).textContent || "";
+      m.pm = new window.ymaps.Placemark([lat, lon], geo ? {} : {iconCaption: cap}, {preset: geo ? "islands#geolocationIcon" : "islands#blueDotIconWithCaption"});
+      map.geoObjects.add(m.pm); });
+    return m;
+  };
+  M.draw = () => {};
+  M.destroy = () => { M.dead = true; window.removeEventListener("resize", M.measure); try { M.ym && M.ym.destroy(); } catch (e) {} };
+  window.addEventListener("resize", M.measure); requestAnimationFrame(M.measure);
+  return M;
+}
+/* kalit bo'lsa Yandex, aks holda Mapbox / OpenStreetMap */
+function makeMap(el, o) { return o.ykey ? YMap(el, o) : GMap(el, o); }

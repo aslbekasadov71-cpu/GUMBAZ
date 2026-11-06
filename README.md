@@ -11,7 +11,9 @@ Faqat **Python 3.9+** — hech qanday kutubxona o'rnatilmaydi.
 
 ## Asosiy imkoniyatlar
 - **Dona + qadoq**: har bir mahsulotning dona narxi va qadog'i (korobka, blok, yashik…): nechta dona, qadoq narxi (chegirmali bo'lishi mumkin), "faqat qadoqda" / "faqat donada" / "ikkalasi".
-- **Hududlar va marshrut kunlari**: masalan, Markaz — Du/Pa, Kunchiqar — Se/Ju. Do'konchi faqat o'z hududining eng yaqin kunlarini tanlaydi.
+- **Yetkazish kunlari (Du–Sh)**: admin har bir kunga ko'cha/mahalla nomlarini yozadi (masalan, Bog'ishamol — Dushanba, Juma). Do'kon manzilida shu nom bo'lsa, kunlar avtomatik biriktiriladi; kerak bo'lsa do'konga qo'lda belgilanadi. Do'konchi faqat o'z kunlarining eng yaqin sanalarini tanlaydi.
+- **Shtrix-kod**: admin panelda kamera bilan skanerlash — mahsulot nomi, grammi va rasmi Open Food Facts bazasidan avtomatik to'ldiriladi; katalogda bor bo'lsa, o'sha mahsulot ochiladi. USB/Bluetooth skaner ham ishlaydi (maydonga yozib Enter).
+- **Yandex xaritasi** (ixtiyoriy): `YANDEX_API_KEY` berilsa, xarita Yandex'dan (uylar va uy raqamlari bilan) va manzil Yandex Geocoder orqali aniqlanadi. Kalit bo'lmasa — Mapbox (`MAPBOX_TOKEN`) yoki OpenStreetMap.
 - **Nasiya (qarz daftari)**: buyurtma "Yetkazildi" qilinganda olingan pul kiritiladi, qolgani do'kon qarziga yoziladi. To'lov qabul qilish, qo'lda tuzatish (eski daftar qarzi), qarz chegarasi (umumiy yoki har bir do'konga alohida). Do'konchi o'z qarzini va tarixini ilovada ko'radi, har o'zgarishda botga xabar keladi.
 - **Yuklash ro'yxati**: tanlangan kun (va hudud) uchun mashinaga nima ortish kerak (masalan, "5 korobka + 3 dona") va qaysi do'konlarga borish, naqd/nasiya summasi. Botga yuborish yoki nusxalash.
 - **Do'konlar**: ro'yxat, hudud, chegara, ichki izoh, bloklash.
@@ -36,6 +38,8 @@ Faqat **Python 3.9+** — hech qanday kutubxona o'rnatilmaydi.
 | `ADMIN_BOT_TOKEN` | admin bot tokeni |
 | `ADMIN_IDS` | rahbarning Telegram ID si (bir nechta bo'lsa vergul bilan) |
 | `OWNER_PASSWORD` | rahbarning brauzerdan kirish paroli |
+| `YANDEX_API_KEY` | (ixtiyoriy) Yandex "JavaScript API va HTTP Geocoder" kaliti — xarita va aniq manzil |
+| `MAPBOX_TOKEN` | (ixtiyoriy) Mapbox public token — Yandex kaliti bo'lmasa xarita uchun |
 
 `WEBAPP_URL` Render manzilidan avtomatik olinadi. Render'da bot **webhook** rejimida ishlaydi: server uxlab qolsa ham Telegram xabari uni uyg'otadi (birinchi javob 30–60 soniya kechikishi mumkin).
 
@@ -58,7 +62,7 @@ HTTPS uchun Caddy: `ulgurji.uz { reverse_proxy 127.0.0.1:8080 }`. systemd: `depl
 bot.py               ikkala bot + web server + API + zaxira
 config.example.json  sozlamalar namunasi (Render'da environment orqali)
 data/menu.json       boshlang'ich katalog (keyin paneldan o'zgaradi)
-data/zones.json      boshlang'ich hududlar
+data/routes.json     boshlang'ich yetkazish kunlari (ko'chalar)
 data/banners.json    boshlang'ich bannerlar
 webapp/index.html    do'konchilar Mini App'i
 webapp/admin.html    admin panel

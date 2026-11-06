@@ -273,7 +273,7 @@ class DB:
         CREATE INDEX IF NOT EXISTS ix_orders_created ON orders(created);
         CREATE INDEX IF NOT EXISTS ix_order_msgs ON order_msgs(order_id);
         """)
-        for table, extra in (("users", (("landmark", "TEXT"), ("shop", "TEXT"), ("zone", "TEXT"), ("debt_limit", "INTEGER"),
+        for table, extra in (("users", (("landmark", "TEXT"), ("shop", "TEXT"), ("zone", "TEXT"), ("days", "TEXT"), ("debt_limit", "INTEGER"),
                                         ("note", "TEXT"), ("blocked", "INTEGER DEFAULT 0"))),
                              ("orders", (("delivery_date", "TEXT"), ("zone", "TEXT"), ("paid", "INTEGER"), ("debt", "INTEGER")))):
             cols = {r[1] for r in self.c.execute(f"PRAGMA table_info({table})")}
@@ -414,6 +414,8 @@ T = {
         "mon": ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"],
         "date_fmt": "{wd}, {d}-{m}",
         "pcs": "dona",
+        "days_line": "🚚 Yetkazish kunlari: <b>{d}</b>",
+        "days_any": "istalgan ish kuni (Du–Sh)",
     },
     "ru": {
         "hello": "Здравствуйте! Добро пожаловать в бот оптовых заказов <b>{company}</b> 📦\n\n"
@@ -450,6 +452,8 @@ T = {
         "mon": ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"],
         "date_fmt": "{wd}, {d} {m}",
         "pcs": "шт",
+        "days_line": "🚚 Дни доставки: <b>{d}</b>",
+        "days_any": "любой рабочий день (Пн–Сб)",
     },
 }
 STATUS_ORDER = ["new", "accepted", "on_way", "done", "cancelled"]
@@ -503,31 +507,61 @@ def qty_text(item, lang="uz"):
     return f"{item['qty']} {(item.get('base') or UNITS['pc']).get(lang) or 'dona'}"
 
 
-# ── hududlar va marshrut kunlari ──
-def zones():
-    return db.kv_get("zones", [])
+# ── marshrut: hafta kunlari (Du–Sh) va har bir kunga boriladigan ko'chalar ──
+WORKDAYS = list(range(6))   # 0=Dushanba … 5=Shanba (yakshanba — dam olish)
 
 
-def zone_by_id(zid):
-    return next((z for z in zones() if z["id"] == zid), None)
+def routes():
+    """{"0": ["Bog'ishamol", ...], ...} — har bir hafta kuniga ko'cha/mahalla kalit so'zlari."""
+    r = db.kv_get("routes")
+    return {str(d): list((r or {}).get(str(d)) or []) for d in WORKDAYS}
+
+
+def norm_place(s):
+    s = to_latin(str(s or "")).lower()
+    s = re.sub(r"[ʻʼ‘’`´'ʹ]", "", s).replace("x", "h").replace("ё", "yo")
+    s = re.sub(r"\b(ko\s?chasi|kochasi|ko\s?cha|tor|shoh|mahallasi|mahalla|mfy|massivi|ulitsa|street|st)\b", " ", s)
+    return re.sub(r"[^a-z0-9а-я ]+", " ", re.sub(r"\s+", " ", s)).strip()
+
+
+def matched_days(user, rts=None):
+    txt = " " + norm_place(f"{user.get('address') or ''} {user.get('landmark') or ''}") + " "
+    out = []
+    for d, kws in (rts or routes()).items():
+        for k in kws:
+            nk = norm_place(k)
+            if nk and nk in txt:
+                out.append(int(d))
+                break
+    return sorted(out)
+
+
+def manual_days(user):
+    try:
+        v = json.loads(user.get("days") or "null")
+    except ValueError:
+        v = None
+    return sorted({int(d) for d in v if int(d) in WORKDAYS}) if isinstance(v, list) and v else None
+
+
+def shop_days(user, rts=None):
+    """Do'konga biriktirilgan kunlar: qo'lda belgilangan yoki manzil bo'yicha topilgan ([] — topilmadi)."""
+    return manual_days(user) or matched_days(user, rts)
 
 
 def _today():
-    lt = time.localtime()
     import datetime
+    lt = time.localtime()
     return datetime.date(lt.tm_year, lt.tm_mon, lt.tm_mday), lt.tm_hour
 
 
-def delivery_dates(zone_id, n=4):
-    """Do'kon hududining marshrut kunlaridan eng yaqin n tasi (ISO sana)."""
+def delivery_dates(days, n=4):
+    """Do'kon kunlaridan eng yaqin n ta sana (ISO). Kun topilmasa — istalgan ish kuni (Du–Sh)."""
     import datetime
     today, hour = _today()
     until = int(setting("SAME_DAY_UNTIL") or 0)
     start = today if until and hour < until else today + datetime.timedelta(days=1)
-    z = zone_by_id(zone_id) if zone_id else None
-    days = set(z.get("days") or []) if z else set()
-    if not days:
-        days = set(range(7))
+    days = set(days or WORKDAYS)
     out = []
     for i in range(28):
         d = start + datetime.timedelta(days=i)
@@ -536,6 +570,11 @@ def delivery_dates(zone_id, n=4):
             if len(out) >= n:
                 break
     return out
+
+
+def days_text(days, lang="uz"):
+    L_ = T[lang if lang in T else "uz"]
+    return ", ".join(L_["wd"][d] for d in days) if days else L_["days_any"]
 
 
 def date_label(iso, lang="uz"):
@@ -682,7 +721,10 @@ def to_latin(text):
     return "".join(out)
 
 
-YANDEX_GEOCODER_KEY = (os.environ.get("YANDEX_GEOCODER_KEY") or str(CFG.get("YANDEX_GEOCODER_KEY") or "")).strip()
+# Yandex: bitta kalit ("JavaScript API va HTTP Geocoder") — xarita (uy raqamlari bilan) va manzil aniqlash uchun.
+YANDEX_API_KEY = (os.environ.get("YANDEX_API_KEY") or str(CFG.get("YANDEX_API_KEY") or "")).strip()
+YANDEX_GEOCODER_KEY = (os.environ.get("YANDEX_GEOCODER_KEY") or str(CFG.get("YANDEX_GEOCODER_KEY") or "") or YANDEX_API_KEY).strip()
+YANDEX_JS_KEY = (os.environ.get("YANDEX_JS_KEY") or YANDEX_API_KEY).strip()
 
 
 def yandex_geocode(lat, lon, lang):
@@ -887,8 +929,7 @@ def items_text(items, lang):
 
 
 def zone_name(zid, lang="uz"):
-    z = zone_by_id(zid) if zid else None
-    return (z["name"].get(lang) or z["name"]["uz"]) if z else ""
+    return ""
 
 
 SHOP_FALLBACK = "Do'kon"
@@ -903,8 +944,7 @@ def admin_text(order, user):
              f"🏪 <b>{esc(user.get('shop') or SHOP_FALLBACK)}</b>", f"👤 {who}", f"📞 <code>{esc(user.get('phone'))}</code>"]
     if order.get("address"):
         lines.append(f"📍 {esc(order['address'])}")
-    zn = zone_name(order.get("zone"))
-    lines.append(f"📅 <b>{date_label(order.get('delivery_date'))}</b>" + (f"  ·  🗺 {esc(zn)}" if zn else ""))
+    lines.append(f"📅 <b>{date_label(order.get('delivery_date'))}</b>")
     lines.append(T["uz"]["pay"].get(order["payment"], order["payment"]))
     bal = db.balance(order["tg_id"])
     if bal > 0:
@@ -951,10 +991,8 @@ def create_order(user, body):
     items, total = build_items(body.get("items"))
     if total < int(setting("MIN_ORDER") or 0):
         raise ValueError("min_order")
-    if zones() and not zone_by_id(user.get("zone")):
-        raise ValueError("no_zone")
     date = str(body.get("date") or "")
-    if date not in delivery_dates(user.get("zone"), 7):
+    if date not in delivery_dates(shop_days(user), 7):
         raise ValueError("bad_date")
     payment = "debt" if body.get("payment") == "debt" and setting("ALLOW_DEBT") else "cash"
     if payment == "debt":
@@ -970,7 +1008,7 @@ def create_order(user, body):
     oid = db.x("INSERT INTO orders(tg_id,items,total,delivery,payment,address,lat,lon,comment,status,created,updated,delivery_date,zone)"
                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                (user["tg_id"], json.dumps(items, ensure_ascii=False), total, "route", payment, address[:320],
-                user["lat"], user["lon"], str(body.get("comment") or "")[:500], "new", now, now, date, user.get("zone")))
+                user["lat"], user["lon"], str(body.get("comment") or "")[:500], "new", now, now, date, None))
     order = db.q("SELECT * FROM orders WHERE id=?", (oid,), one=True)
     threading.Thread(target=notify_new_order, args=(order, user), daemon=True).start()
     return order
@@ -1104,6 +1142,8 @@ def send_ready(chat_id, lang, user=None):
         head.append(tr(lang, "shop_line").format(s=esc(user["shop"])))
     if user and user.get("address"):
         head.append(tr(lang, "addr").format(a=esc(user["address"])))
+    if user and user.get("lat") is not None:
+        head.append(tr(lang, "days_line").format(d=days_text(shop_days(user), lang)))
     if head:
         text = "\n".join(head) + "\n\n" + text
     tg(CLIENT, "sendMessage", chat_id=chat_id, text="✅", reply_markup={"remove_keyboard": True})
@@ -1372,15 +1412,12 @@ def dashboard(days=7):
             "new_shops": db.q("SELECT COUNT(*) c FROM users WHERE phone IS NOT NULL AND created>=?", (day_start(),), one=True)["c"]}
 
 
-def loadlist(date, zone=None):
+def loadlist(date, zone=None):  # zone — eski parametr, ishlatilmaydi
     """Bir kunlik yuklash ro'yxati: qaysi mahsulotdan qancha ortish va qaysi do'konlarga borish."""
     sql = ("SELECT o.*, u.shop ushop, u.name uname, u.phone uphone, u.landmark ulandmark FROM orders o "
            "LEFT JOIN users u ON u.tg_id=o.tg_id WHERE o.delivery_date=? AND o.status IN ('new','accepted','on_way')")
     args = [date]
-    if zone:
-        sql += " AND o.zone=?"
-        args.append(zone)
-    rows = db.q(sql + " ORDER BY o.zone, o.id", args)
+    rows = db.q(sql + " ORDER BY o.id", args)
     prods, pm = {}, product_map()
     tot = {"orders": len(rows), "sum": 0, "cash": 0, "debt": 0, "new": 0}
     out = []
@@ -1400,7 +1437,7 @@ def loadlist(date, zone=None):
                 p["pack_qty"] = int(it.get("pack_qty") or pk.get("qty"))
                 p["pack_name"] = it.get("unit_name") or pk.get("name")
         out.append({"id": r["id"], "status": r["status"], "shop": r["ushop"], "name": r["uname"], "phone": r["uphone"],
-                    "address": r["address"], "lat": r["lat"], "lon": r["lon"], "zone": r["zone"], "zone_name": zone_name(r["zone"]),
+                    "address": r["address"], "lat": r["lat"], "lon": r["lon"], "zone_name": "",
                     "total": r["total"], "payment": r["payment"], "comment": r["comment"], "items": items})
     for p in prods.values():
         if p["pack_qty"]:
@@ -1495,7 +1532,7 @@ def login_blocked(key):
 
 def public_user(u):
     return {k: u.get(k) for k in ("tg_id", "phone", "name", "lang", "photo", "lat", "lon", "address",
-                                  "landmark", "shop", "zone")} if u else None
+                                  "landmark", "shop")} if u else None
 
 
 def client_settings():
@@ -1505,15 +1542,15 @@ def client_settings():
             "support_phone": s["SUPPORT_PHONE"], "support_username": s["SUPPORT_USERNAME"],
             "work_hours": s["WORK_HOURS"] or "", "min_order": int(s["MIN_ORDER"] or 0),
             "accepting": bool(s["ACCEPTING"]), "closed_msg": {"uz": s["CLOSED_MSG_UZ"], "ru": s["CLOSED_MSG_RU"]},
-            "allow_debt": bool(s["ALLOW_DEBT"]), "map_token": MAPBOX_TOKEN,
-            "zones": [{"id": z["id"], "name": z["name"], "days": z.get("days") or []} for z in zones()]}
+            "allow_debt": bool(s["ALLOW_DEBT"]), "map_token": MAPBOX_TOKEN, "ymaps_key": YANDEX_JS_KEY}
 
 
 def account(user):
     """Do'konchi uchun: qarz, chegara, yetkazish sanalari."""
     lang = user.get("lang") or "uz"
-    return {"balance": db.balance(user["tg_id"]), "limit": debt_limit(user),
-            "dates": [{"date": d, "label": date_label(d, lang)} for d in delivery_dates(user.get("zone"), 4)]}
+    days = shop_days(user)
+    return {"balance": db.balance(user["tg_id"]), "limit": debt_limit(user), "days": days,
+            "dates": [{"date": d, "label": date_label(d, lang)} for d in delivery_dates(days, 4)]}
 
 
 def slug(s):
@@ -1562,6 +1599,15 @@ def clean_product(p, existing=None):
     else:
         out.pop("badge", None)
     out["available"] = p.get("available", True) is not False
+    bc = re.sub(r"\D", "", str(p.get("barcode") or ""))
+    if bc:
+        if not 6 <= len(bc) <= 14:
+            raise ValueError("bad_barcode")
+        if any(x.get("barcode") == bc and x.get("id") != (existing or {}).get("id") for x in MENU.data["products"]):
+            raise ValueError("barcode_taken")
+        out["barcode"] = bc
+    else:
+        out.pop("barcode", None)
     out["price"] = _int(p.get("price"), 1, 10 ** 10, "bad_price")
     out["unit"] = p.get("unit") if p.get("unit") in UNITS else "pc"
     pk = p.get("pack") or None
@@ -1578,10 +1624,46 @@ def clean_product(p, existing=None):
     return out
 
 
-def clean_zone(z):
-    name = clean_l10n(z.get("name"), limit=40)
-    days = sorted({int(d) for d in (z.get("days") or []) if str(d).isdigit() and 0 <= int(d) <= 6})
-    return {"id": str(z.get("id") or "") or slug(name["uz"]), "name": name, "days": days}
+OFF_API = os.environ.get("OFF_API") or "https://world.openfoodfacts.org"
+
+
+def barcode_lookup(code):
+    """Shtrix-kod bo'yicha mahsulot: avval o'z katalogimizdan, keyin Open Food Facts bazasidan."""
+    p = next((x for x in MENU.data["products"] if x.get("barcode") == code), None)
+    if p:
+        return {"found": "local", "product_id": p["id"]}
+    url = f"{OFF_API}/api/v2/product/{code}.json?fields=product_name,product_name_ru,product_name_uz,product_name_en,brands,quantity,image_front_url,image_url"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "UlgurjiBot/1.0 (wholesale catalog)"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            d = json.loads(r.read(3 * 1024 * 1024))
+    except Exception as e:
+        log.info("barcode %s: %s", code, e)
+        return {"found": None, "error": "lookup_failed"}
+    pr = d.get("product") if d.get("status") == 1 else None
+    if not pr:
+        return {"found": None}
+    nm_uz = (pr.get("product_name_uz") or pr.get("product_name") or pr.get("product_name_en") or pr.get("product_name_ru") or "").strip()
+    nm_ru = (pr.get("product_name_ru") or pr.get("product_name") or nm_uz).strip()
+    brand = (pr.get("brands") or "").split(",")[0].strip()
+    qty = (pr.get("quantity") or "").strip()
+    out = {"found": "off", "name": {"uz": nm_uz, "ru": nm_ru}, "brand": brand, "quantity": qty, "img": ""}
+    img = pr.get("image_front_url") or pr.get("image_url")
+    if img and img.startswith("https://"):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(img, headers={"User-Agent": "UlgurjiBot/1.0"}), timeout=10) as r:
+                data = r.read(4 * 1024 * 1024)
+            ext = "jpg" if data[:3] == b"\xff\xd8\xff" else "png" if data[:4] == b"\x89PNG" else None
+            if ext:
+                os.makedirs(os.path.join(UPLOAD_DIR, "products"), exist_ok=True)
+                src = f"uploads/products/{int(time.time())}_{code}.{ext}"
+                with open(os.path.join(WEBAPP_DIR, src), "wb") as f:
+                    f.write(data)
+                BACKUP.mark()
+                out["img"] = src
+        except Exception as e:
+            log.info("barcode rasm %s: %s", code, e)
+    return out
 
 
 def remove_upload(src):
@@ -1598,9 +1680,16 @@ def remove_upload(src):
             db.kv_set("tg_files", files)
 
 
-def broadcast(text, notify_chat, zone=None):
-    users = db.q("SELECT tg_id FROM users WHERE phone IS NOT NULL AND COALESCE(blocked,0)=0" + (" AND zone=?" if zone else ""),
-                 (zone,) if zone else ())
+def broadcast_targets(day=None):
+    users = db.q("SELECT tg_id,address,landmark,days FROM users WHERE phone IS NOT NULL AND COALESCE(blocked,0)=0")
+    if day not in (None, ""):
+        rts = routes()
+        users = [u for u in users if int(day) in (shop_days(u, rts) or WORKDAYS)]
+    return users
+
+
+def broadcast(text, notify_chat, day=None):
+    users = broadcast_targets(day)
     ok = 0
     for u in users:
         if tg(CLIENT, "sendMessage", chat_id=u["tg_id"], text=text):
@@ -1618,13 +1707,13 @@ def public_staff(s):
 
 # admin marshrut → kerakli ruxsat (None = har qanday kirgan xodim; "owner" = faqat rahbar)
 ROUTE_PERM = {
-    "me": None, "logout": None, "settings": None, "menu": None, "zones": None,
+    "me": None, "logout": None, "settings": None, "menu": None, "routes": None,
     "dashboard": "stats", "orders": "orders", "order": "orders", "order/status": "orders",
     "loadlist": "orders", "loadlist/send": "orders",
     "product/toggle": ("stock", "menu"), "product/save": "menu", "product/delete": "menu",
     "category/save": "menu", "category/delete": "menu",
     "banner/save": "banners", "banner/delete": "banners",
-    "settings/save": "settings", "geocode": "settings", "zone/save": "settings", "zone/delete": "settings",
+    "settings/save": "settings", "geocode": "settings", "routes/save": "settings", "barcode": "menu",
     "shops": ("shops", "debts"), "shop": ("shops", "debts"), "shop/save": "shops",
     "debts": "debts", "payment": "debts", "adjust": "debts", "ledger/delete": "owner",
     "broadcast": "broadcast",
@@ -1756,10 +1845,6 @@ class Handler(BaseHTTPRequestHandler):
                     f[k] = v
             if body.get("lang") in ("uz", "ru"):
                 f["lang"] = body["lang"]
-            if "zone" in body:
-                if body["zone"] and not zone_by_id(body["zone"]):
-                    raise ValueError("bad_zone")
-                f["zone"] = body["zone"] or None
             u = db.upsert_user(uid, **f)
             if "lang" in f:
                 set_client_menu(uid, f["lang"])
@@ -1783,7 +1868,8 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("bad_coords")
             addr = re.sub(r"\s+", " ", str(body.get("address") or "")).strip()[:200] or reverse_geocode(lat, lon, user.get("lang"))
             land = re.sub(r"\s+", " ", str(body.get("landmark") or "")).strip()[:120]
-            return self.send_json({"ok": True, "user": public_user(db.upsert_user(uid, lat=lat, lon=lon, address=addr, landmark=land))})
+            u = db.upsert_user(uid, lat=lat, lon=lon, address=addr, landmark=land)
+            return self.send_json({"ok": True, "user": public_user(u), "account": account(u)})
         if route == "geocode":
             return self.send_json({"ok": True, "address": reverse_geocode(float(body["lat"]), float(body["lon"]),
                                                                           body.get("lang") or user.get("lang"))})
@@ -1980,13 +2066,13 @@ class Handler(BaseHTTPRequestHandler):
             date = str(body.get("date") or _today()[0].isoformat())
             days = db.q("SELECT delivery_date d, COUNT(*) c FROM orders WHERE status IN ('new','accepted','on_way') AND delivery_date>=? "
                         "GROUP BY delivery_date ORDER BY delivery_date LIMIT 10", (_today()[0].isoformat(),))
-            return self.send_json({"ok": True, **loadlist(date, body.get("zone") or None),
+            return self.send_json({"ok": True, **loadlist(date),
                                    "days": [{"date": d["d"], "orders": d["c"], "label": date_label(d["d"])} for d in days]})
         if route == "loadlist/send":
             chat = (tu or {}).get("id") or ((me.get("staff") or {}).get("tg_id")) or (CFG["ADMIN_IDS"][0] if me["owner"] and CFG["ADMIN_IDS"] else None)
             if not chat:
                 raise ValueError("no_chat")
-            for part in split_msg(loadlist_text(loadlist(str(body.get("date")), body.get("zone") or None))):
+            for part in split_msg(loadlist_text(loadlist(str(body.get("date"))))):
                 tg(ADMIN, "sendMessage", chat_id=chat, text=part, parse_mode="HTML")
             return self.send_json({"ok": True})
 
@@ -2019,6 +2105,11 @@ class Handler(BaseHTTPRequestHandler):
                     saved = new
                 MENU.save()
             return self.send_json({"ok": True, "product": saved})
+        if route == "barcode":
+            code = re.sub(r"\D", "", str(body.get("code") or ""))
+            if not 6 <= len(code) <= 14:
+                raise ValueError("bad_barcode")
+            return self.send_json({"ok": True, "code": code, **barcode_lookup(code)})
         if route == "product/toggle":
             with MENU.lock:
                 p = product_map().get(body.get("id"))
@@ -2117,7 +2208,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"ok": True})
 
         if route == "settings":
-            return self.send_json({"ok": True, "settings": all_settings(), "map_token": MAPBOX_TOKEN})
+            return self.send_json({"ok": True, "settings": all_settings(), "map_token": MAPBOX_TOKEN, "ymaps_key": YANDEX_JS_KEY})
         if route == "geocode":
             lat, lon = float(body["lat"]), float(body["lon"])
             return self.send_json({"ok": True, "uz": reverse_geocode(lat, lon, "uz"), "ru": reverse_geocode(lat, lon, "ru")})
@@ -2137,29 +2228,31 @@ class Handler(BaseHTTPRequestHandler):
             db.kv_set("settings", s)
             return self.send_json({"ok": True, "settings": all_settings()})
 
-        if route == "zones":
-            cnt = {r["zone"]: r["c"] for r in db.q("SELECT zone, COUNT(*) c FROM users WHERE phone IS NOT NULL GROUP BY zone")}
-            return self.send_json({"ok": True, "zones": [dict(z, shops=cnt.get(z["id"], 0)) for z in zones()],
-                                   "no_zone": cnt.get(None, 0)})
-        if route == "zone/save":
-            z = clean_zone(body.get("zone") or {})
-            lst = zones()
-            cur = next((x for x in lst if x["id"] == (body.get("zone") or {}).get("id")), None)
-            if cur:
-                cur.update(name=z["name"], days=z["days"])
-                z = cur
-            else:
-                lst.append(z)
-            db.kv_set("zones", lst)
-            return self.send_json({"ok": True, "zone": z})
-        if route == "zone/delete":
-            zid = str(body.get("id") or "")
-            db.kv_set("zones", [x for x in zones() if x["id"] != zid])
-            db.x("UPDATE users SET zone=NULL WHERE zone=?", (zid,))
-            return self.send_json({"ok": True})
+        if route == "routes":
+            rts = routes()
+            cnt, none = {d: 0 for d in rts}, 0
+            for u in db.q("SELECT address,landmark,days FROM users WHERE phone IS NOT NULL"):
+                ds = shop_days(u, rts)
+                none += not ds
+                for d in ds:
+                    cnt[str(d)] += 1
+            return self.send_json({"ok": True, "routes": rts, "shops": cnt, "unassigned": none})
+        if route == "routes/save":
+            src = body.get("routes") or {}
+            rts = routes()
+            for d in WORKDAYS:
+                if str(d) in src:
+                    kws = []
+                    for k in src[str(d)] or []:
+                        k = re.sub(r"\s+", " ", str(k)).strip()[:60]
+                        if k and norm_place(k) and k.lower() not in [x.lower() for x in kws]:
+                            kws.append(k)
+                    rts[str(d)] = kws[:80]
+            db.kv_set("routes", rts)
+            return self.send_json({"ok": True, "routes": rts})
 
         if route in ("shops", "debts"):
-            sql = ("SELECT u.tg_id,u.shop,u.name,u.phone,u.username,u.address,u.zone,u.created,u.blocked,u.debt_limit,"
+            sql = ("SELECT u.tg_id,u.shop,u.name,u.phone,u.username,u.address,u.landmark,u.days,u.created,u.blocked,u.debt_limit,"
                    " (SELECT COALESCE(SUM(amount),0) FROM ledger l WHERE l.tg_id=u.tg_id) balance,"
                    " (SELECT COUNT(*) FROM orders o WHERE o.tg_id=u.tg_id AND o.status!='cancelled') orders,"
                    " (SELECT COALESCE(SUM(total),0) FROM orders o WHERE o.tg_id=u.tg_id AND o.status='done') spent,"
@@ -2170,25 +2263,32 @@ class Handler(BaseHTTPRequestHandler):
                 qq = f"%{str(body['q']).strip()}%"
                 sql += " AND (u.shop LIKE ? OR u.name LIKE ? OR u.phone LIKE ?)"
                 args += [qq, qq, qq]
-            if body.get("zone"):
-                sql += " AND u.zone=?" if body["zone"] != "-" else " AND u.zone IS NULL"
-                if body["zone"] != "-":
-                    args.append(body["zone"])
             rows = db.q(sql, args)
+            rts = routes()
+            for r in rows:
+                r["days_list"] = shop_days(r, rts)
+                r["manual"] = manual_days(r) is not None
+            if body.get("day") not in (None, ""):
+                if body["day"] == "-":
+                    rows = [r for r in rows if not r["days_list"]]
+                else:
+                    rows = [r for r in rows if int(body["day"]) in r["days_list"]]
             if route == "debts":
                 rows = sorted([r for r in rows if r["balance"] > 0], key=lambda r: -r["balance"])
             else:
                 rows.sort(key=lambda r: (-(r["last_order"] or 0), -r["created"]))
             for r in rows:
-                r["zone_name"] = zone_name(r["zone"])
                 r["limit"] = debt_limit(r)
+                r.pop("days", None)
             return self.send_json({"ok": True, "shops": rows[:300], "total": len(rows), "debt": debt_summary()})
         if route == "shop":
             uid = int(body["id"])
             u = db.get_user(uid)
             if not u:
                 return self.send_json({"ok": False, "error": "not_found"}, 404)
-            u["zone_name"] = zone_name(u.get("zone"))
+            u["days_list"] = shop_days(u)
+            u["auto_days"] = matched_days(u)
+            u["manual"] = manual_days(u) is not None
             u["balance"] = db.balance(uid)
             u["limit"] = debt_limit(u)
             led = db.q("SELECT * FROM ledger WHERE tg_id=? ORDER BY id DESC LIMIT 40", (uid,))
@@ -2206,10 +2306,9 @@ class Handler(BaseHTTPRequestHandler):
                 if len(v) < 2:
                     raise ValueError("bad_shop")
                 f["shop"] = v
-            if "zone" in body:
-                if body["zone"] and not zone_by_id(body["zone"]):
-                    raise ValueError("bad_zone")
-                f["zone"] = body["zone"] or None
+            if "days" in body:
+                ds = body["days"]
+                f["days"] = json.dumps(sorted({int(d) for d in ds if int(d) in WORKDAYS})) if isinstance(ds, list) and ds else None
             if "debt_limit" in body:
                 f["debt_limit"] = None if body["debt_limit"] in (None, "") else _int(body["debt_limit"], 0, 10 ** 12, "bad_amount")
             if "note" in body:
@@ -2235,10 +2334,10 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("empty")
             if not rate_ok(("bc", me["id"], me["owner"]), 60):
                 return self.send_json({"ok": False, "error": "too_fast"}, 429)
-            zone = body.get("zone") or None
-            n = db.q("SELECT COUNT(*) c FROM users WHERE phone IS NOT NULL AND COALESCE(blocked,0)=0" + (" AND zone=?" if zone else ""),
-                     (zone,) if zone else (), one=True)["c"]
-            threading.Thread(target=broadcast, args=(text, (tu or {}).get("id"), zone), daemon=True).start()
+            day = body.get("day")
+            day = int(day) if str(day) in [str(d) for d in WORKDAYS] else None
+            n = len(broadcast_targets(day))
+            threading.Thread(target=broadcast, args=(text, (tu or {}).get("id"), day), daemon=True).start()
             return self.send_json({"ok": True, "queued": n})
 
         if route == "staff":
@@ -2384,9 +2483,9 @@ def main():
     db.open()
     MENU.load()
     BANNERS.load()
-    if db.kv_get("zones") is None and os.path.exists(os.path.join(seed, "zones.json")):
-        with open(os.path.join(seed, "zones.json"), encoding="utf-8") as f:
-            db.kv_set("zones", json.load(f))
+    if db.kv_get("routes") is None and os.path.exists(os.path.join(seed, "routes.json")):
+        with open(os.path.join(seed, "routes.json"), encoding="utf-8") as f:
+            db.kv_set("routes", json.load(f))
     BACKUP.dirty = False
 
     srv = ThreadingHTTPServer((CFG.get("HOST", "0.0.0.0"), int(CFG.get("PORT", 8080))), Handler)

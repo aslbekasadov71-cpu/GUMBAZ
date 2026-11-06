@@ -53,6 +53,18 @@
 #splash.hide{opacity:0;pointer-events:none}
 select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 15px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
 /*__MAPCSS__*/
+#scanLayer{position:fixed;inset:0;z-index:120;background:#000;display:flex;flex-direction:column}
+.scbox{position:absolute;inset:0;overflow:hidden}
+#scv{width:100%;height:100%}#scv video{width:100%!important;height:100%!important;object-fit:cover}
+#scv img,#qr-shaded-region{display:none!important}
+.scframe{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.scframe i{width:min(300px,82vw);height:min(170px,40vh);border-radius:18px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45);border:3px solid #fff;position:relative;overflow:hidden}
+.scframe i::after{content:"";position:absolute;left:8%;right:8%;height:2px;background:#f04438;top:50%;animation:scl 1.6s ease-in-out infinite;box-shadow:0 0 12px #f04438}
+@keyframes scl{0%,100%{transform:translateY(-55px)}50%{transform:translateY(55px)}}
+.sctop{position:absolute;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff;z-index:2}
+.sctop b{font-size:15px;text-align:center}.sctop span{width:44px}
+.scbot{position:absolute;left:0;right:0;bottom:0;padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,rgba(0,0,0,.75),transparent);z-index:2}
+.scbot small{color:#fecdca;margin-top:8px;text-align:center}
 .locmini{position:relative;height:150px;border-radius:16px;overflow:hidden;margin-bottom:10px;background:#e9edf2}
 .locmini .gmap{pointer-events:none}
 .locmini .pinw{top:50%}
@@ -90,7 +102,7 @@ let tT; function toast(m, i = "check") { const e = $("#toast"); e.innerHTML = ic
 const ST = {new: "Yangi", accepted: "Qabul qilindi", on_way: "Yo'lda", done: "Yetkazildi", cancelled: "Bekor qilindi"};
 const NEXTL = {accepted: ["Qabul qilish", "check"], on_way: ["Yo'lga chiqdi", "truck"], done: ["Yetkazildi", "flag"], cancelled: ["Bekor qilish", "close"]};
 const num = n => (Math.round(n) + "").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-const ERR = {bad_login: "Login yoki parol noto'g'ri", too_many: "Ko'p urinish. 10 daqiqadan keyin qayta urinib ko'ring", login_taken: "Bu login band", bad_login_format: "Login: 3–32 ta lotin harf, raqam, _ . -", short_password: "Parol kamida 6 ta belgidan iborat bo'lsin", too_large_20: "Fayl 19 MB dan katta bo'lmasin", login_required: "Qayta kiring", category_not_empty: "Avval bo'limdagi mahsulotlarni o'chiring yoki ko'chiring", bad_price: "Narxni to'g'ri kiriting", name_required: "Nomini kiriting", bad_category: "Bo'limni tanlang", too_fast: "Biroz kuting", forbidden: "Ruxsat yo'q", network: "Internet aloqasi yo'q", bad_type: "Faqat JPG, PNG, WEBP yoki MP4", too_large: "Fayl juda katta (25 MB gacha)", already: "Allaqachon admin", bad_pack: "Qadoqdagi sonini to'g'ri kiriting", bad_amount: "Summani to'g'ri kiriting", bad_zone: "Hudud topilmadi", bad_shop: "Do'kon nomini kiriting", cannot_delete: "Bu yozuvni o'chirib bo'lmaydi", no_chat: "Telegram chat topilmadi — admin botni oching", not_found: "Topilmadi"};
+const ERR = {bad_login: "Login yoki parol noto'g'ri", too_many: "Ko'p urinish. 10 daqiqadan keyin qayta urinib ko'ring", login_taken: "Bu login band", bad_login_format: "Login: 3–32 ta lotin harf, raqam, _ . -", short_password: "Parol kamida 6 ta belgidan iborat bo'lsin", too_large_20: "Fayl 19 MB dan katta bo'lmasin", login_required: "Qayta kiring", category_not_empty: "Avval bo'limdagi mahsulotlarni o'chiring yoki ko'chiring", bad_price: "Narxni to'g'ri kiriting", name_required: "Nomini kiriting", bad_category: "Bo'limni tanlang", too_fast: "Biroz kuting", forbidden: "Ruxsat yo'q", network: "Internet aloqasi yo'q", bad_type: "Faqat JPG, PNG, WEBP yoki MP4", too_large: "Fayl juda katta (25 MB gacha)", already: "Allaqachon admin", bad_pack: "Qadoqdagi sonini to'g'ri kiriting", bad_amount: "Summani to'g'ri kiriting", bad_barcode: "Shtrix-kod noto'g'ri", barcode_taken: "Bu shtrix-kod boshqa mahsulotda bor", bad_shop: "Do'kon nomini kiriting", cannot_delete: "Bu yozuvni o'chirib bo'lmaydi", no_chat: "Telegram chat topilmadi — admin botni oching", not_found: "Topilmadi"};
 const A = {me: null, view: "dash", stack: [], menu: null, cat: "all", sortMode: false, ordFilter: "active", orders: null, oq: "", activeCount: 0};
 const L = o => o ? (o.uz || o.ru || "") : "";
 const ago = s => { const d = Date.now() / 1000 - s; if (d < 60) return "hozir"; if (d < 3600) return Math.floor(d / 60) + " daq oldin"; if (d < 86400) return Math.floor(d / 3600) + " soat oldin"; return new Date(s * 1000).toLocaleDateString("ru-RU", {day: "2-digit", month: "2-digit"}) + " " + new Date(s * 1000).toLocaleTimeString("ru-RU", {hour: "2-digit", minute: "2-digit"}); };
@@ -164,14 +176,15 @@ function go(v, replace) {
   A.view = v; closeModal(true); render(); window.scrollTo(0, 0); updBack();
 }
 function back() {
+  if ($("#scanLayer")) return closeScanner();
   if ($("#mapLayer")) return closeRestMap();
   if ($(".modal")) return closeModal();
   if (A.sortMode) { A.sortMode = false; return render(); }
   if (A.stack.length) { A.view = A.stack.pop(); render(); window.scrollTo(0, 0); return updBack(); }
   if (A.view !== "dash") go("dash");
 }
-function updBack() { try { (!!$(".modal") || !!$("#mapLayer") || A.stack.length || A.view !== "dash" || A.sortMode) ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {} }
-const VIEWS = {dash: vDash, orders: vOrders, menu: vMenu, more: vMore, cats: vCats, banners: vBanners, shops: vShops, debts: vDebts, loadlist: vLoadlist, zones: vZones, broadcast: vBroadcast, settings: vSettings, staff: vStaff};
+function updBack() { try { (!!$(".modal") || !!$("#mapLayer") || !!$("#scanLayer") || A.stack.length || A.view !== "dash" || A.sortMode) ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {} }
+const VIEWS = {dash: vDash, orders: vOrders, menu: vMenu, more: vMore, cats: vCats, banners: vBanners, shops: vShops, debts: vDebts, loadlist: vLoadlist, routes: vRoutes, broadcast: vBroadcast, settings: vSettings, staff: vStaff};
 async function render() {
   const v = A.view;
   $("#nav").hidden = !TABS.includes(v);
@@ -261,7 +274,7 @@ function orderCard(o, i) {
     <div class="grow"><div class="hd"><b class="num">#${o.id} · ${esc(o.ushop || "Do'kon")}</b><span class="tag ${o.status}">${ST[o.status]}</span></div>
     <small style="margin-top:2px">${esc(o.uname || "")} · ${esc(o.uphone || "")}</small>
     <small style="white-space:nowrap">${o.items.map(x => esc(L(x.name)) + " ×" + x.qty).join(", ")}</small>
-    <div class="ft"><small>${ic("calendar", "xs")} ${esc(o.date_label || "")}${o.zone_name ? " · " + esc(o.zone_name) : ""}</small><span style="display:flex;gap:6px;align-items:center"><span class="tag ${o.payment}">${o.payment === "debt" ? "Nasiya" : "Naqd"}</span><b class="num">${short(o.total)}</b></span></div></div></button>`;
+    <div class="ft"><small>${ic("calendar", "xs")} ${esc(o.date_label || "")}</small><span style="display:flex;gap:6px;align-items:center"><span class="tag ${o.payment}">${o.payment === "debt" ? "Nasiya" : "Naqd"}</span><b class="num">${short(o.total)}</b></span></div></div></button>`;
 }
 async function openOrder(id) {
   const r = await api("order", {id}); if (!r.ok) return fail(r);
@@ -312,7 +325,7 @@ async function vMenu() {
   const offN = m.products.filter(p => !p.available).length;
   if (A.sortMode && A.cat === "all") A.sortMode = false;
   const full = can("menu");
-  return `${titleBar("Katalog", full ? `<button class="btn b sm" onclick="editProduct()">${ic("add", "s")} Mahsulot</button>` : "")}
+  return `${titleBar("Katalog", full ? `<div style="display:flex;gap:6px"><button class="btn soft sm" onclick="scanAdd()" aria-label="Shtrix-kod">${ic("scan", "s")} Skaner</button><button class="btn b sm" onclick="editProduct()">${ic("add", "s")}</button></div>` : "")}
     ${offN ? `<div class="banner" style="margin-bottom:10px">${ic("danger")}<div>${offN} ta mahsulot tugagan deb belgilangan<small>Do'konlar ularni "Tugagan" deb ko'radi</small></div></div>` : ""}
     <div class="chips" style="margin-bottom:10px"><button class="chip ${A.cat === "all" ? "on" : ""}" data-mc="all">Hammasi<span class="n num">${m.products.length}</span></button>
       ${cats.map(c => `<button class="chip ${A.cat === c.id ? "on" : ""}" data-mc="${c.id}">${esc(L(c.name))}</button>`).join("")}</div>
@@ -364,6 +377,9 @@ function drawEditor() {
   const p = ed, m = A.menu;
   modal(`<h3 style="margin-bottom:12px">${p.id ? "Mahsulotni tahrirlash" : "Yangi mahsulot"}</h3>
     <button class="photo" id="phBtn">${p.img ? img(p.img) + `<span class="ov">${ic("camera", "xs")} Almashtirish</span>` : `<div style="text-align:center">${ic("gallery", "xl")}<small style="margin-top:6px">Rasm yuklash (4:3)</small></div>`}</button>
+    <label class="lbl">Shtrix-kod</label>
+    <div class="row"><input id="bcI" inputmode="numeric" class="num" placeholder="Skanerlang yoki raqamini yozing" value="${esc(p.barcode || "")}" maxlength="14" enterkeyhint="search"><button class="btn soft auto" id="bcS" type="button">${ic("scan", "s")} Skaner</button></div>
+    ${p.offNote ? `<small style="margin:6px 4px 0;color:#079455">${ic("check", "xs")} ${esc(p.offNote)}</small>` : ""}
     <label class="lbl">Nomi</label><div class="two"><input id="nUz" placeholder="O'zbekcha" value="${esc(p.name.uz)}" maxlength="80"><input id="nRu" placeholder="Русский" value="${esc(p.name.ru)}" maxlength="80"></div>
     <label class="lbl">Tavsif (ixtiyoriy)</label><div class="two"><textarea id="dUz" rows="2" placeholder="O'zbekcha" maxlength="240">${esc(p.desc.uz)}</textarea><textarea id="dRu" rows="2" placeholder="Русский" maxlength="240">${esc(p.desc.ru)}</textarea></div>
     <label class="lbl">Brend / bo'lim</label><select id="cSel">${m.categories.map(c => `<option value="${c.id}" ${c.id === p.cat ? "selected" : ""}>${esc(L(c.name))}</option>`).join("")}</select>
@@ -377,7 +393,9 @@ function drawEditor() {
     <button class="btn b full" id="pSave" style="margin-top:10px">${ic("check", "s")} Saqlash</button>
     ${p.id ? `<button class="link" id="pDel" style="color:var(--red)">${ic("trash", "s")} Mahsulotni o'chirish</button>` : ""}`);
   drawPack();
-  const sync = () => { p.name = {uz: $("#nUz").value, ru: $("#nRu").value}; p.desc = {uz: $("#dUz").value, ru: $("#dRu").value}; p.cat = $("#cSel").value; readPrice(); };
+  const sync = () => { p.name = {uz: $("#nUz").value, ru: $("#nRu").value}; p.desc = {uz: $("#dUz").value, ru: $("#dRu").value}; p.cat = $("#cSel").value; p.barcode = $("#bcI").value.replace(/\D/g, ""); readPrice(); };
+  $("#bcS").onclick = () => { sync(); openScanner(code => lookupCode(code, true)); };
+  $("#bcI").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); sync(); if (p.barcode.length >= 6) lookupCode(p.barcode, true); } };
   $("#phBtn").onclick = () => pickFile("image/*", async f => { const blob = await resizeImg(f, 960, 720); const r = await upload(blob, "product"); if (r) { sync(); p.img = r; drawEditor(); } });
   $$("[data-un]").forEach(b => b.onclick = () => { p.unit = b.dataset.un; hap("sel"); $$("[data-un]").forEach(x => x.classList.toggle("on", x === b)); $("#unL").textContent = UNL[p.unit]; readPrice(); drawPack(); });
   $("#pkSw").onclick = e => { readPrice(); p.hasPack = !p.hasPack; e.currentTarget.classList.toggle("on", p.hasPack); hap("sel"); drawPack(); };
@@ -413,12 +431,60 @@ async function saveProduct() {
   if (!p.price) return toast("Narxni kiriting", "danger");
   if (p.hasPack && (!p.pack.qty || p.pack.qty < 2)) return toast("Qadoqdagi sonini kiriting (kamida 2)", "danger");
   if (p.hasPack && !(p.pack.name.uz || p.pack.name.ru)) return toast("Qadoq nomini kiriting", "danger");
-  const out = {id: p.id, cat: p.cat, name: p.name, desc: p.desc, img: p.img, badge: p.badge, available: p.available, price: p.price, unit: p.unit || "pc"};
+  const out = {id: p.id, cat: p.cat, name: p.name, desc: p.desc, img: p.img, badge: p.badge, available: p.available, price: p.price, unit: p.unit || "pc", barcode: p.barcode || ""};
   if (p.hasPack) { out.pack = {name: {uz: p.pack.name.uz || p.pack.name.ru, ru: p.pack.name.ru || p.pack.name.uz}, qty: p.pack.qty}; if (p.pack.price) out.pack.price = p.pack.price; out.sell = p.sell; }
   const b = $("#pSave"); b.disabled = true;
   const r = await api("product/save", {product: out}); b.disabled = false;
   if (!r.ok) return fail(r);
   hap("ok"); toast(p.id ? "Saqlandi" : "Mahsulot qo'shildi"); A.menu = null; closeModal(); if (A.view === "menu") render();
+}
+
+/* shtrix-kod skaneri (kamera) — html5-qrcode, BarcodeDetector bo'lsa undan foydalanadi */
+let SC = null;
+function loadScanLib() {
+  if (window.Html5Qrcode) return Promise.resolve();
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
+}
+async function openScanner(onCode) {
+  closeScanner();
+  const ov = document.createElement("div"); ov.id = "scanLayer";
+  ov.innerHTML = `<div class="scbox"><div id="scv"></div><div class="scframe"><i></i></div></div>
+    <div class="sctop"><button class="rbtn" id="scX" aria-label="Yopish">${ic("close")}</button><b>Shtrix-kodni ramkaga to'g'rilang</b><span></span></div>
+    <div class="scbot"><div class="row"><input id="scM" inputmode="numeric" class="num" placeholder="Yoki raqamini yozing" maxlength="14"><button class="btn b auto" id="scOk">${ic("check", "s")}</button></div><small id="scE"></small></div>`;
+  document.body.appendChild(ov); updBack();
+  let done = false; const fire = code => { if (done) return; done = true; hap("ok"); closeScanner(); onCode(code); };
+  $("#scX").onclick = closeScanner;
+  $("#scOk").onclick = () => { const v = $("#scM").value.replace(/\D/g, ""); if (v.length >= 6) fire(v); };
+  $("#scM").onkeydown = e => { if (e.key === "Enter") $("#scOk").click(); };
+  try {
+    await loadScanLib(); if (!$("#scanLayer")) return;
+    const F = window.Html5QrcodeSupportedFormats;
+    SC = new Html5Qrcode("scv", {verbose: false, formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.QR_CODE], experimentalFeatures: {useBarCodeDetectorIfSupported: true}});
+    await SC.start({facingMode: "environment"}, {fps: 12, qrbox: (w, h) => ({width: Math.min(300, w * .82) | 0, height: Math.min(170, h * .4) | 0}), aspectRatio: 1.333},
+      txt => { const v = String(txt).replace(/\D/g, ""); if (v.length >= 6) fire(v); }, () => {});
+  } catch (e) {
+    const er = $("#scE"); if (er) er.textContent = "Kamera ochilmadi. Telegram'ga kamera ruxsatini bering yoki raqamni qo'lda yozing.";
+  }
+}
+function closeScanner() { const l = $("#scanLayer"); if (SC) { const s = SC; SC = null; s.stop().catch(() => {}).finally(() => { try { s.clear(); } catch (e) {} }); } if (l) l.remove(); setTimeout(updBack, 0); }
+function scanAdd() { openScanner(code => lookupCode(code, false)); }
+async function lookupCode(code, inEditor) {
+  toast("Qidirilmoqda…", "search");
+  const r = await api("barcode", {code}); if (!r.ok) return fail(r);
+  if (r.found === "local") { toast("Bu mahsulot katalogda bor"); closeModal(true); return editProduct(r.product_id); }
+  const m = await getMenu(); if (!m) return;
+  if (!inEditor || !ed) await editProduct();
+  const p = ed; p.barcode = r.code;
+  if (r.found === "off") {
+    const q = r.quantity && !(r.name.uz || "").toLowerCase().includes(r.quantity.toLowerCase().replace(/\s/g, "")) ? `, ${r.quantity}` : "";
+    if (!p.name.uz) p.name.uz = (r.name.uz || r.name.ru) + q; if (!p.name.ru) p.name.ru = (r.name.ru || r.name.uz) + q;
+    if (r.img && !p.img) p.img = r.img;
+    const cat = r.brand && m.categories.find(c => [c.name.uz, c.name.ru].some(n => n && n.toLowerCase() === r.brand.toLowerCase()));
+    if (cat) p.cat = cat.id;
+    p.offNote = `Bazadan topildi${r.brand ? ": " + r.brand : ""}${r.quantity ? " · " + r.quantity : ""}. Narxni kiriting.`;
+    hap("ok"); toast("Mahsulot ma'lumoti topildi");
+  } else { p.offNote = ""; toast("Bazada topilmadi — nomini yozing", "info"); }
+  drawEditor(); setTimeout(() => { const i = $("#pr1"); if (i && r.found === "off") i.focus(); }, 300);
 }
 
 /* uploads */
@@ -443,7 +509,7 @@ function vMore() {
   const g1 = (can("shops") || can("debts") ? it("shops", "shop", "Do'konlar", "Ro'yxat, hudud, qarz chegarasi, bloklash") : "") + (can("debts") ? it("debts", "wallet", "Qarz daftari", "Nasiya, to'lov qabul qilish", "red") : "") +
     (can("broadcast") ? it("broadcast", "bell", "Xabar yuborish", "Aksiya va yangiliklar do'konlarga", "gold") : "");
   const g2 = (can("menu") ? it("cats", "list", "Brendlar / bo'limlar", "Qo'shish, nomini o'zgartirish, tartib") : "") + (can("banners") ? it("banners", "gallery", "Reklama bannerlari", "Rasm va video, tartib, havola") : "");
-  const g3 = (can("settings") ? it("zones", "route", "Hududlar va marshrut kunlari", "Qaysi hududga qaysi kunlari boriladi") + it("settings", "settings", "Sozlamalar", "Firma nomi, telefon, minimal buyurtma, nasiya") : "") + (A.me.owner ? it("staff", "shield", "Xodimlar", "Login, parol va ruxsatlar") : "");
+  const g3 = (can("settings") ? it("routes", "route", "Yetkazish kunlari", "Qaysi ko'chaga qaysi kunlari boriladi (Du–Sh)") + it("settings", "settings", "Sozlamalar", "Firma nomi, telefon, minimal buyurtma, nasiya") : "") + (A.me.owner ? it("staff", "shield", "Xodimlar", "Login, parol va ruxsatlar") : "");
   return `<div class="top"><div class="grow"><small>${A.me.owner ? "Rahbar" : "Xodim"}</small><h1>${esc(A.me.name || "Boshqaruv")}</h1></div>${DEMO ? `<span class="pill gold">DEMO</span>` : ""}</div>
     ${g0 ? `<h2>Yetkazish</h2>${g0}` : ""}${g1 ? `<h2>Do'konlar</h2>${g1}` : ""}${g2 ? `<h2>Katalog</h2>${g2}` : ""}${g3 ? `<h2>Tizim</h2>${g3}` : ""}
     ${!A.me.owner ? `<h2>Ruxsatlaringiz</h2><div class="box" style="display:flex;flex-wrap:wrap;gap:6px">${A.me.perms.map(p => `<span class="tag">${PL[p][0]}</span>`).join("") || `<span class="mute">Ruxsat berilmagan</span>`}</div>` : ""}
@@ -517,33 +583,32 @@ function editBanner(id) {
 }
 async function delBanner(id) { if (!(await confirmBox("Bannerni o'chirasizmi?", "Mijoz ilovasidan darhol yo'qoladi.", "O'chirish", true))) return; const r = await api("banner/delete", {id}); if (!r.ok) return fail(r); hap("ok"); toast("O'chirildi"); render(); }
 
-/* ───────── zones (umumiy) ───────── */
-const WD = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"], WDL = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"];
-async function getZones(force) { if (!A.zones || force) { const r = await api("zones"); if (!r.ok) return []; A.zones = r.zones; A.noZone = r.no_zone; } return A.zones; }
-const zoneLabel = id => { const z = (A.zones || []).find(x => x.id === id); return z ? L(z.name) : ""; };
+/* ───────── yetkazish kunlari (umumiy) ───────── */
+const WD = ["Du", "Se", "Ch", "Pa", "Ju", "Sh"], WDL = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
+const daysTxt = (ds, short) => ds && ds.length ? ds.map(d => (short ? WD : WDL)[d]).join(", ") : "Kun belgilanmagan";
+async function getRoutes(force) { if (!A.routes || force) { const r = await api("routes"); if (!r.ok) return null; A.routes = r; } return A.routes; }
 
 /* ───────── do'konlar ───────── */
 async function vShops() {
-  const [r] = await Promise.all([api("shops", {q: A.sq || "", zone: A.sz || ""}), getZones()]); if (!r.ok) return errBox(r);
-  const zs = A.zones || [];
+  const [r, rt] = await Promise.all([api("shops", {q: A.sq || "", day: A.sd == null ? "" : A.sd}), getRoutes(true)]); if (!r.ok) return errBox(r);
   return `${titleBar("Do'konlar")}
     <div class="stat"><small>Ro'yxatdan o'tgan do'konlar</small><div class="big num">${r.total}</div><div class="sp"><div><small>Qarzdorlar</small><b class="num">${r.debt.count}</b></div><div><small>Umumiy qarz</small><b class="num">${short(r.debt.total)}</b></div></div></div>
     <label class="field" style="margin-bottom:10px">${ic("search")}<input id="sq" type="search" placeholder="Do'kon nomi, egasi, telefon" value="${esc(A.sq || "")}" enterkeyhint="search"></label>
-    ${zs.length ? `<div class="chips" style="margin-bottom:12px"><button class="chip ${!A.sz ? "on" : ""}" data-sz="">Hammasi</button>${zs.map(z => `<button class="chip ${A.sz === z.id ? "on" : ""}" data-sz="${z.id}">${esc(L(z.name))}<span class="n num">${z.shops}</span></button>`).join("")}${A.noZone ? `<button class="chip ${A.sz === "-" ? "on" : ""}" data-sz="-">Hududsiz<span class="n num">${A.noZone}</span></button>` : ""}</div>` : ""}
+    <div class="chips" style="margin-bottom:12px"><button class="chip ${A.sd == null ? "on" : ""}" data-sd="">Hammasi</button>${WD.map((d, k) => `<button class="chip ${A.sd === String(k) ? "on" : ""}" data-sd="${k}">${WDL[k]}${rt && rt.shops[k] ? `<span class="n num">${rt.shops[k]}</span>` : ""}</button>`).join("")}${rt && rt.unassigned ? `<button class="chip ${A.sd === "-" ? "on" : ""}" data-sd="-" style="color:var(--red)">Belgilanmagan<span class="n num" style="background:var(--red)">${rt.unassigned}</span></button>` : ""}</div>
     ${r.shops.map(shopRow).join("") || `<div class="empty"><div class="ei">${ic("shop", "xl")}</div><b>Do'kon topilmadi</b><p>Do'konchilar do'konlar botida /start bosib ro'yxatdan o'tadi.</p></div>`}`;
 }
 vShops.after = () => { const q = $("#sq"); q.onkeydown = e => { if (e.key === "Enter") { A.sq = q.value.trim(); q.blur(); render(); } }; q.onsearch = () => { A.sq = q.value.trim(); render(); }; };
 function shopRow(s, i) {
   return `<button class="card rise" style="animation-delay:${Math.min(i, 10) * 20}ms" data-shop="${s.tg_id}"><div class="ico ${s.blocked ? "red" : s.balance > 0 ? "gold" : ""}">${ic(s.blocked ? "block" : "shop")}</div>
-    <div class="grow"><b>${esc(s.shop || s.name || "—")}</b><small class="num">${esc(s.name || "")} · ${esc(s.phone || "")}${s.zone_name ? " · " + esc(s.zone_name) : ""}</small></div>
+    <div class="grow"><b>${esc(s.shop || s.name || "—")}</b><small class="num">${esc(s.name || "")} · ${esc(s.phone || "")}</small><small class="${s.days_list.length ? "" : "red"}">${ic("calendar", "xs")} ${daysTxt(s.days_list, true)}${s.manual ? " · qo'lda" : ""}</small></div>
     <div class="right">${s.balance > 0 ? `<b class="num red" style="font-weight:800">${short(s.balance)}</b><small>qarz</small>` : `<b class="num" style="font-weight:800">${s.orders}</b><small>buyurtma</small>`}</div></button>`;
 }
 async function openShop(id) {
-  const [r] = await Promise.all([api("shop", {id}), getZones()]); if (!r.ok) return fail(r);
+  const r = await api("shop", {id}); if (!r.ok) return fail(r);
   const s = r.shop, tel = String(s.phone || "").replace(/[^\d+]/g, ""), bal = s.balance;
   const kn = {order: "Nasiyaga mahsulot", payment: "To'lov", adjust: "Tuzatish"};
   modal(`<div class="stat ${bal > 0 ? "red" : "ok"}" style="margin-bottom:10px"><small>${esc(s.shop || "Do'kon")}</small><div class="big num">${bal > 0 ? money(bal) : bal < 0 ? "+" + money(-bal) : "Qarz yo'q"}</div>
-      <div class="sp"><div><small>Chegara</small><b class="num">${s.limit ? short(s.limit) : "cheksiz"}</b></div><div><small>Hudud</small><b>${esc(s.zone_name || "—")}</b></div></div></div>
+      <div class="sp"><div><small>Chegara</small><b class="num">${s.limit ? short(s.limit) : "cheksiz"}</b></div><div><small>Yetkazish kunlari</small><b>${esc(daysTxt(s.days_list, true))}</b></div></div></div>
     ${can("debts") ? `<div class="row" style="margin-bottom:8px"><button class="btn ok" id="shPay">${ic("handmoney", "s")} To'lov qabul qilish</button><button class="btn soft auto" id="shAdj" aria-label="Tuzatish">${ic("pen", "s")}</button></div>` : ""}
     <div class="card"><div class="ico">${ic("user")}</div><div class="grow"><b>${esc(s.name || "—")}</b><small class="num">${esc(s.phone || "")}${s.username ? " · @" + esc(s.username) : ""}</small></div>
       ${tel ? `<a class="ico okb" href="tel:${esc(tel)}" aria-label="Qo'ng'iroq">${ic("phone")}</a>` : ""}${s.username ? `<button class="ico" style="border:0" onclick="openTg('${esc(s.username)}')" aria-label="Telegram">${ic("chat")}</button>` : ""}</div>
@@ -578,19 +643,23 @@ function payBox(s, kind) {
     hap("ok"); toast(r.balance > 0 ? `Saqlandi · qoldiq qarz ${short(r.balance)}` : "Saqlandi · qarz yo'q"); openShop(s.tg_id); if (["shops", "debts", "dash"].includes(A.view)) render(); };
 }
 function editShop(s) {
-  const zs = A.zones || [];
+  const days = new Set(s.manual ? s.days_list : []); let manual = s.manual;
   modal(`<h3 style="margin-bottom:12px">Do'kon sozlamalari</h3>
     <label class="lbl">Do'kon nomi</label><input id="esN" maxlength="60" value="${esc(s.shop || "")}">
-    ${zs.length ? `<label class="lbl">Hudud (marshrut)</label><select id="esZ"><option value="">— Hududsiz —</option>${zs.map(z => `<option value="${z.id}" ${z.id === s.zone ? "selected" : ""}>${esc(L(z.name))} · ${z.days.map(d => WD[d]).join(", ")}</option>`).join("")}</select>` : ""}
+    <label class="lbl">Yetkazish kunlari</label>
+    <div class="seg" style="margin-bottom:8px"><button data-dm="0" class="${manual ? "" : "on"}" type="button">Manzil bo'yicha<small>${esc(daysTxt(s.auto_days, true))}</small></button><button data-dm="1" class="${manual ? "on" : ""}" type="button">Qo'lda tanlash</button></div>
+    <div class="chips" id="esD" style="flex-wrap:wrap;${manual ? "" : "display:none"}">${WDL.map((d, i) => `<button class="chip ${days.has(i) ? "on" : ""}" data-esd="${i}" type="button">${d}</button>`).join("")}</div>
     <label class="lbl">Qarz chegarasi (so'm)</label><input id="esL" inputmode="numeric" class="num" placeholder="Bo'sh — umumiy sozlama (${A.settings && +A.settings.DEBT_LIMIT ? short(+A.settings.DEBT_LIMIT) : "cheksiz"}); 0 — cheksiz" value="${s.debt_limit == null ? "" : s.debt_limit}">
     <label class="lbl">Ichki izoh (do'konga ko'rinmaydi)</label><textarea id="esT" rows="2" maxlength="300">${esc(s.note || "")}</textarea>
     <div class="card" style="margin-top:12px"><div class="ico red">${ic("block")}</div><div class="grow"><b>Bloklash</b><small>Bloklangan do'kon buyurtma bera olmaydi</small></div><button class="sw ${s.blocked ? "on" : ""}" id="esB"></button></div>
     <button class="btn b full" id="esS" style="margin-top:8px">${ic("check", "s")} Saqlash</button>`);
+  $$("[data-dm]").forEach(b => b.onclick = () => { manual = b.dataset.dm === "1"; hap("sel"); $$("[data-dm]").forEach(x => x.classList.toggle("on", x === b)); $("#esD").style.display = manual ? "" : "none"; });
+  $$("[data-esd]").forEach(b => b.onclick = () => { const i = +b.dataset.esd; days.has(i) ? days.delete(i) : days.add(i); b.classList.toggle("on", days.has(i)); hap("sel"); });
   $("#esB").onclick = e => { e.currentTarget.classList.toggle("on"); hap("sel"); };
   $("#esS").onclick = async () => { const lim = $("#esL").value.replace(/\D/g, "");
-    const body = {id: s.tg_id, shop: $("#esN").value.trim(), debt_limit: lim === "" ? null : +lim, note: $("#esT").value.trim(), blocked: $("#esB").classList.contains("on")};
-    if ($("#esZ")) body.zone = $("#esZ").value;
-    const r = await api("shop/save", body); if (!r.ok) return fail(r); hap("ok"); toast("Saqlandi"); A.zones = null; openShop(s.tg_id); if (A.view === "shops") render(); };
+    if (manual && !days.size) return toast("Kamida bitta kun tanlang", "danger");
+    const body = {id: s.tg_id, shop: $("#esN").value.trim(), debt_limit: lim === "" ? null : +lim, note: $("#esT").value.trim(), blocked: $("#esB").classList.contains("on"), days: manual ? [...days] : null};
+    const r = await api("shop/save", body); if (!r.ok) return fail(r); hap("ok"); toast("Saqlandi"); A.routes = null; openShop(s.tg_id); if (A.view === "shops") render(); };
 }
 
 /* ───────── qarz daftari ───────── */
@@ -600,20 +669,18 @@ async function vDebts() {
   return `${titleBar("Qarz daftari")}
     <div class="stat red"><small>Do'konlarning umumiy qarzi</small><div class="big num">${money(r.debt.total)}</div><div class="sp"><div><small>Qarzdor do'konlar</small><b class="num">${r.debt.count}</b></div></div></div>
     ${r.shops.map((s, i) => `<button class="card rise" style="animation-delay:${Math.min(i, 10) * 20}ms;align-items:flex-start" data-shop="${s.tg_id}"><span class="rank">${i + 1}</span><div class="grow"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(s.shop || s.name)}</b><b class="num red" style="flex:none">${money(s.balance)}</b></div>
-      <small class="num">${esc(s.phone || "")}${s.zone_name ? " · " + esc(s.zone_name) : ""}${s.limit && s.balance > s.limit ? ` · <span class="red">chegaradan oshgan</span>` : ""}</small><div class="pbar" style="background:var(--redl)"><i style="width:${s.balance / max * 100}%;background:var(--red)"></i></div></div></button>`).join("")
+      <small class="num">${esc(s.phone || "")}${s.limit && s.balance > s.limit ? ` · <span class="red">chegaradan oshgan</span>` : ""}</small><div class="pbar" style="background:var(--redl)"><i style="width:${s.balance / max * 100}%;background:var(--red)"></i></div></div></button>`).join("")
       || `<div class="empty"><div class="ei" style="background:var(--okl);color:#079455">${ic("check", "xl")}</div><b>Qarzdor do'kon yo'q</b></div>`}`;
 }
 
 /* ───────── yuklash ro'yxati ───────── */
 async function vLoadlist() {
-  await getZones();
-  const r = await api("loadlist", {date: A.llDate || "", zone: A.llZone || ""}); if (!r.ok) return errBox(r);
+  const r = await api("loadlist", {date: A.llDate || ""}); if (!r.ok) return errBox(r);
   if (!A.llDate && r.days.length && !r.orders.length) { A.llDate = r.days[0].date; return vLoadlist(); }
-  A.llDate = r.date; A.ll = r; const tt = r.totals, zs = A.zones || [];
+  A.llDate = r.date; A.ll = r; const tt = r.totals;
   const days = r.days.some(d => d.date === r.date) ? r.days : [{date: r.date, label: r.label, orders: 0}, ...r.days];
   return `${titleBar("Yuklash ro'yxati")}
     <div class="chips" style="margin-bottom:8px">${days.map(d => `<button class="chip ${d.date === r.date ? "on" : ""}" data-lld="${d.date}">${esc(d.label.split(",")[0])} <span class="mute" style="font-weight:600">${esc(d.label.split(",")[1] || "")}</span>${d.orders ? `<span class="n num">${d.orders}</span>` : ""}</button>`).join("")}</div>
-    ${zs.length ? `<div class="chips" style="margin-bottom:12px"><button class="chip ${!A.llZone ? "on" : ""}" data-llz="">Barcha hududlar</button>${zs.map(z => `<button class="chip ${A.llZone === z.id ? "on" : ""}" data-llz="${z.id}">${esc(L(z.name))}</button>`).join("")}</div>` : ""}
     <div class="stat"><small>${esc(r.label)}</small><div class="big num">${money(tt.sum)}</div>
       <div class="sp"><div><small>Buyurtmalar</small><b class="num">${tt.orders}${tt.new ? ` <span style="font-size:12px;opacity:.8">(${tt.new} yangi)</span>` : ""}</b></div><div><small>Naqd</small><b class="num">${short(tt.cash)}</b></div><div><small>Nasiya</small><b class="num">${short(tt.debt)}</b></div></div></div>
     ${tt.orders ? `<div class="row" style="margin-bottom:6px">${DEMO ? "" : `<button class="btn soft" id="llSend">${ic("send", "s")} Botga yuborish</button>`}<button class="btn soft" id="llCopy">${ic("copy", "s")} Nusxalash</button></div>
@@ -622,11 +689,11 @@ async function vLoadlist() {
     <div class="box" style="padding:4px 14px">${r.products.map(p => `<div class="line"><span style="color:var(--ink);font-weight:700">${esc(L(p.name))}</span><b class="num" style="text-align:right">${esc(pcsTxt(p))}</b></div>`).join("")}</div>
     <h2>🏪 Do'konlar · ${tt.orders}</h2>
     ${r.orders.map((o, i) => `<button class="card oc" data-o="${o.id}" style="align-items:flex-start"><span class="rank">${i + 1}</span><div class="grow"><div class="hd"><b>${esc(o.shop || "—")}</b><span class="tag ${o.status}">${ST[o.status]}</span></div>
-      <small style="white-space:normal">${esc(o.address || "")}</small><div class="ft"><small class="num">#${o.id} · ${esc(o.phone || "")}${o.zone_name && !A.llZone ? " · " + esc(o.zone_name) : ""}</small><span style="display:flex;gap:6px;align-items:center"><span class="tag ${o.payment}">${o.payment === "debt" ? "Nasiya" : "Naqd"}</span><b class="num">${short(o.total)}</b></span></div></div></button>`).join("")}`
+      <small style="white-space:normal">${esc(o.address || "")}</small><div class="ft"><small class="num">#${o.id} · ${esc(o.phone || "")}</small><span style="display:flex;gap:6px;align-items:center"><span class="tag ${o.payment}">${o.payment === "debt" ? "Nasiya" : "Naqd"}</span><b class="num">${short(o.total)}</b></span></div></div></button>`).join("")}`
     : `<div class="empty"><div class="ei">${ic("truck", "xl")}</div><b>Bu kunga buyurtma yo'q</b><p>Boshqa kunni tanlang.</p></div>`}`;
 }
 vLoadlist.after = () => {
-  const s = $("#llSend"); if (s) s.onclick = async () => { s.disabled = true; const r = await api("loadlist/send", {date: A.llDate, zone: A.llZone || ""}); s.disabled = false; if (!r.ok) return fail(r); hap("ok"); toast("Admin botga yuborildi"); };
+  const s = $("#llSend"); if (s) s.onclick = async () => { s.disabled = true; const r = await api("loadlist/send", {date: A.llDate}); s.disabled = false; if (!r.ok) return fail(r); hap("ok"); toast("Admin botga yuborildi"); };
   const c = $("#llCopy"); if (c) c.onclick = () => { const ok = () => toast("Nusxalandi"); const txt = llText(A.ll); navigator.clipboard ? navigator.clipboard.writeText(txt).then(ok, ok) : ok(); };
   const a = $("#llAcc"); if (a) a.onclick = async () => { const ids = A.ll.orders.filter(o => o.status === "new").map(o => o.id); if (!(await confirmBox("Qabul qilinsinmi?", `${ids.length} ta yangi buyurtma qabul qilinadi va do'konlarga xabar boradi.`, "Qabul qilish"))) return;
     for (const id of ids) await api("order/status", {id, status: "accepted"}, null, true); hap("ok"); toast(`${ids.length} ta qabul qilindi`); pollOrders(); render(); };
@@ -637,39 +704,36 @@ function llText(r) {
     ...r.orders.map((o, i) => `${i + 1}. ${o.shop || "—"} · #${o.id} · ${money(o.total)} · ${o.payment === "debt" ? "Nasiya" : "Naqd"}\n   ${o.phone || ""} · ${o.address || ""}`)].join("\n");
 }
 
-/* ───────── hududlar ───────── */
-async function vZones() {
-  const zs = await getZones(true);
-  return `${titleBar("Hududlar", `<button class="btn b sm" onclick="editZone()">${ic("add", "s")} Hudud</button>`)}
-    <div class="banner info" style="margin-bottom:10px">${ic("info")}<div>Har bir hududga boriladigan hafta kunlarini belgilang. Do'konchi buyurtma berayotganda faqat o'z hududining eng yaqin kunlarini tanlay oladi.</div></div>
-    ${zs.map(z => `<button class="card" onclick="editZone('${z.id}')"><div class="ico">${ic("route")}</div><div class="grow"><b>${esc(L(z.name))}</b><small>${z.days.map(d => WDL[d]).join(", ") || "Kun belgilanmagan — har kuni"}</small></div><div class="right"><b class="num">${z.shops}</b><small>do'kon</small></div></button>`).join("")
-      || `<div class="empty"><div class="ei">${ic("route", "xl")}</div><b>Hudud yo'q</b><p>Hudud bo'lmasa, do'konchi istalgan kunni tanlaydi.</p></div>`}
-    ${A.noZone ? `<div class="banner" style="margin-top:8px">${ic("danger")}<div>${A.noZone} ta do'kon hududga biriktirilmagan<small>Ular buyurtma berishda hududini o'zi tanlaydi yoki Do'konlar bo'limida siz belgilaysiz</small></div></div>` : ""}`;
+/* ───────── yetkazish kunlari (marshrut) ───────── */
+async function vRoutes() {
+  const rt = await getRoutes(true); if (!rt) return errBox({error: "network"});
+  return `${titleBar("Yetkazish kunlari")}
+    <div class="banner info" style="margin-bottom:10px">${ic("info")}<div>Har bir kunga boriladigan ko'cha yoki mahalla nomlarini yozing. Do'kon manzilida shu nom bo'lsa, o'sha kunlar avtomatik biriktiriladi.<small>Masalan: Bog'ishamol — Dushanba va Juma kunlariga yoziladi. Yakshanba — dam olish.</small></div></div>
+    ${rt.unassigned ? `<button class="banner bad" style="width:100%;border:0;margin-bottom:10px;text-align:left" onclick="A.sd='-';go('shops')">${ic("danger")}<div>${rt.unassigned} ta do'konga kun topilmadi<small>Bosing — ro'yxatni ochib, qo'lda belgilang yoki shu yerga ko'cha nomini qo'shing</small></div></button>` : ""}
+    ${WDL.map((d, k) => `<div class="box" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-weight:800;font-size:16px">${d}</b><span class="tag">${rt.shops[k] || 0} ta do'kon</span></div>
+      <div class="chips" style="flex-wrap:wrap;margin-bottom:8px">${(rt.routes[k] || []).map((w, i) => `<button class="chip on" data-rdel="${k}:${i}" type="button">${esc(w)} ${ic("close", "xs")}</button>`).join("") || `<small>Hali ko'cha qo'shilmagan</small>`}</div>
+      <div class="row"><input data-radd="${k}" placeholder="Ko'cha yoki mahalla nomi" maxlength="60" enterkeyhint="done"><button class="btn soft auto" data-rbtn="${k}" type="button">${ic("add", "s")}</button></div></div>`).join("")}`;
 }
-function editZone(id) {
-  const z = id ? JSON.parse(JSON.stringify(A.zones.find(x => x.id === id))) : {name: {uz: "", ru: ""}, days: []}, days = new Set(z.days);
-  modal(`<h3 style="margin-bottom:12px">${id ? "Hududni tahrirlash" : "Yangi hudud"}</h3>
-    <label class="lbl">Nomi</label><div class="two"><input id="zU" placeholder="Masalan: Kunchiqar" value="${esc(z.name.uz)}" maxlength="40"><input id="zR" placeholder="Например: Кунчикар" value="${esc(z.name.ru)}" maxlength="40"></div>
-    <label class="lbl">Yetkazish kunlari</label><div class="chips" style="flex-wrap:wrap">${WDL.map((d, i) => `<button class="chip ${days.has(i) ? "on" : ""}" data-zd="${i}" type="button">${d}</button>`).join("")}</div>
-    <button class="btn b full" id="zS" style="margin-top:14px">${ic("check", "s")} Saqlash</button>
-    ${id ? `<button class="link" id="zD" style="color:var(--red)">${ic("trash", "s")} Hududni o'chirish</button>` : ""}`);
-  $$("[data-zd]").forEach(b => b.onclick = () => { const i = +b.dataset.zd; days.has(i) ? days.delete(i) : days.add(i); b.classList.toggle("on", days.has(i)); hap("sel"); });
-  $("#zS").onclick = async () => { const r = await api("zone/save", {zone: {id, name: {uz: $("#zU").value, ru: $("#zR").value}, days: [...days]}}); if (!r.ok) return fail(r); hap("ok"); toast("Saqlandi"); closeModal(); A.zones = null; render(); };
-  if (id) $("#zD").onclick = async () => { if (!(await confirmBox("Hududni o'chirasizmi?", "Bu hududdagi do'konlar hududsiz qoladi.", "O'chirish", true))) return; const r = await api("zone/delete", {id}); if (!r.ok) return fail(r); toast("O'chirildi"); A.zones = null; render(); };
-}
+vRoutes.after = () => {
+  const save = async (k, list) => { const r = await api("routes/save", {routes: {[k]: list}}); if (!r.ok) return fail(r); hap("ok"); A.routes = null; render(); };
+  const add = k => { const i = $(`[data-radd="${k}"]`), v = i.value.trim(); if (!v) return i.focus(); const cur = A.routes.routes[k] || []; save(k, cur.concat(v.split(/[,;]+/).map(x => x.trim()).filter(Boolean))); };
+  $$("[data-rbtn]").forEach(b => b.onclick = () => add(b.dataset.rbtn));
+  $$("[data-radd]").forEach(i => i.onkeydown = e => { if (e.key === "Enter") add(i.dataset.radd); });
+  $$("[data-rdel]").forEach(b => b.onclick = () => { const [k, i] = b.dataset.rdel.split(":"); const cur = (A.routes.routes[k] || []).slice(); cur.splice(+i, 1); save(k, cur); });
+};
 
 /* broadcast */
 async function vBroadcast() {
-  const zs = await getZones();
+
   return `${titleBar("Xabar yuborish")}
     <div class="banner info" style="margin-bottom:12px">${ic("bell")}<div>Xabar do'konlar botidan ro'yxatdan o'tgan do'konlarga boradi.<small>Masalan: "Milkita'ga yangi narxlar! Korobka — 190 000 so'm"</small></div></div>
-    ${zs.length ? `<label class="lbl">Kimga</label><select id="bcZ" style="margin-bottom:10px"><option value="">Barcha do'konlar</option>${zs.map(z => `<option value="${z.id}">${esc(L(z.name))} hududi</option>`).join("")}</select>` : ""}
+    <label class="lbl">Kimga</label><select id="bcZ" style="margin-bottom:10px"><option value="">Barcha do'konlar</option>${WDL.map((d, k) => `<option value="${k}">${d} kungi do'konlar</option>`).join("")}</select>
     <textarea id="bcT" rows="6" maxlength="3500" placeholder="Xabar matni…"></textarea>
     <small id="bcN" style="text-align:right;margin:6px 4px 12px">0 / 3500</small>
     <button class="btn b full" id="bcS" disabled>${ic("send", "s")} Yuborish</button>`;
 }
 vBroadcast.after = () => { const ta = $("#bcT"), b = $("#bcS"); ta.oninput = () => { $("#bcN").textContent = ta.value.length + " / 3500"; b.disabled = !ta.value.trim(); };
-  b.onclick = async () => { if (!(await confirmBox("Yuborilsinmi?", "Buni qaytarib bo'lmaydi.", "Yuborish"))) return; const r = await api("broadcast", {text: ta.value.trim(), zone: $("#bcZ") ? $("#bcZ").value : ""}); if (!r.ok) return fail(r); hap("ok"); toast(`${r.queued} ta do'konga yuborilmoqda`); ta.value = ""; b.disabled = true; }; };
+  b.onclick = async () => { if (!(await confirmBox("Yuborilsinmi?", "Buni qaytarib bo'lmaydi.", "Yuborish"))) return; const r = await api("broadcast", {text: ta.value.trim(), day: $("#bcZ").value}); if (!r.ok) return fail(r); hap("ok"); toast(`${r.queued} ta do'konga yuborilmoqda`); ta.value = ""; b.disabled = true; }; };
 
 /* settings */
 const SF = [["Firma", [["COMPANY_NAME", "Firma nomi (botda va ilovada chiqadi)"]]],
@@ -677,7 +741,7 @@ const SF = [["Firma", [["COMPANY_NAME", "Firma nomi (botda va ilovada chiqadi)"]
   ["Nasiya va yetkazish", [["DEBT_LIMIT", "Standart qarz chegarasi, so'm (0 — cheksiz)", "numeric"], ["SAME_DAY_UNTIL", "Shu soatgacha bugunga buyurtma (0 — faqat ertadan)", "numeric"]]],
   ["Yopiq paytdagi xabar", [["CLOSED_MSG_UZ", "O'zbekcha"], ["CLOSED_MSG_RU", "Ruscha"]]]];
 async function vSettings() {
-  const r = await api("settings"); if (!r.ok) return errBox(r); A.settings = r.settings; A.mapToken = r.map_token || ""; const s = r.settings;
+  const r = await api("settings"); if (!r.ok) return errBox(r); A.settings = r.settings; A.mapToken = r.map_token || ""; A.ykey = r.ymaps_key || ""; const s = r.settings;
   return `${titleBar("Sozlamalar")}
     <div class="card"><div class="ico ${s.ACCEPTING !== false ? "okb" : "red"}">${ic("shop")}</div><div class="grow"><b>Buyurtma qabul qilish</b><small>O'chirilsa, do'konlar buyurtma bera olmaydi</small></div><button class="sw ${s.ACCEPTING !== false ? "on" : ""}" id="sAcc"></button></div>
     <div class="card"><div class="ico gold">${ic("notebook")}</div><div class="grow"><b>Nasiyaga buyurtma</b><small>O'chirilsa, faqat naqd to'lov</small></div><button class="sw ${s.ALLOW_DEBT !== false ? "on" : ""}" id="sDebt"></button></div>
@@ -691,7 +755,7 @@ async function vSettings() {
 }
 vSettings.after = () => {
   const s = A.settings, mini = $("#locmini");
-  if (mini) { const m = GMap(mini, {lat: +s.BASE_LAT, lon: +s.BASE_LON, zoom: 16, tileUrl: tileFn(A.mapToken, "map")});
+  if (mini) { const m = makeMap(mini, {lat: +s.BASE_LAT, lon: +s.BASE_LON, zoom: 16, tileUrl: tileFn(A.mapToken, "map"), ykey: A.ykey, ystyle: "map"});
     mini._map = m; const pw = document.createElement("div"); pw.className = "pinw"; pw.innerHTML = `<i class="pshadow"></i><div class="pinb">${PIN_SVG}</div>`; mini.appendChild(pw); }
   $("#locBtn").onclick = () => openRestMap();
   ["#sAcc", "#sDebt"].forEach(k => $(k).onclick = e => { e.currentTarget.classList.toggle("on"); hap("sel"); });
@@ -775,7 +839,7 @@ function openRestMap() {
   document.body.appendChild(el); updBack();
   el.classList.toggle("sat", !!tok && st === "sat");
   const sheet = $("#msheet"), pin = $("#pin"), ctl = $("#mctl"), attr = $("#mattr");
-  const map = RM.map = GMap($("#gmap"), {lat: +s.BASE_LAT, lon: +s.BASE_LON, zoom: 18, tileUrl: tileFn(tok, st),
+  const map = RM.map = makeMap($("#gmap"), {lat: +s.BASE_LAT, lon: +s.BASE_LON, zoom: 18, tileUrl: tileFn(tok, st), ykey: A.ykey, ystyle: st,
     focusY: H => Math.max(150, (H - sheet.offsetHeight) / 2 + 40),
     onMeasure: m => { pin.style.top = m.fy + "px"; const b = sheet.offsetHeight + 14; ctl.style.bottom = b + "px"; attr.style.bottom = (b - 4) + "px"; },
     onMoveStart: () => { el.classList.add("moving"); pin.classList.remove("drop"); pin.classList.add("lift"); hap("sel"); },
@@ -807,6 +871,7 @@ function restGeo() {
   if (!fillU && !fillR) return;
   if (fillU) u.classList.add("loading"); if (fillR) r.classList.add("loading");
   clearTimeout(RM.t); RM.t = setTimeout(async () => {
+    if (!RM) return;
     const res = await api("geocode", {lat: RM.map.lat, lon: RM.map.lon}, null, true);
     if (!RM || my !== RM.req) return; u.classList.remove("loading"); r.classList.remove("loading");
     if (!res.ok) return;
@@ -817,16 +882,15 @@ function restGeo() {
 
 /* ───────── events ───────── */
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-tab],[data-of],[data-o],[data-st],[data-mc],[data-tog],[data-edit],[data-mv],[data-cmv],[data-bmv],[data-bdel],[data-sid],[data-shop],[data-sz],[data-lld],[data-llz]"); if (!el) return;
+  const el = e.target.closest("[data-tab],[data-of],[data-o],[data-st],[data-mc],[data-tog],[data-edit],[data-mv],[data-cmv],[data-bmv],[data-bdel],[data-sid],[data-shop],[data-sd],[data-lld]"); if (!el) return;
   const d = el.dataset;
   if (d.tab) { hap("sel"); return go(d.tab); }
   if (d.of) { A.ordFilter = d.of; hap("sel"); return render(); }
   if (d.st) return setStatus(+d.oid, d.st);
   if (d.o) { hap(); return openOrder(+d.o); }
   if (d.shop) { hap(); return openShop(+d.shop); }
-  if (d.sz !== undefined && el.classList.contains("chip")) { A.sz = d.sz; hap("sel"); return render(); }
+  if (d.sd !== undefined && el.classList.contains("chip")) { A.sd = d.sd === "" ? null : d.sd; hap("sel"); return render(); }
   if (d.lld) { A.llDate = d.lld; hap("sel"); return render(); }
-  if (d.llz !== undefined && el.classList.contains("chip")) { A.llZone = d.llz; hap("sel"); return render(); }
   if (d.mc) { A.cat = d.mc; A.sortMode = false; hap("sel"); return render(); }
   if (d.tog) { e.stopPropagation(); return toggleProd(d.tog, el); }
   if (d.edit) { hap(); return editProduct(d.edit); }
@@ -845,9 +909,9 @@ const dLbl = iso => { const x = new Date(iso + "T00:00:00"); return WDL[(x.getDa
 function mockInit() {
   const d = JSON.parse(JSON.stringify(DEMO_DATA || {categories: [], products: [], banners: []}));
   d.products.forEach(p => p.available = p.available !== false);
-  const zones = (DEMO_DATA.settings && DEMO_DATA.settings.zones) || [];
+  const routes = JSON.parse(JSON.stringify(DEMO_DATA.routes || {}));
   const shops = [["Baraka market", "Aziz Karimov"], ["Oila do'koni", "Madina Aliyeva"], ["Sardor savdo", "Sardor Rahimov"], ["Nur supermarket", "Dilnoza Yusupova"], ["Bekzod mini-market", "Bekzod Toshev"], ["Shirin do'kon", "Nilufar Qodirova"], ["Aziz 24/7", "Aziz Ergashev"], ["Shahnoza market", "Shahnoza Ismoilova"]];
-  const users = shops.map(([s, n], i) => ({tg_id: 1000 + i, shop: s, name: n, phone: "+99890" + (1234567 + i * 7919), username: i % 3 ? null : n.split(" ")[0].toLowerCase(), zone: zones.length ? zones[i % zones.length].id : null, address: "Shahrisabz, Ipak yo'li ko'chasi, " + (5 + i * 7), landmark: i % 2 ? "Bozor yonida" : "", lat: 39.06 + i / 900, lon: 66.83 + i / 800, debt_limit: i === 0 ? 3000000 : null, created: Date.now() / 1000 - 86400 * (i * 3 + 1), blocked: 0, note: ""}));
+  const users = shops.map(([s, n], i) => ({tg_id: 1000 + i, shop: s, name: n, phone: "+99890" + (1234567 + i * 7919), username: i % 3 ? null : n.split(" ")[0].toLowerCase(), days: null, address: "Shahrisabz, " + ["Ipak yo'li", "Bog'ishamol", "Kunchiqar", "Nasaf", "Amir Temur", "Mustaqillik", "Navoiy", "Ipak yo'li"][i] + " ko'chasi, " + (5 + i * 7), landmark: i % 2 ? "Bozor yonida" : "", lat: 39.06 + i / 900, lon: 66.83 + i / 800, debt_limit: i === 0 ? 3000000 : null, created: Date.now() / 1000 - 86400 * (i * 3 + 1), blocked: 0, note: ""}));
   const now = Date.now() / 1000 | 0, orders = [], ledger = []; let id = 1000, lid = 1;
   let seed = 7; const rnd = n => { seed = (seed * 16807) % 2147483647; return seed % n; };
   const mkItems = () => { const items = []; for (let j = 0, m = 2 + rnd(3); j < m; j++) { const p = d.products[rnd(d.products.length)], u = p.pack && p.sell !== "pc" && rnd(3) ? "pack" : (p.sell === "pack" ? "pack" : "pc");
@@ -862,7 +926,7 @@ function mockInit() {
   }
   ledger.push({id: lid++, tg_id: 1001, amount: -200000, kind: "payment", note: "Naqd", by_name: "Rahbar", created: now - 3600});
   orders.slice(-4).forEach((o, i) => o.status = ["accepted", "accepted", "new", "new"][i]);
-  MK = {menu: d, users, orders, ledger, zones: JSON.parse(JSON.stringify(zones)), lid,
+  MK = {menu: d, users, orders, ledger, routes, lid,
     settings: {COMPANY_NAME: "Ulgurji savdo", BASE_ADDRESS_UZ: "Shahrisabz, ombor", BASE_ADDRESS_RU: "Шахрисабз, склад", BASE_LAT: 39.0578, BASE_LON: 66.8342, SUPPORT_PHONE: "+998 90 000 00 00", SUPPORT_USERNAME: "", WORK_HOURS: "Du–Sh, 08:00–20:00", MIN_ORDER: 200000, ACCEPTING: true, ALLOW_DEBT: true, DEBT_LIMIT: 0, SAME_DAY_UNTIL: 0, CLOSED_MSG_UZ: "Hozir buyurtma qabul qilmayapmiz.", CLOSED_MSG_RU: "Сейчас мы не принимаем заказы."},
     staff: [{id: 1, login: "jasur", name: "Jasur (haydovchi)", perms: ["orders", "debts"], active: true, telegram: true}, {id: 2, login: "malika", name: "Malika (operator)", perms: ["stats", "orders", "stock", "menu", "shops"], active: true, telegram: false}]};
 }
@@ -872,11 +936,14 @@ async function mock(route, b, raw) {
   await new Promise(r => setTimeout(r, route === "upload" ? 400 : 80));
   const ok = x => Object.assign({ok: true}, x), d0 = (() => { const x = new Date(); x.setHours(0, 0, 0, 0); return x / 1000; })();
   const bal = uid => MK.ledger.filter(e => e.tg_id === uid).reduce((a, e) => a + e.amount, 0);
-  const zn = id => { const z = MK.zones.find(x => x.id === id); return z ? z.name.uz : ""; };
+  const zn = () => "";
+  const nP = s => String(s || "").toLowerCase().replace(/[ʻʼ‘’`´']/g, "").replace(/\b(ko\s?chasi|mahallasi)\b/g, " ").replace(/\s+/g, " ").trim();
+  const autoD = u => Object.keys(MK.routes).filter(k => MK.routes[k].some(w => nP(w) && (" " + nP(u.address + " " + (u.landmark || "")) + " ").includes(nP(w)))).map(Number).sort();
+  const daysOf = u => u.days && u.days.length ? u.days : autoD(u);
   const withU = o => { const u = MK.users.find(x => x.tg_id === o.tg_id) || {}; return Object.assign({}, o, {uname: u.name, uphone: u.phone, uusername: u.username, ushop: u.shop, next: NX[o.status] || [], date_label: dLbl(o.delivery_date), zone_name: zn(o.zone), balance: bal(o.tg_id)}); };
   const live = MK.orders.filter(o => o.status !== "cancelled"), ACT = ["new", "accepted", "on_way"];
   const dsum = () => { const bs = MK.users.map(u => bal(u.tg_id)).filter(x => x > 0); return {total: bs.reduce((a, x) => a + x, 0), count: bs.length}; };
-  const shopX = u => { const os = live.filter(o => o.tg_id === u.tg_id); return Object.assign({}, u, {balance: bal(u.tg_id), orders: os.length, spent: os.reduce((a, o) => a + o.total, 0), zone_name: zn(u.zone), limit: u.debt_limit != null ? u.debt_limit : +MK.settings.DEBT_LIMIT, last_order: Math.max(0, ...os.map(o => o.created))}); };
+  const shopX = u => { const os = live.filter(o => o.tg_id === u.tg_id); return Object.assign({}, u, {days_list: daysOf(u), auto_days: autoD(u), manual: !!(u.days && u.days.length), balance: bal(u.tg_id), orders: os.length, spent: os.reduce((a, o) => a + o.total, 0), zone_name: zn(u.zone), limit: u.debt_limit != null ? u.debt_limit : +MK.settings.DEBT_LIMIT, last_order: Math.max(0, ...os.map(o => o.created))}); };
   switch (route) {
     case "me": return ok({name: "Rahbar", owner: true, perms: Object.keys(PL)});
     case "login": return ok({token: "demo"});
@@ -902,7 +969,7 @@ async function mock(route, b, raw) {
       if (b.status === "done") { o.paid = b.paid == null ? (o.payment === "cash" ? o.total : 0) : Math.min(o.total, b.paid); o.debt = o.total - o.paid; if (o.debt) MK.ledger.push({id: MK.lid++, tg_id: o.tg_id, amount: o.debt, kind: "order", order_id: o.id, note: "Buyurtma #" + o.id, by_name: "Rahbar", created: Date.now() / 1000}); }
       return ok({status: o.status, paid: o.paid, debt: o.debt}); }
     case "loadlist": {
-      const date = b.date || dISO(0), os = MK.orders.filter(o => o.delivery_date === date && ACT.includes(o.status) && (!b.zone || o.zone === b.zone)).map(withU), prods = {}, tot = {orders: os.length, sum: 0, cash: 0, debt: 0, new: 0};
+      const date = b.date || dISO(0), os = MK.orders.filter(o => o.delivery_date === date && ACT.includes(o.status)).map(withU), prods = {}, tot = {orders: os.length, sum: 0, cash: 0, debt: 0, new: 0};
       os.forEach(o => { tot.sum += o.total; tot[o.payment] += o.total; tot.new += o.status === "new"; o.items.forEach(x => { const p = prods[x.pid] = prods[x.pid] || {pid: x.pid, name: x.name, pcs: 0, base: x.base, pack_qty: 0}; p.pcs += x.qty * (x.pack_qty || 1); const cur = MK.menu.products.find(y => y.id === x.pid); if (cur && cur.pack) { p.pack_qty = cur.pack.qty; p.pack_name = cur.pack.name; } }); });
       Object.values(prods).forEach(p => { if (p.pack_qty) { p.packs = Math.floor(p.pcs / p.pack_qty); p.rest = p.pcs % p.pack_qty; } });
       const days = {}; MK.orders.filter(o => ACT.includes(o.status) && o.delivery_date >= dISO(0)).forEach(o => { days[o.delivery_date] = (days[o.delivery_date] || 0) + 1; });
@@ -926,22 +993,24 @@ async function mock(route, b, raw) {
     case "settings": return ok({settings: Object.assign({}, MK.settings), map_token: ""});
     case "geocode": return ok({uz: "Qashqadaryo viloyati, Shahrisabz, Ipak yo'li ko'chasi", ru: "Кашкадарьинская область, Шахрисабз, улица Ипак йули"});
     case "settings/save": Object.assign(MK.settings, b.settings); return ok({settings: Object.assign({}, MK.settings)});
-    case "zones": return ok({zones: MK.zones.map(z => Object.assign({}, z, {shops: MK.users.filter(u => u.zone === z.id).length})), no_zone: MK.users.filter(u => !u.zone).length});
-    case "zone/save": { const z = b.zone, cur = MK.zones.find(x => x.id === z.id); if (!z.name.uz && !z.name.ru) return {ok: false, error: "name_required"}; const nz = {id: z.id || "z" + Date.now(), name: {uz: z.name.uz || z.name.ru, ru: z.name.ru || z.name.uz}, days: z.days.sort()}; if (cur) Object.assign(cur, nz); else MK.zones.push(nz); return ok({zone: nz}); }
-    case "zone/delete": MK.zones = MK.zones.filter(z => z.id !== b.id); MK.users.forEach(u => { if (u.zone === b.id) u.zone = null; }); return ok({});
+    case "routes": { const cnt = {}; let un = 0; MK.users.forEach(u => { const ds = daysOf(u); if (!ds.length) un++; ds.forEach(k => cnt[k] = (cnt[k] || 0) + 1); }); return ok({routes: JSON.parse(JSON.stringify(MK.routes)), shops: cnt, unassigned: un}); }
+    case "routes/save": Object.assign(MK.routes, b.routes); return ok({routes: MK.routes});
+    case "barcode": { const loc = MK.menu.products.find(p => p.barcode === b.code); if (loc) return ok({code: b.code, found: "local", product_id: loc.id});
+      if (b.code === "8992741941129") return ok({code: b.code, found: "off", name: {uz: "Milkita Milk Candy", ru: "Milkita Milk Candy"}, brand: "Milkita", quantity: "90 g", img: ""});
+      return ok({code: b.code, found: null}); }
     case "shops": case "debts": {
       let l = MK.users.map(shopX);
       if (b.q) { const q = b.q.toLowerCase(); l = l.filter(u => (u.shop + " " + u.name + " " + u.phone).toLowerCase().includes(q)); }
-      if (b.zone) l = l.filter(u => b.zone === "-" ? !u.zone : u.zone === b.zone);
+      if (b.day !== "" && b.day != null) l = l.filter(u => b.day === "-" ? !u.days_list.length : u.days_list.includes(+b.day));
       if (route === "debts") l = l.filter(u => u.balance > 0).sort((a, c) => c.balance - a.balance);
       return ok({shops: l, total: l.length, debt: dsum()});
     }
     case "shop": { const u = MK.users.find(x => x.tg_id === b.id); if (!u) return {ok: false, error: "not_found"};
       return ok({shop: shopX(u), ledger: MK.ledger.filter(e => e.tg_id === u.tg_id).slice().reverse(), orders: MK.orders.filter(o => o.tg_id === u.tg_id).slice(-15).reverse().map(o => Object.assign({}, o, {date_label: dLbl(o.delivery_date)}))}); }
-    case "shop/save": { const u = MK.users.find(x => x.tg_id === b.id); ["shop", "zone", "debt_limit", "note"].forEach(k => { if (k in b) u[k] = b[k] === "" && k === "zone" ? null : b[k]; }); u.blocked = b.blocked ? 1 : 0; return ok({shop: u}); }
+    case "shop/save": { const u = MK.users.find(x => x.tg_id === b.id); ["shop", "days", "debt_limit", "note"].forEach(k => { if (k in b) u[k] = b[k]; }); u.blocked = b.blocked ? 1 : 0; return ok({shop: u}); }
     case "payment": case "adjust": { const amt = route === "payment" ? -Math.abs(b.amount) : b.amount; MK.ledger.push({id: MK.lid++, tg_id: b.id, amount: amt, kind: route, note: b.note, by_name: "Rahbar", created: Date.now() / 1000}); return ok({balance: bal(b.id)}); }
     case "ledger/delete": { const e = MK.ledger.find(x => x.id === b.id); MK.ledger = MK.ledger.filter(x => x.id !== b.id); return ok({balance: e ? bal(e.tg_id) : 0}); }
-    case "broadcast": return ok({queued: MK.users.filter(u => !b.zone || u.zone === b.zone).length});
+    case "broadcast": return ok({queued: MK.users.filter(u => b.day === "" || b.day == null || (daysOf(u).length ? daysOf(u) : [0, 1, 2, 3, 4, 5]).includes(+b.day)).length});
     case "loadlist/send": return ok({});
     case "staff": return ok({staff: MK.staff, owner_ids: [123456789]});
     case "staff/save": { const x = b.staff; if (MK.staff.some(s => s.login === x.login && s.id !== x.id)) return {ok: false, error: "login_taken"};

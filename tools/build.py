@@ -34,7 +34,7 @@ ICONS = {  # ilova nomi -> Solar ikonka
     "history": "history-bold-duotone", "repeat": "repeat-bold", "route": "routing-2-bold-duotone", "copy": "copy-bold-duotone",
     "sale": "sale-bold", "notebook": "notebook-bold-duotone", "handmoney": "hand-money-bold-duotone",
     "block": "user-block-bold-duotone", "map": "map-bold-duotone", "layers": "layers-bold-duotone", "star": "star-bold",
-    "truck": "delivery-bold-duotone", "clip": "clipboard-list-bold-duotone",
+    "truck": "delivery-bold-duotone", "clip": "clipboard-list-bold-duotone", "scan": "scanner-bold-duotone",
 }
 FALLBACK_BODY = {
     "add-linear": '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M12 5v14m7-7H5"/>',
@@ -94,7 +94,7 @@ def demo_data():
                          "support_phone": cfg["SUPPORT_PHONE"], "support_username": cfg["SUPPORT_USERNAME"], "work_hours": cfg["WORK_HOURS"],
                          "min_order": cfg["MIN_ORDER"], "accepting": True, "allow_debt": True, "map_token": "",
                          "closed_msg": {"uz": cfg["CLOSED_MSG_UZ"], "ru": cfg["CLOSED_MSG_RU"]},
-                         "zones": json.load(open(os.path.join(ROOT, "data", "zones.json"), encoding="utf-8"))}}
+                         "ymaps_key": ""}, "routes": json.load(open(os.path.join(ROOT, "data", "routes.json"), encoding="utf-8"))}
 
 
 def main():

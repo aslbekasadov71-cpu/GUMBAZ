@@ -75,3 +75,6 @@
 .mgrid small{font-size:11.5px;font-weight:700}
 .mgrid input{border:0;padding:2px 0 6px;background:none;font-weight:700}
 .mland{margin-bottom:10px}
+.gmap.ymode{touch-action:auto;cursor:default;background:#eef1ec}
+.ybox{position:absolute;left:0;right:0;top:0;height:100%}
+.ymode~.mattr,#mapLayer:has(.ymode) .mattr{display:none}

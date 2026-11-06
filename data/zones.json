@@ -1,5 +1,0 @@
-[
- {"id": "markaz", "name": {"uz": "Markaz", "ru": "Центр"}, "days": [0, 3]},
- {"id": "kunchiqar", "name": {"uz": "Kunchiqar", "ru": "Кунчикар"}, "days": [1, 4]},
- {"id": "tuman", "name": {"uz": "Shahrisabz tumani", "ru": "Шахрисабзский район"}, "days": [2, 5]}
-]
