@@ -119,7 +119,7 @@ function GMap(el, o) {
 const dist = (a, b, c, d) => { const R = 6371, r = Math.PI / 180, x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
 const kmTxt = km => km < 1 ? `${Math.round(km * 1000 / 10) * 10} m` : `${km.toFixed(1).replace(".", ",")} km`;
 const isCoords = a => /^\s*-?\d+\.\d+,\s*-?\d+\.\d+\s*$/.test(a || "");
-const PIN_SVG = `<svg viewBox="0 0 48 60" width="48" height="60" aria-hidden="true"><defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16875e"/><stop offset="1" stop-color="#0b3d2c"/></linearGradient></defs><path d="M24 2C12.4 2 3 11.2 3 22.6c0 14.6 17.4 32.3 19.4 34.3a2.3 2.3 0 0 0 3.2 0C27.6 54.9 45 37.2 45 22.6 45 11.2 35.6 2 24 2z" fill="url(#pg)"/><circle cx="24" cy="22.5" r="10.5" fill="#fff"/><circle cx="24" cy="22.5" r="5" fill="#c9a95e"/></svg>`;
+const PIN_SVG = `<svg viewBox="0 0 48 60" width="48" height="60" aria-hidden="true"><defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b7bf0"/><stop offset="1" stop-color="#0f2f6e"/></linearGradient></defs><path d="M24 2C12.4 2 3 11.2 3 22.6c0 14.6 17.4 32.3 19.4 34.3a2.3 2.3 0 0 0 3.2 0C27.6 54.9 45 37.2 45 22.6 45 11.2 35.6 2 24 2z" fill="url(#pg)"/><circle cx="24" cy="22.5" r="10.5" fill="#fff"/><circle cx="24" cy="22.5" r="5" fill="#f5b301"/></svg>`;
 /* Xarita uslublari: Mapbox (token bo'lsa) — sputnik/sxema, aks holda OpenStreetMap */
 const MAP_STYLES = {sat: "mapbox/satellite-streets-v12", map: "mapbox/streets-v12"};
 function tileFn(token, style) {

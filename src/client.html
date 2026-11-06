@@ -1,4 +1,4 @@
-<title>Gumbaz Express</title>
+<title>Ulgurji buyurtma</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f2f4f7">
@@ -8,23 +8,27 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /*__BASE__*/
-/* ── client ── */
+/* ── do'konchi ilovasi ── */
 .app{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
-.app.withcart{padding-bottom:calc(180px + env(safe-area-inset-bottom,0px))}
-.app.nonav{padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
-.hi{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.app.withcart{padding-bottom:calc(176px + env(safe-area-inset-bottom,0px))}
+.app.nonav{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))}
+.hi{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
 .hi .logo{width:46px;height:46px;border-radius:50%;flex:none}
-.addr{flex:1;min-width:0;background:none;border:0;padding:0;text-align:left}
-.addr small{display:flex;align-items:center;gap:4px}
-.addr b{display:flex;align-items:center;gap:2px;font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden}
-.addr b span{overflow:hidden;text-overflow:ellipsis}
+.hi .who{flex:1;min-width:0;background:none;border:0;padding:0;text-align:left}
+.hi .who small{display:flex;align-items:center;gap:4px}
+.hi .who b{display:flex;align-items:center;gap:2px;font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden}
+.hi .who b span{overflow:hidden;text-overflow:ellipsis}
 .av{width:44px;height:44px;border-radius:50%;background:var(--bl);color:var(--b);display:grid;place-items:center;font-weight:800;font-size:17px;overflow:hidden;flex:none;border:0;padding:0}
 .av img{width:100%;height:100%;object-fit:cover}
-.greet{margin:0 0 14px}
-.greet small{font-size:14px}
+.qinfo{display:flex;gap:8px;margin-bottom:12px}
+.qinfo button{flex:1;min-width:0;border:0;border-radius:16px;padding:10px 12px;text-align:left;background:var(--card);display:flex;gap:10px;align-items:center}
+.qinfo .ico{width:36px;height:36px;border-radius:11px}
+.qinfo b{display:block;font-size:14px;font-weight:800;line-height:1.25}
+.qinfo small{font-size:12px}
+.qinfo .debt b{color:var(--red)}
 .closed{margin-bottom:12px}
 /* banners */
-.bwrap{margin:14px -14px 0}
+.bwrap{margin:12px -14px 0}
 .btrack{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 14px;scroll-padding:0 14px}
 .btrack::-webkit-scrollbar{display:none}
 .bs{flex:0 0 100%;scroll-snap-align:start;aspect-ratio:2/1;border-radius:22px;overflow:hidden;background:var(--bd);position:relative;border:0;padding:0;max-width:100%}
@@ -33,32 +37,36 @@
 .dots{display:flex;justify-content:center;gap:5px;margin-top:10px}
 .dots i{width:6px;height:6px;border-radius:6px;background:#d0d5dd;transition:width .3s var(--ease),background .3s}
 .dots i.on{width:20px;background:var(--b)}
-/* sticky chips */
 .catbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);margin:6px -14px 0;padding:10px 14px}
 .catbar.stuck{box-shadow:0 8px 16px -12px rgba(16,24,40,.25)}
 .sec{scroll-margin-top:calc(70px + env(safe-area-inset-top,0px))}
-.sec h3{margin:18px 2px 10px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.pc{background:var(--card);border-radius:18px;padding:8px;display:flex;flex-direction:column;gap:8px;position:relative;text-align:left;border:0;transition:transform .12s var(--ease)}
-.pc:active{transform:scale(.985)}
-.pc .ph{aspect-ratio:4/3;border-radius:14px;background:var(--photo);overflow:hidden;position:relative;max-width:100%}
-.pc .ph img{width:100%;height:100%;object-fit:cover;display:block}
-.pc .bd{padding:0 4px 2px;display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
-.pc .nm{font-weight:700;font-size:15px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.pc .ds{font-size:12.5px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc .pr{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto;padding-top:6px}
-.pc .pr b{font-size:16px;font-weight:800;white-space:nowrap}
-.pc .pr b small{display:inline;font-size:12px;font-weight:600}
-.addb{width:36px;height:36px;border-radius:12px;background:var(--bl);color:var(--b);display:grid;place-items:center;flex:none;border:0;padding:0;transition:transform .15s var(--ease),background .15s}
+.sec h3{margin:16px 2px 10px;display:flex;align-items:center;gap:8px}
+.sec h3 .n{font-size:13px;color:var(--mute);font-weight:700}
+/* product rows */
+.pr{background:var(--card);border-radius:18px;padding:10px;display:flex;gap:12px;align-items:center;margin-bottom:8px;position:relative;cursor:pointer;transition:transform .12s var(--ease)}
+.pr:active{transform:scale(.99)}
+.pr .pi{width:76px;height:76px;border-radius:14px;flex:none;position:relative;overflow:hidden;background:var(--photo)}
+.pr .pi img{width:100%;height:100%;object-fit:cover;display:block}
+.noimg{position:absolute;inset:0;display:grid;place-items:center;background:hsl(var(--h,215) 80% 95%);color:hsl(var(--h,215) 65% 45%)}
+.noimg b{position:absolute;left:0;right:0;bottom:5px;text-align:center;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;opacity:.8}
+.noimg.big .ic{width:64px;height:64px}.noimg.big b{font-size:13px;bottom:12px}
+.pr .pb{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pr .nm{font-weight:700;font-size:15px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pr .pk{font-size:12.5px;color:var(--mute);font-weight:600;display:flex;align-items:center;gap:4px}
+.pr .pp{font-size:16px;font-weight:800;white-space:nowrap;margin-top:2px}
+.pr .pp small{display:inline;font-size:12px;font-weight:600}
+.pr .ctl{flex:none;align-self:flex-end;display:flex;flex-direction:column;align-items:center;gap:3px}
+.addb{width:40px;height:40px;border-radius:13px;background:var(--bl);color:var(--b);display:grid;place-items:center;flex:none;border:0;padding:0;transition:transform .15s var(--ease),background .15s}
 .addb:active{transform:scale(.88)}
-.addb.n{background:var(--b);color:#fff;font-weight:800;font-size:15px}
-.pc .qty{width:100%;justify-content:space-between;background:var(--bl)}
-.pc .qty b{color:var(--b)}
-.pc .badge{position:absolute;left:14px;top:14px;z-index:1;font-size:11.5px;font-weight:800;padding:3px 8px 3px 6px;border-radius:99px;display:flex;align-items:center;gap:3px;background:var(--gl);color:var(--gd)}
-.pc .badge.spicy{background:var(--redl);color:var(--red)}
-.pc .badge.new{background:var(--okl);color:#079455}
-.pc.off{opacity:.55}
-.pc.off .ph::after{content:attr(data-off);position:absolute;inset:0;display:grid;place-items:center;background:rgba(16,24,40,.42);color:#fff;font-weight:800;font-size:14px}
+.vq{display:flex;flex-direction:column;align-items:center;background:var(--bl);border-radius:13px;padding:3px}
+.vq button{border:0;background:none;color:var(--b);width:34px;height:28px;display:grid;place-items:center;border-radius:9px}
+.vq button:active{background:#d5e2fb}
+.vq b{font-size:15px;font-weight:800;color:var(--b);min-width:30px;text-align:center;line-height:1.1}
+.vq small{font-size:10px;font-weight:700;color:var(--b);opacity:.8;line-height:1}
+.badge{position:absolute;left:5px;top:5px;z-index:1;font-size:10.5px;font-weight:800;padding:2px 7px 2px 5px;border-radius:99px;display:flex;align-items:center;gap:2px;background:var(--gl);color:var(--gd)}
+.badge.new{background:var(--okl);color:#079455}.badge.sale{background:var(--redl);color:var(--red)}
+.pr.off{opacity:.55}.pr.off .ctl{display:none}
+.pr .soldout{font-size:12px;font-weight:800;color:var(--red)}
 /* cart slab */
 .slab{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:25;padding:0 max(14px,env(safe-area-inset-left,0px));pointer-events:none;animation:rise .3s var(--ease)}
 .slab>div{max-width:532px;margin:0 auto;background:var(--card);border-radius:20px;padding:10px 10px 10px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(16,24,40,.14);pointer-events:auto}
@@ -70,129 +78,180 @@
 .srow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;font-size:15px;color:var(--mute);font-weight:600}
 .srow b{font-size:22px;font-weight:800;color:var(--ink)}
 /* product sheet */
-.pimg{aspect-ratio:4/3;border-radius:22px;overflow:hidden;background:var(--photo);margin-bottom:14px;max-width:100%}
+.pimg{aspect-ratio:4/3;border-radius:22px;overflow:hidden;background:var(--photo);margin-bottom:14px;max-width:100%;position:relative}
 .pimg img{width:100%;height:100%;object-fit:cover;display:block}
-.sheet h1{margin-bottom:6px}
-.sheet .desc{color:var(--mute);margin-bottom:14px;font-size:15px}
-.pfoot{display:flex;gap:10px;align-items:stretch;margin-top:14px}
-.pfoot .qty{background:var(--card);padding:6px}
-.pfoot .btn{flex:1;justify-content:space-between;padding:14px 18px}
+.sheet h1{margin-bottom:6px;font-size:23px}
+.sheet .desc{color:var(--mute);margin-bottom:12px;font-size:14px}
+.useg button b{font-size:14.5px}
+.qbig{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:16px;padding:8px;margin-top:10px}
+.qbig button.st{width:48px;height:48px;border-radius:13px;border:0;background:var(--bl);color:var(--b);display:grid;place-items:center;flex:none}
+.qbig input{flex:1;min-width:0;text-align:center;font-size:24px;font-weight:800;border:0;padding:6px;background:none}
+.qchips{display:flex;gap:6px;margin-top:8px}
+.qchips button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 0;font-weight:800;font-size:14px;color:var(--b)}
+.qsum{display:flex;justify-content:space-between;align-items:baseline;margin:14px 2px 10px;color:var(--mute);font-weight:600;font-size:14px}
+.qsum b{color:var(--ink);font-size:20px;font-weight:800}
 /* cart items */
-.ci .ico.im{width:64px;height:52px;border-radius:12px}
-.ci .grow b{white-space:normal;line-height:1.25}
+.ci{align-items:center}
+.ci .ico.im{width:58px;height:58px;border-radius:12px}
+.ci .grow b{white-space:normal;line-height:1.25;font-size:14.5px}
 .ci .pp{font-weight:800;font-size:15px;margin-top:3px;display:block;color:var(--ink)}
-/* delivery options */
+.qty input{width:52px;border:0;background:none;text-align:center;font-weight:800;font-size:16px;padding:4px 0}
+/* checkout */
+.dates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.dates button{border:2px solid transparent;background:var(--card);border-radius:16px;padding:12px;text-align:left;transition:border-color .18s}
+.dates button.on{border-color:var(--b);background:var(--bl)}
+.dates b{display:block;font-weight:800;font-size:15px}
+.dates small{font-size:12.5px}
 .opt{border:2px solid transparent;transition:border-color .18s}
 .opt.on{border-color:var(--b)}
 .radio{width:22px;height:22px;border-radius:50%;border:2px solid #d0d5dd;flex:none;display:grid;place-items:center;transition:border-color .18s}
 .opt.on .radio{border-color:var(--b)}
 .opt.on .radio::after{content:"";width:11px;height:11px;border-radius:50%;background:var(--b)}
-.ya{background:#fc3f1d!important;color:#fff!important;font-weight:800;font-size:14px;letter-spacing:-.02em}
-.btn.yab{background:#fc3f1d;border-color:#fc3f1d;color:#fff}
-/* success */
-.okc-ring{width:96px;height:96px;border-radius:50%;background:var(--okl);color:#079455;display:grid;place-items:center;margin:34px auto 18px;animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+.okc-ring{width:96px;height:96px;border-radius:50%;background:var(--okl);color:#079455;display:grid;place-items:center;margin:30px auto 18px;animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
 @keyframes pop{from{transform:scale(.4);opacity:0}}
-/* profile */
+/* profile / ledger */
 .ph-av{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:24px;font-weight:800;overflow:hidden;flex:none;position:relative;border:0;color:#fff;padding:0}
 .ph-av img{width:100%;height:100%;object-fit:cover}
-.ph-av .cam{position:absolute;right:0;bottom:0;width:22px;height:22px;border-radius:50%;background:#fff;color:var(--b);display:grid;place-items:center}
+.stat.red{background:linear-gradient(135deg,#7a1a12 0%,#d92d20 100%)}
+.stat.ok{background:linear-gradient(135deg,#05603a 0%,#12b76a 100%)}
 .lseg{width:116px;flex:none;padding:3px}
 .lseg button{padding:7px 4px}
-/* map */
+.le .amt{font-weight:800;white-space:nowrap}
+.le .amt.plus{color:var(--red)}.le .amt.minus{color:#079455}
+.terms p{margin:0 0 10px;line-height:1.55;max-width:65ch}
+.terms h3{font-size:16px;margin:18px 0 6px}
+.zl button{margin-bottom:8px}
 /*__MAPCSS__*/
 #splash{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;transition:opacity .35s}
 #splash img{width:112px;height:112px;animation:breathe 1.4s ease-in-out infinite}
 @keyframes breathe{50%{transform:scale(1.06)}}
 #splash.hide{opacity:0;pointer-events:none}
-.terms p{margin:0 0 10px;line-height:1.55;max-width:65ch}
-.terms h3{font-size:16px;margin:18px 0 6px}
 </style>
 
 <!--__ICONS__-->
-<div id="splash"><img src="img/logo.png" alt="Gumbaz Express"></div>
+<div id="splash"><img src="img/logo.png" alt=""></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <main class="app" id="app"></main>
 <div id="slab"></div>
 <nav class="tabs" id="nav">
-  <button data-tab="home" class="on"><svg class="ic"><use href="#i-home"/></svg><span data-t="menu"></span></button>
+  <button data-tab="home" class="on"><svg class="ic"><use href="#i-box"/></svg><span data-t="catalog"></span></button>
   <button data-tab="cart"><svg class="ic"><use href="#i-cart"/></svg><span data-t="cart"></span><i class="bdg num" id="bdg" hidden></i></button>
   <button data-tab="orders"><svg class="ic"><use href="#i-orders"/></svg><span data-t="ordersTab"></span></button>
-  <button data-tab="profile"><svg class="ic"><use href="#i-user"/></svg><span data-t="profile"></span></button>
+  <button data-tab="profile"><svg class="ic"><use href="#i-shop"/></svg><span data-t="shopTab"></span></button>
 </nav>
-<input type="file" id="avFile" accept="image/*" hidden>
 
 <script>
 "use strict";
 const FALLBACK = /*__DATA__*/null;
 const I18N = {
-uz:{deliverTo:"Yetkazish manzili",hello:"Salom",hungry:"Bugun nima yeymiz?",search:"Lavash, pitsa, burger…",menu:"Menyu",cart:"Savat",ordersTab:"Buyurtmalar",profile:"Profil",
- add:"Qo'shish",sum:"so'm",from:"dan",clear:"Tozalash",checkout:"Rasmiylashtirish",cartEmpty:"Savat hozircha bo'sh",cartEmptyText:"Menyudan sevimli taomingizni tanlang",toMenu:"Menyuga o'tish",
- items:"Mahsulotlar",total:"Jami",pcs:"ta",howDeliver:"Yetkazib berish",courier:"Gumbaz Express kuryeri",courierSub:"Narxni kuryer yetkazganda aytadi",
- yandex:"Yandex Go",yandexSub:"Yetkazish narxini Yandex kuryeri yetib borganda aytadi",pickup:"Olib ketish",pickupSub:"Bepul · o'zingiz olib ketasiz",address:"Manzil",changeOnMap:"Xaritada o'zgartirish",
- addrExtra:"Kvartira, podyezd, qavat va mo'ljalni qo'shing",pickupFrom:"Olib ketish manzili",payment:"To'lov",cash:"Naqd",card:"Karta",comment:"Izoh: masalan, piyozsiz",
- delivery:"Yetkazish",courierPay:"Kuryer aytadi",yandexPay:"Kuryer aytadi",free:"Bepul",order:"Buyurtma berish",thanks:"Buyurtma qabul qilindi!",orderNo:"Buyurtma raqami",
- myOrders:"Buyurtmalarim",noOrders:"Hali buyurtma yo'q",noOrdersText:"Birinchi buyurtmangizni bering — issiq-issiq yetkazamiz",account:"Hisob",name:"Ism",language:"Til",help:"Yordam",
- support:"Xizmat ko'rsatish",writeUs:"Telegramda yozish",terms:"Foydalanish shartlari",hours:"Ish vaqti",logout:"Chiqish",moveMap:"Xaritani suring — pin manzilni belgilaydi",mapTitle:"Yetkazish manzili",satL:"Sputnik",schemeL:"Xarita",streetPh:"Ko'cha va uy raqami",aptL:"Kvartira",entL:"Podyezd",floorL:"Qavat",landPh:"Mo'ljal: masalan, maktab yonida",saveAddr:"Manzilni saqlash",streetNeed:"Ko'cha va uy raqamini kiriting",fromRest:"Restorandan {d}",hereDeliver:"Shu yerga",gpsErr:"Joylashuvni aniqlab bo'lmadi. Telegram'ga joylashuvga ruxsat bering yoki pinni o'zingiz qo'ying.",aptS:"kv.",entS:"podyezd",floorS:"qavat",landS:"Mo'ljal",
- confirmAddr:"Manzilni tasdiqlash",mapOffline:"Xarita yuklanmadi. Manzilni pastda yozib saqlashingiz mumkin.",locating:"Aniqlanmoqda…",gateTitle:"Avval ro'yxatdan o'ting",
- gateText:"Botga qayting va /start ni bosing: telefon raqam va joylashuvni yuboring.",backToBot:"Botga qaytish",nothing:"Hech narsa topilmadi",soldout:"Tugagan",
- hit:"Xit",spicy:"Achchiq",newb:"Yangi",added:"Savatga qo'shildi",saved:"Saqlandi",minOrder:"Minimal buyurtma",chooseAddr:"Manzilni tanlang",logoutQ:"Hisobdan chiqasizmi?",
- logoutText:"Qayta kirish uchun botda /start ni bosasiz.",yes:"Ha, chiqish",cancel:"Bekor qilish",save:"Saqlash",editName:"Ismni o'zgartirish",
- yandexNote:"Buyurtmangizni Yandex kuryeri yetkazadi. Yetkazish narxini kuryer yetib borganda aytadi.",courierNote:"Kuryer yetkazganda yetkazish narxini aytadi.",pickupNote:"Tayyor bo'lganda botga xabar keladi.",
- err:"Xatolik yuz berdi. Qayta urinib ko'ring.",tooFast:"Biroz kuting va qayta urinib ko'ring",unavailable:"Ba'zi mahsulotlar tugagan, savatni tekshiring",copied:"Raqam nusxalandi",
- estimated:"Taxminan",photoSaved:"Rasm yangilandi",demo:"DEMO",call:"Qo'ng'iroq qilish",copy:"Raqamni nusxalash",ordersCnt:"Buyurtmalar",spent:"Jami xarid",
- closedTitle:"Hozir yopiqmiz",netTitle:"Aloqa yo'q",netText:"Internetni tekshirib, qayta urinib ko'ring.",retry:"Qayta urinish",
- status:{new:"Yangi",accepted:"Qabul qilindi",cooking:"Tayyorlanmoqda",on_way:"Yo'lda",ready:"Tayyor",done:"Yetkazildi",cancelled:"Bekor qilindi"}},
-ru:{deliverTo:"Адрес доставки",hello:"Привет",hungry:"Что будем есть сегодня?",search:"Лаваш, пицца, бургер…",menu:"Меню",cart:"Корзина",ordersTab:"Заказы",profile:"Профиль",
- add:"Добавить",sum:"сум",from:"от",clear:"Очистить",checkout:"Оформить",cartEmpty:"Корзина пока пуста",cartEmptyText:"Выберите любимое блюдо в меню",toMenu:"Перейти в меню",
- items:"Товары",total:"Итого",pcs:"шт",howDeliver:"Доставка",courier:"Курьер Gumbaz Express",courierSub:"Стоимость скажет курьер",
- yandex:"Яндекс Go",yandexSub:"Стоимость доставки скажет курьер Яндекс по прибытии",pickup:"Самовывоз",pickupSub:"Бесплатно · заберёте сами",address:"Адрес",changeOnMap:"Изменить на карте",
- addrExtra:"Добавьте квартиру, подъезд, этаж и ориентир",pickupFrom:"Адрес самовывоза",payment:"Оплата",cash:"Наличные",card:"Карта",comment:"Комментарий: например, без лука",
- delivery:"Доставка",courierPay:"Скажет курьер",yandexPay:"Скажет курьер",free:"Бесплатно",order:"Оформить заказ",thanks:"Заказ принят!",orderNo:"Номер заказа",
- myOrders:"Мои заказы",noOrders:"Заказов пока нет",noOrdersText:"Сделайте первый заказ — привезём горячим",account:"Аккаунт",name:"Имя",language:"Язык",help:"Помощь",
- support:"Служба поддержки",writeUs:"Написать в Telegram",terms:"Условия использования",hours:"Время работы",logout:"Выйти",moveMap:"Двигайте карту — пин отмечает адрес",mapTitle:"Адрес доставки",satL:"Спутник",schemeL:"Схема",streetPh:"Улица и номер дома",aptL:"Квартира",entL:"Подъезд",floorL:"Этаж",landPh:"Ориентир: например, возле школы",saveAddr:"Сохранить адрес",streetNeed:"Укажите улицу и номер дома",fromRest:"{d} от ресторана",hereDeliver:"Сюда",gpsErr:"Не удалось определить местоположение. Разрешите доступ в Telegram или поставьте пин вручную.",aptS:"кв.",entS:"подъезд",floorS:"этаж",landS:"Ориентир",
- confirmAddr:"Подтвердить адрес",mapOffline:"Карта не загрузилась. Адрес можно ввести ниже и сохранить.",locating:"Определяем…",gateTitle:"Сначала зарегистрируйтесь",
- gateText:"Вернитесь в бот и нажмите /start: отправьте номер и геолокацию.",backToBot:"Вернуться в бот",nothing:"Ничего не найдено",soldout:"Нет в наличии",
- hit:"Хит",spicy:"Острое",newb:"Новинка",added:"Добавлено в корзину",saved:"Сохранено",minOrder:"Минимальный заказ",chooseAddr:"Выберите адрес",logoutQ:"Выйти из аккаунта?",
- logoutText:"Чтобы войти снова, нажмите /start в боте.",yes:"Да, выйти",cancel:"Отмена",save:"Сохранить",editName:"Изменить имя",
- yandexNote:"Заказ доставит курьер Яндекс. Стоимость доставки он скажет по прибытии.",courierNote:"Курьер скажет стоимость доставки при доставке.",pickupNote:"Когда заказ будет готов, бот пришлёт уведомление.",
- err:"Произошла ошибка. Попробуйте ещё раз.",tooFast:"Подождите немного и попробуйте снова",unavailable:"Некоторых товаров нет, проверьте корзину",copied:"Номер скопирован",
- estimated:"Примерно",photoSaved:"Фото обновлено",demo:"ДЕМО",call:"Позвонить",copy:"Скопировать номер",ordersCnt:"Заказы",spent:"Всего покупок",
- closedTitle:"Сейчас закрыто",netTitle:"Нет соединения",netText:"Проверьте интернет и попробуйте снова.",retry:"Повторить",
- status:{new:"Новый",accepted:"Принят",cooking:"Готовится",on_way:"В пути",ready:"Готов",done:"Доставлен",cancelled:"Отменён"}}
+uz:{catalog:"Katalog",cart:"Savat",ordersTab:"Buyurtmalar",shopTab:"Do'kon",hello:"Salom",whatToday:"Bugun nimaga buyurtma beramiz?",search:"Mahsulot qidirish…",
+ sum:"so'm",per:"/",add:"Savatga",update:"Savatni yangilash",remove:"Savatdan olib tashlash",clear:"Tozalash",checkout:"Rasmiylashtirish",cartEmpty:"Savat hozircha bo'sh",
+ cartEmptyText:"Katalogdan kerakli mahsulotlarni tanlang",toCatalog:"Katalogga o'tish",positions:"pozitsiya",total:"Jami",items:"Mahsulotlar",nextDelivery:"Keyingi yetkazish",
+ debt:"Qarzingiz",noDebt:"Qarz yo'q",pcsIn:"{n} {u}",packOf:"{p} · {n} {u}",each:"dona narxi",qtyL:"Miqdori",inCart:"Savatda",shopL:"Do'kon",
+ deliveryDay:"Yetkazish kuni",payment:"To'lov",cash:"Naqd",cashSub:"Yetkazilganda to'laysiz",debtPay:"Nasiya",debtSub:"Keyinroq to'laysiz",curDebt:"Joriy qarz",limit:"Chegara",
+ noLimit:"cheklanmagan",afterOrder:"Buyurtmadan keyin",overLimit:"Qarz chegarasidan oshadi. Naqd tanlang yoki avval to'lov qiling.",comment:"Izoh (ixtiyoriy): masalan, ertalab olib keling",
+ order:"Buyurtma berish",thanks:"Buyurtma qabul qilindi!",orderNo:"Buyurtma raqami",willDeliver:"Yetkazish",myOrders:"Buyurtmalarim",noOrders:"Hali buyurtma yo'q",
+ noOrdersText:"Birinchi buyurtmangizni bering — marshrut kunida yetkazamiz",reorder:"Qayta buyurtma",reordered:"Savatga qo'shildi",partReorder:"Ba'zi mahsulotlar hozir yo'q",
+ paidL:"To'landi",debtL:"Nasiyaga",ledger:"Hisob-kitob",ledgerSub:"Qarz, to'lovlar tarixi",balanceDebt:"Umumiy qarzingiz",balanceZero:"Qarzingiz yo'q",balanceOver:"Oldindan to'lov",
+ ledgerEmpty:"Hali yozuv yo'q",kOrder:"Nasiyaga mahsulot",kPayment:"To'lov",kAdjust:"Tuzatish",shopName:"Do'kon nomi",owner:"Egasi",address:"Manzil",zone:"Hudud",chooseZone:"Hududni tanlang",
+ zoneHint:"Yetkazish kunlari hududingizga qarab belgilanadi",language:"Til",help:"Yordam",support:"Qo'llab-quvvatlash",writeUs:"Telegramda yozish",terms:"Foydalanish shartlari",hours:"Ish vaqti",
+ logout:"Chiqish",logoutQ:"Hisobdan chiqasizmi?",logoutText:"Qayta kirish uchun botda /start ni bosasiz.",hasDebt:"Qarz yoki faol buyurtma bor — avval hisob-kitob qiling",yes:"Ha, chiqish",cancel:"Bekor qilish",
+ save:"Saqlash",saved:"Saqlandi",edit:"O'zgartirish",chooseAddr:"Manzilni belgilang",mapTitle:"Do'kon manzili",satL:"Sputnik",schemeL:"Xarita",streetPh:"Ko'cha, uy raqami",landPh:"Mo'ljal: masalan, bozor yonida",
+ saveAddr:"Manzilni saqlash",streetNeed:"Ko'cha va uy raqamini kiriting",hereShop:"Do'kon shu yerda",base:"Ombor",gpsErr:"Joylashuvni aniqlab bo'lmadi. Telegram'ga ruxsat bering yoki pinni o'zingiz qo'ying.",
+ mapOffline:"Xarita yuklanmadi. Manzilni pastda yozib saqlashingiz mumkin.",gateTitle:"Avval ro'yxatdan o'ting",gateText:"Botga qayting va /start ni bosing: telefon, do'kon nomi va joylashuvni yuboring.",
+ backToBot:"Botga qaytish",blockedT:"Hisob to'xtatilgan",blockedText:"Ma'lumot uchun qo'llab-quvvatlash raqamiga qo'ng'iroq qiling.",nothing:"Hech narsa topilmadi",soldout:"Tugagan",
+ hit:"Xit",newb:"Yangi",sale:"Aksiya",added:"Savatga qo'shildi",minOrder:"Minimal buyurtma",err:"Xatolik yuz berdi. Qayta urinib ko'ring.",tooFast:"Biroz kuting va qayta urinib ko'ring",
+ unavailable:"Ba'zi mahsulotlar tugagan, savatni tekshiring",noZone:"Avval hududingizni tanlang",badDate:"Yetkazish kunini qayta tanlang",copied:"Raqam nusxalandi",demo:"DEMO",call:"Qo'ng'iroq qilish",copy:"Raqamni nusxalash",
+ closedTitle:"Hozir buyurtma qabul qilinmayapti",netTitle:"Aloqa yo'q",netText:"Internetni tekshirib, qayta urinib ko'ring.",retry:"Qayta urinish",ordersCnt:"Buyurtmalar",editName:"Ismni o'zgartirish",editShop:"Do'kon nomini o'zgartirish",
+ status:{new:"Yangi",accepted:"Qabul qilindi",on_way:"Yo'lda",done:"Yetkazildi",cancelled:"Bekor qilindi"},
+ wd:["Du","Se","Ch","Pa","Ju","Sh","Ya"],wdl:["Dushanba","Seshanba","Chorshanba","Payshanba","Juma","Shanba","Yakshanba"],mon:["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktabr","noyabr","dekabr"],today:"Bugun",tomorrow:"Ertaga",
+ units:{pc:"dona",kg:"kg",l:"litr",pack:"pachka"}},
+ru:{catalog:"Каталог",cart:"Корзина",ordersTab:"Заказы",shopTab:"Магазин",hello:"Здравствуйте",whatToday:"Что закажем сегодня?",search:"Поиск товара…",
+ sum:"сум",per:"/",add:"В корзину",update:"Обновить корзину",remove:"Убрать из корзины",clear:"Очистить",checkout:"Оформить",cartEmpty:"Корзина пока пуста",
+ cartEmptyText:"Выберите нужные товары в каталоге",toCatalog:"Перейти в каталог",positions:"позиций",total:"Итого",items:"Товары",nextDelivery:"Ближайшая доставка",
+ debt:"Ваш долг",noDebt:"Долгов нет",pcsIn:"{n} {u}",packOf:"{p} · {n} {u}",each:"цена за шт",qtyL:"Количество",inCart:"В корзине",shopL:"Магазин",
+ deliveryDay:"День доставки",payment:"Оплата",cash:"Наличные",cashSub:"Оплата при доставке",debtPay:"В долг",debtSub:"Оплатите позже",curDebt:"Текущий долг",limit:"Лимит",
+ noLimit:"без лимита",afterOrder:"После заказа",overLimit:"Превышен лимит долга. Выберите наличные или сначала оплатите.",comment:"Комментарий (необязательно): например, привезите утром",
+ order:"Оформить заказ",thanks:"Заказ принят!",orderNo:"Номер заказа",willDeliver:"Доставка",myOrders:"Мои заказы",noOrders:"Заказов пока нет",
+ noOrdersText:"Сделайте первый заказ — доставим в день маршрута",reorder:"Повторить",reordered:"Добавлено в корзину",partReorder:"Некоторых товаров сейчас нет",
+ paidL:"Оплачено",debtL:"В долг",ledger:"Взаиморасчёты",ledgerSub:"Долг, история оплат",balanceDebt:"Ваш общий долг",balanceZero:"Долгов нет",balanceOver:"Предоплата",
+ ledgerEmpty:"Записей пока нет",kOrder:"Товар в долг",kPayment:"Оплата",kAdjust:"Корректировка",shopName:"Название магазина",owner:"Владелец",address:"Адрес",zone:"Район",chooseZone:"Выберите район",
+ zoneHint:"Дни доставки зависят от вашего района",language:"Язык",help:"Помощь",support:"Поддержка",writeUs:"Написать в Telegram",terms:"Условия использования",hours:"Время работы",
+ logout:"Выйти",logoutQ:"Выйти из аккаунта?",logoutText:"Чтобы войти снова, нажмите /start в боте.",hasDebt:"Есть долг или активный заказ — сначала рассчитайтесь",yes:"Да, выйти",cancel:"Отмена",
+ save:"Сохранить",saved:"Сохранено",edit:"Изменить",chooseAddr:"Укажите адрес",mapTitle:"Адрес магазина",satL:"Спутник",schemeL:"Схема",streetPh:"Улица, номер дома",landPh:"Ориентир: например, возле базара",
+ saveAddr:"Сохранить адрес",streetNeed:"Укажите улицу и номер дома",hereShop:"Магазин здесь",base:"Склад",gpsErr:"Не удалось определить местоположение. Разрешите доступ в Telegram или поставьте пин вручную.",
+ mapOffline:"Карта не загрузилась. Адрес можно ввести ниже и сохранить.",gateTitle:"Сначала зарегистрируйтесь",gateText:"Вернитесь в бот и нажмите /start: отправьте номер, название магазина и геолокацию.",
+ backToBot:"Вернуться в бот",blockedT:"Аккаунт приостановлен",blockedText:"Позвоните в поддержку для уточнения.",nothing:"Ничего не найдено",soldout:"Нет в наличии",
+ hit:"Хит",newb:"Новинка",sale:"Акция",added:"Добавлено в корзину",minOrder:"Минимальный заказ",err:"Произошла ошибка. Попробуйте ещё раз.",tooFast:"Подождите немного и попробуйте снова",
+ unavailable:"Некоторых товаров нет, проверьте корзину",noZone:"Сначала выберите район",badDate:"Выберите день доставки заново",copied:"Номер скопирован",demo:"ДЕМО",call:"Позвонить",copy:"Скопировать номер",
+ closedTitle:"Сейчас заказы не принимаются",netTitle:"Нет соединения",netText:"Проверьте интернет и попробуйте снова.",retry:"Повторить",ordersCnt:"Заказы",editName:"Изменить имя",editShop:"Изменить название магазина",
+ status:{new:"Новый",accepted:"Принят",on_way:"В пути",done:"Доставлен",cancelled:"Отменён"},
+ wd:["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],wdl:["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"],mon:["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"],today:"Сегодня",tomorrow:"Завтра",
+ units:{pc:"шт",kg:"кг",l:"л",pack:"пачка"}}
 };
 const TERMS = {
-uz:`<p>Gumbaz Express Telegram ilovasidan foydalanib, siz quyidagi shartlarga rozilik bildirasiz.</p><h3>1. Buyurtma</h3><p>Buyurtma "Buyurtma berish" tugmasi bosilgandan so'ng qabul qilinadi. Operator tasdiqlaydi, holat o'zgarishi haqida botga xabar keladi.</p><h3>2. Narxlar</h3><p>Narxlar so'mda. Yetkazish narxi taom narxiga kirmaydi: Gumbaz Express kuryeri tanlansa — kuryer aytadi, Yandex Go tanlansa — Yandex Go tarifi bo'yicha.</p><h3>3. To'lov</h3><p>To'lov buyurtmani olganda naqd yoki karta orqali.</p><h3>4. Bekor qilish</h3><p>Tayyorlash boshlanmaguncha xizmat ko'rsatish raqami orqali bekor qilish mumkin.</p><h3>5. Shaxsiy ma'lumotlar</h3><p>Telefon, ism va manzil faqat buyurtmani yetkazish uchun ishlatiladi va uchinchi shaxslarga berilmaydi. "Chiqish" tugmasi ma'lumotlaringizni o'chiradi.</p>`,
-ru:`<p>Используя приложение Gumbaz Express в Telegram, вы соглашаетесь со следующими условиями.</p><h3>1. Заказ</h3><p>Заказ принимается после нажатия «Оформить заказ». Оператор подтверждает его, об изменении статуса придёт сообщение в бот.</p><h3>2. Цены</h3><p>Цены в сумах. Доставка не входит в цену блюд: курьер Gumbaz Express скажет стоимость сам, Яндекс Go — по своему тарифу.</p><h3>3. Оплата</h3><p>При получении — наличными или картой.</p><h3>4. Отмена</h3><p>До начала приготовления — по номеру службы поддержки.</p><h3>5. Персональные данные</h3><p>Телефон, имя и адрес используются только для доставки и не передаются третьим лицам. Кнопка «Выйти» удаляет ваши данные.</p>`};
+uz:`<p>Ilovadan foydalanib, siz quyidagi shartlarga rozilik bildirasiz.</p><h3>1. Buyurtma</h3><p>Buyurtma "Buyurtma berish" tugmasi bosilgandan so'ng qabul qilinadi va distribyutor tomonidan tasdiqlanadi. Holat o'zgarishi haqida botga xabar keladi.</p><h3>2. Narxlar</h3><p>Narxlar ulgurji, so'mda. Buyurtma qabul qilingan paytdagi narx amal qiladi.</p><h3>3. Yetkazish</h3><p>Mahsulot hududingizning marshrut kunida, do'kon manziliga yetkaziladi.</p><h3>4. To'lov va nasiya</h3><p>To'lov yetkazilganda naqd yoki nasiyaga. Nasiyaga olingan summa "Hisob-kitob" bo'limida ko'rinadi va kelishilgan muddatda to'lanadi. Qarz chegarasidan oshgan buyurtma nasiyaga qabul qilinmaydi.</p><h3>5. Shaxsiy ma'lumotlar</h3><p>Telefon, do'kon nomi va manzil faqat buyurtmalarni yetkazish va hisob-kitob uchun ishlatiladi, uchinchi shaxslarga berilmaydi.</p>`,
+ru:`<p>Пользуясь приложением, вы соглашаетесь со следующими условиями.</p><h3>1. Заказ</h3><p>Заказ принимается после нажатия «Оформить заказ» и подтверждается дистрибьютором. Об изменении статуса придёт сообщение в бот.</p><h3>2. Цены</h3><p>Цены оптовые, в сумах. Действует цена на момент принятия заказа.</p><h3>3. Доставка</h3><p>Товар доставляется в день маршрута вашего района по адресу магазина.</p><h3>4. Оплата и долг</h3><p>Оплата при доставке наличными или в долг. Сумма в долг отражается в разделе «Взаиморасчёты» и погашается в согласованный срок. Заказ сверх лимита долга в долг не принимается.</p><h3>5. Персональные данные</h3><p>Телефон, название и адрес магазина используются только для доставки и расчётов и не передаются третьим лицам.</p>`};
 
 /* ───────── state & utils ───────── */
 const tg = window.Telegram && window.Telegram.WebApp;
 const INIT = tg && tg.initData ? tg.initData : "";
-const S = {demo: !INIT && !!FALLBACK, lang: "uz", user: null, cats: [], prods: [], banners: [], set: {}, cart: [], delivery: "courier", payment: "cash",
-  view: "home", stack: [], orders: null, q: "", comment: ""};
+const S = {demo: !INIT && !!FALLBACK, lang: "uz", user: null, acc: null, cats: [], prods: [], banners: [], set: {}, cart: [], payment: "cash", date: null,
+  view: "home", stack: [], orders: null, q: "", comment: "", ledger: null};
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const t = k => (I18N[S.lang] && I18N[S.lang][k] != null ? I18N[S.lang][k] : I18N.uz[k] != null ? I18N.uz[k] : k);
 const L = o => o ? (o[S.lang] || o.uz || "") : "";
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ic = (n, c = "") => `<svg class="ic ${c}"><use href="#i-${n}"/></svg>`;
-const money = n => (Math.round(n) + "").replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " " + t("sum");
-const store = {get(k, d) { try { const v = localStorage.getItem("gx_" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem("gx_" + k, JSON.stringify(v)); } catch (e) {} }, del(k) { try { localStorage.removeItem("gx_" + k); } catch (e) {} }};
+const num = n => (Math.round(n) + "").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+const money = n => num(n) + " " + t("sum");
+const store = {get(k, d) { try { const v = localStorage.getItem("ux_" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("ux_" + k, JSON.stringify(v)); } catch (e) {} }, del(k) { try { localStorage.removeItem("ux_" + k); } catch (e) {} }};
 const hap = k => { try { const h = tg && tg.HapticFeedback; if (!h) return; k === "ok" ? h.notificationOccurred("success") : k === "err" ? h.notificationOccurred("error") : k === "sel" ? h.selectionChanged() : h.impactOccurred(k || "light"); } catch (e) {} };
-let tT; function toast(m, i = "check") { const e = $("#toast"); e.innerHTML = ic(i, "s") + esc(m); e.classList.add("show"); clearTimeout(tT); tT = setTimeout(() => e.classList.remove("show"), 2300); }
-const img = (src, cls = "") => `<img class="fade ${cls}" src="${esc(src)}" alt="" loading="lazy" onload="this.classList.add('ld')" onerror="this.classList.add('ld')">`;
+let tT; function toast(m, i = "check") { const e = $("#toast"); e.innerHTML = ic(i, "s") + esc(m); e.classList.add("show"); clearTimeout(tT); tT = setTimeout(() => e.classList.remove("show"), 2400); }
 async function api(path, body) {
   const opt = body === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json", "X-Init-Data": INIT}, body: JSON.stringify(body)};
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 15000); opt.signal = ctl.signal;
   try { const r = await fetch("api/" + path, opt); const j = await r.json().catch(() => ({ok: false, error: "bad_json"})); if (!r.ok && j.ok !== false) j.ok = false; return j; }
   catch (e) { return {ok: false, error: "network"}; } finally { clearTimeout(to); }
 }
+
+/* ───────── mahsulot va birliklar ───────── */
 const P = id => S.prods.find(p => p.id === id);
-const minPrice = p => p.variants ? Math.min(...p.variants.map(v => v.price)) : p.price;
-const key = (pid, vid) => pid + "|" + (vid || "");
-const info = c => { const p = P(c.pid); if (!p) return null; const v = p.variants ? p.variants.find(x => x.id === c.vid) : null; if (p.variants && !v) return null; return {p, v, price: v ? v.price : p.price}; };
-const cartTotal = () => S.cart.reduce((a, c) => { const i = info(c); return a + (i ? i.price * c.qty : 0); }, 0);
-const cartCount = () => S.cart.reduce((a, c) => a + c.qty, 0);
+const HUES = [215, 28, 150, 330, 265, 190, 5, 95];
+const catHue = cid => HUES[Math.max(0, S.cats.findIndex(c => c.id === cid)) % HUES.length];
+function pimg(p, big) {
+  if (p.img) return `<img class="fade" src="${esc(p.img)}" alt="" loading="lazy" onload="this.classList.add('ld')" onerror="this.classList.add('ld')">`;
+  const c = S.cats.find(x => x.id === p.cat);
+  return `<div class="noimg ${big ? "big" : ""}" style="--h:${catHue(p.cat)}">${ic("box", "l")}<b>${esc(c ? L(c.name) : "")}</b></div>`;
+}
+const baseU = p => (t("units")[p.unit || "pc"] || t("units").pc);
+const sellUnits = p => !p.pack ? ["pc"] : p.sell === "pack" ? ["pack"] : p.sell === "pc" ? ["pc"] : ["pack", "pc"];
+const defUnit = p => sellUnits(p)[0];
+const unitPrice = (p, u) => u === "pack" && p.pack ? (p.pack.price || p.price * p.pack.qty) : p.price;
+const unitName = (p, u) => u === "pack" && p.pack ? L(p.pack.name) : baseU(p);
+const unitShort = (p, u) => { const n = unitName(p, u); return n.length > 6 ? n.slice(0, 3).toLowerCase() + "." : n.toLowerCase(); };
+const key = (pid, u) => pid + "|" + u;
+const line = c => { const p = P(c.pid); if (!p || !sellUnits(p).includes(c.unit)) return null; return {p, price: unitPrice(p, c.unit)}; };
+const cartTotal = () => S.cart.reduce((a, c) => { const x = line(c); return a + (x ? x.price * c.qty : 0); }, 0);
+const inCart = (pid, u) => S.cart.find(c => c.pid === pid && c.unit === u);
 const saveCart = () => store.set("cart_" + (S.user && S.user.tg_id || 0), S.cart);
+const clampQ = n => Math.max(0, Math.min(9999, Math.round(+n || 0)));
+
+/* ───────── sanalar (demo uchun — serverda hisoblanadi) ───────── */
+const pad = n => (n < 10 ? "0" : "") + n;
+const isoOf = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+function dparts(iso) { const d = new Date(iso + "T00:00:00"), now = new Date(); now.setHours(0, 0, 0, 0);
+  const diff = Math.round((d - now) / 864e5), dm = S.lang === "ru" ? d.getDate() + " " + t("mon")[d.getMonth()] : d.getDate() + "-" + t("mon")[d.getMonth()];
+  return {wd: t("wdl")[(d.getDay() + 6) % 7], dm, rel: diff === 0 ? t("today") : diff === 1 ? t("tomorrow") : ""}; }
+function dateLabel(iso) { const p = dparts(iso); return (p.rel || p.wd) + ", " + p.dm; }
+function demoDates(zid) {
+  const z = (S.set.zones || []).find(x => x.id === zid), days = z && z.days && z.days.length ? z.days : [0, 1, 2, 3, 4, 5, 6], out = [];
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  for (let i = 1; i < 28 && out.length < 4; i++) { const x = new Date(d.getTime() + i * 864e5); if (days.includes((x.getDay() + 6) % 7)) out.push(isoOf(x)); }
+  return out.map(date => ({date, label: dateLabel(date)}));
+}
+const zoneName = id => { const z = (S.set.zones || []).find(x => x.id === id); return z ? L(z.name) : ""; };
 
 /* ───────── boot ───────── */
 async function boot() {
@@ -204,29 +263,35 @@ async function boot() {
   if (m && m.products) { applyMenu(m); S.sig = JSON.stringify([m.products, m.banners, m.categories, m.settings]); } else if (FALLBACK) applyMenu(FALLBACK);
   if (!S.demo) {
     if (!INIT) return gate("tg");
-    if (!me.ok) return gate(me.error === "unauthorized" ? "reg" : "net");
+    if (!me.ok) return gate(me.error === "blocked" ? "blocked" : me.error === "unauthorized" ? "reg" : "net");
     if (!me.registered) return gate("reg");
-    S.user = me.user; if (S.user.lang) S.lang = S.user.lang;
+    S.user = me.user; S.acc = me.account; if (S.user.lang) S.lang = S.user.lang;
   } else {
-    const r = S.set.restaurant || {lat: 39.0578, lon: 66.8342};
-    S.user = store.get("demoUser", {tg_id: 0, name: "Mehmon", phone: "+998 90 123 45 67", lang: S.lang, photo: null, lat: r.lat + .006, lon: r.lon + .004, address: "Ipak yo'li ko'chasi, 12"});
+    const b = S.set.base || {lat: 39.0578, lon: 66.8342};
+    S.user = store.get("demoUser", {tg_id: 0, name: "Aziz Karimov", shop: "Baraka market", phone: "+998 90 123 45 67", lang: S.lang, lat: b.lat + .006, lon: b.lon + .004, address: "Shahrisabz, Ipak yo'li ko'chasi, 12", landmark: "Dehqon bozori yonida", zone: "markaz"});
+    S.acc = {balance: store.get("demoBal", 350000), limit: 3000000, dates: demoDates(S.user.zone)};
   }
   if (!S.prods.length) return gate("net");
-  S.cart = store.get("cart_" + (S.user.tg_id || 0), []).filter(c => info(c));
+  S.cart = store.get("cart_" + (S.user.tg_id || 0), []).filter(c => line(c));
   i18nStatic(); go("home", true); splashOff();
 }
-function applyMenu(m) { S.cats = m.categories || []; S.prods = (m.products || []).map(p => Object.assign({available: true}, p)); S.banners = m.banners || []; S.set = m.settings || {}; }
+function applyMenu(m) { S.cats = m.categories || []; S.prods = (m.products || []).map(p => Object.assign({available: true}, p)); S.banners = m.banners || []; S.set = m.settings || {};
+  document.title = S.set.company || document.title; }
 function splashOff() { setTimeout(() => $("#splash").classList.add("hide"), 200); setTimeout(() => { const s = $("#splash"); s && s.remove(); }, 700); }
 function gate(kind) {
   i18nStatic(); $("#nav").hidden = true;
-  if (kind === "tg") { $("#app").innerHTML = `<div class="empty view" style="padding-top:12vh"><img src="img/logo.png" alt="" style="width:96px;height:96px;margin-bottom:18px"><b>Gumbaz Express</b><p>${S.lang === "ru" ? "Откройте меню через нашего Telegram-бота." : "Menyuni Telegram botimiz orqali oching."}</p></div>`; return splashOff(); }
-  const reg = kind === "reg";
-  $("#app").innerHTML = `<div class="empty view" style="padding-top:12vh"><img src="img/logo.png" alt="" style="width:96px;height:96px;margin-bottom:18px">
-    <b>${t(reg ? "gateTitle" : "netTitle")}</b><p>${t(reg ? "gateText" : "netText")}</p>
-    <button class="btn b full" style="margin-top:22px" onclick="${reg ? "try{tg.close()}catch(e){}" : "location.reload()"}">${t(reg ? "backToBot" : "retry")}</button></div>`;
+  const logo = `<img src="img/logo.png" alt="" style="width:96px;height:96px;margin-bottom:18px">`;
+  if (kind === "tg") { $("#app").innerHTML = `<div class="empty view" style="padding-top:12vh">${logo}<b>${esc(S.set.company || "")}</b><p>${S.lang === "ru" ? "Откройте каталог через нашего Telegram-бота." : "Katalogni Telegram botimiz orqali oching."}</p></div>`; return splashOff(); }
+  const M = {reg: ["gateTitle", "gateText", "backToBot", "try{tg.close()}catch(e){}"], net: ["netTitle", "netText", "retry", "location.reload()"], blocked: ["blockedT", "blockedText", "backToBot", "try{tg.close()}catch(e){}"]}[kind];
+  $("#app").innerHTML = `<div class="empty view" style="padding-top:12vh">${logo}<b>${t(M[0])}</b><p>${t(M[1])}</p>
+    <button class="btn b full" style="margin-top:22px" onclick="${M[3]}">${t(M[2])}</button></div>`;
   splashOff();
 }
 function i18nStatic() { document.documentElement.lang = S.lang; $$("[data-t]").forEach(e => e.textContent = t(e.dataset.t)); }
+async function refreshAcc() {
+  if (S.demo) { S.acc.dates = demoDates(S.user.zone); return; }
+  const r = await api("account", {}); if (r.ok) { S.user = r.user; S.acc = r.account; }
+}
 
 /* ───────── navigation ───────── */
 const TABS = ["home", "cart", "orders", "profile"];
@@ -239,7 +304,7 @@ function back() {
   if ($(".modal")) return closeModal();
   if ($("#mapLayer")) return closeMap();
   if (S.view === "success") return go("home");
-  if (S.stack.length) { const v = S.stack.pop(); S.view = v; render(); window.scrollTo(0, 0); updBack(); return; }
+  if (S.stack.length) { S.view = S.stack.pop(); render(); window.scrollTo(0, 0); updBack(); return; }
   if (S.view !== "home") go("home");
 }
 function updBack() { try { const need = !!$(".modal") || !!$("#mapLayer") || S.stack.length > 0 || S.view !== "home"; need ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {} }
@@ -251,28 +316,31 @@ function render() {
   $("#nav").hidden = !TABS.includes(v);
   $$("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
   app.className = "app" + (TABS.includes(v) ? (v === "home" && S.cart.length ? " withcart" : "") : " nonav");
-  const R = {home: vHome, cart: vCart, checkout: vCheckout, success: vSuccess, orders: vOrders, profile: vProfile, terms: vTerms}[v];
+  const R = {home: vHome, cart: vCart, checkout: vCheckout, success: vSuccess, orders: vOrders, profile: vProfile, terms: vTerms, ledger: vLedger}[v];
   app.innerHTML = `<div class="view">${R()}</div>`;
   after(v); updCart();
 }
 function after(v) {
   if (v === "home") { setupBanner(); setupSpy(); const q = $("#q"); if (q) { q.value = S.q; q.oninput = () => { S.q = q.value; clearTimeout(q._t); q._t = setTimeout(drawSearch, 140); }; } drawSearch(); }
   if (v === "orders") loadOrders();
-  if (v === "profile" && S.orders == null) loadOrders(true);
+  if (v === "ledger") loadLedger();
+  if (v === "checkout") checkLimit();
 }
 
-/* ───────── HOME ───────── */
-function avatar(u, cls = "av") {
+/* ───────── HOME (katalog) ───────── */
+function avatar(u) {
   const tgu = tg && tg.initDataUnsafe && tg.initDataUnsafe.user, src = (u && u.photo) || (tgu && tgu.photo_url);
-  return src ? `<img src="${esc(src)}" alt="">` : esc(((u && u.name) || "G").trim().charAt(0).toUpperCase());
+  return src ? `<img src="${esc(src)}" alt="">` : esc(((u && (u.shop || u.name)) || "D").trim().charAt(0).toUpperCase());
 }
 function vHome() {
   const cats = S.cats.filter(c => S.prods.some(p => p.cat === c.id));
-  const closed = S.set.accepting === false;
+  const closed = S.set.accepting === false, bal = (S.acc || {}).balance || 0, nd = ((S.acc || {}).dates || [])[0];
   return `<div class="hi"><img class="logo" src="img/logo.png" alt="">
-    <button class="addr" onclick="openMap()"><small>${ic("delivery", "xs")}${t("deliverTo")}</small><b><span>${esc(isCoords(S.user.address) ? t("chooseAddr") : (S.user.address || t("chooseAddr")))}</span>${ic("down", "s")}</b></button>
-    <button class="av" onclick="go('profile')" aria-label="${t("profile")}">${avatar(S.user)}</button></div>
-    <div class="greet"><small>${t("hello")}, ${esc((S.user.name || "").split(" ")[0])} 👋</small><h1>${t("hungry")}</h1></div>
+    <button class="who" onclick="go('profile')"><small>${ic("shop", "xs")}${esc(S.set.company || t("shopL"))}</small><b><span>${esc(S.user.shop || S.user.name || "")}</span>${ic("down", "s")}</b></button>
+    <button class="av" onclick="go('profile')" aria-label="${t("shopTab")}">${avatar(S.user)}</button></div>
+    <div class="qinfo">
+      <button onclick="go('profile')"><div class="ico">${ic("calendar", "s")}</div><div style="min-width:0"><small>${t("nextDelivery")}</small><b>${nd ? esc(dateLabel(nd.date)) : "—"}</b></div></button>
+      <button class="${bal > 0 ? "debt" : ""}" onclick="go('ledger')"><div class="ico ${bal > 0 ? "red" : "okb"}">${ic("wallet", "s")}</div><div style="min-width:0"><small>${t("debt")}</small><b class="num">${bal > 0 ? money(bal) : t("noDebt")}</b></div></button></div>
     ${closed ? `<div class="banner bad closed">${ic("clock")}<div>${t("closedTitle")}<small>${esc(L(S.set.closed_msg))}</small></div></div>` : ""}
     <label class="field">${ic("search")}<input id="q" type="search" placeholder="${t("search")}" autocomplete="off" enterkeyhint="search"></label>
     <div id="homeBody">
@@ -281,30 +349,29 @@ function vHome() {
         : `<img src="${esc(b.src)}" alt="" ${i ? 'loading="lazy"' : ""}>`}</button>`).join("")}</div>
         <div class="dots" id="bd">${S.banners.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div></div>` : ""}
       <div class="catbar"><div class="chips" id="chips">${cats.map((c, i) => `<button class="chip ${i ? "" : "on"}" data-cat="${c.id}">${esc(L(c.name))}</button>`).join("")}</div></div>
-      ${cats.map(c => `<section class="sec" id="s-${c.id}" data-cat="${c.id}"><h3>${esc(L(c.name))}</h3><div class="grid">${S.prods.filter(p => p.cat === c.id).map(card).join("")}</div></section>`).join("")}
+      ${cats.map(c => { const l = S.prods.filter(p => p.cat === c.id); return `<section class="sec" id="s-${c.id}" data-cat="${c.id}"><h3>${esc(L(c.name))}<span class="n">${l.length}</span></h3>${l.map(row).join("")}</section>`; }).join("")}
     </div><div id="searchBody" hidden></div>`;
 }
-function card(p) {
-  const n = S.cart.filter(c => c.pid === p.id).reduce((a, c) => a + c.qty, 0), off = p.available === false;
-  const badge = !off && p.badge ? `<span class="badge ${p.badge}">${ic("fire", "xs")}${t(p.badge === "new" ? "newb" : p.badge)}</span>` : "";
-  let ctl;
-  if (off) ctl = "";
-  else if (n && !p.variants) ctl = `<div class="qty" data-stop><button data-dec="${p.id}" aria-label="−">${ic("minus", "s")}</button><b class="num">${n}</b><button data-inc="${p.id}" aria-label="+">${ic("plus", "s")}</button></div>`;
-  else ctl = `<button class="addb ${n ? "n" : ""}" data-quick="${p.id}" aria-label="${t("add")}">${n ? `<span class="num">${n}</span>` : ic("plus", "s")}</button>`;
-  const priceRow = n && !p.variants && !off ? `<div class="pr" style="flex-direction:column;align-items:stretch;gap:6px"><b class="num">${money(p.price)}</b>${ctl}</div>`
-    : `<div class="pr"><b class="num">${p.variants ? `<small>${t("from")} </small>` : ""}${money(minPrice(p))}</b>${ctl}</div>`;
-  return `<div class="pc ${off ? "off" : ""}" data-p="${p.id}" role="button" tabindex="0">${badge}
-    <div class="ph" data-off="${t("soldout")}">${img(p.img)}</div>
-    <div class="bd"><div class="nm">${esc(L(p.name))}</div>${p.desc ? `<div class="ds">${esc(L(p.desc))}</div>` : ""}${priceRow}</div></div>`;
+function row(p) {
+  const off = p.available === false, u = defUnit(p), c = inCart(p.id, u), anyN = S.cart.filter(x => x.pid === p.id).length;
+  const badge = !off && p.badge ? `<span class="badge ${p.badge}">${ic(p.badge === "sale" ? "sale" : p.badge === "new" ? "star" : "fire", "xs")}${t(p.badge === "new" ? "newb" : p.badge)}</span>` : "";
+  const pk = p.pack ? `${ic("box", "xs")}${esc(L(p.pack.name))} · ${p.pack.qty} ${esc(baseU(p))}` : `${ic("box", "xs")}${esc(baseU(p))}`;
+  const sub = u === "pack" && sellUnits(p).includes("pc") ? `<small class="num">${money(p.price)} / ${esc(baseU(p))}</small>` : "";
+  const ctl = off ? "" : c ? `<div class="vq" data-stop><button data-inc="${p.id}" aria-label="+">${ic("plus", "s")}</button><b class="num">${c.qty}</b><small>${esc(unitShort(p, u))}</small><button data-dec="${p.id}" aria-label="−">${ic("minus", "s")}</button></div>`
+    : `<button class="addb" data-quick="${p.id}" aria-label="${t("add")}">${anyN ? ic("check", "s") : ic("plus", "s")}</button>`;
+  return `<div class="pr ${off ? "off" : ""}" data-p="${p.id}" role="button" tabindex="0"><div class="pi">${badge}${pimg(p)}</div>
+    <div class="pb"><div class="nm">${esc(L(p.name))}</div><div class="pk">${pk}</div>
+      <div class="pp num">${off ? `<span class="soldout">${t("soldout")}</span>` : `${num(unitPrice(p, u))} <small>${t("sum")} / ${esc(unitName(p, u))}</small>`}</div>${off ? "" : sub}</div>
+    <div class="ctl">${ctl}</div></div>`;
 }
-function refreshCards() { $$(".pc[data-p]").forEach(el => { const p = P(el.dataset.p); if (p) { el.outerHTML = card(p); } }); $$(".pc img.fade").forEach(i => i.complete && i.classList.add("ld")); }
+function refreshRows() { $$(".pr[data-p]").forEach(el => { const p = P(el.dataset.p); if (p) el.outerHTML = row(p); }); $$(".pr img.fade").forEach(i => i.complete && i.classList.add("ld")); }
 function drawSearch() {
   const sb = $("#searchBody"), hb = $("#homeBody"); if (!sb) return;
   const q = S.q.trim().toLowerCase();
   if (!q) { sb.hidden = true; hb.hidden = false; return; }
-  const f = S.prods.filter(p => [p.name.uz, p.name.ru, p.desc && p.desc.uz, p.desc && p.desc.ru].join(" ").toLowerCase().includes(q));
+  const f = S.prods.filter(p => [p.name.uz, p.name.ru, L((S.cats.find(c => c.id === p.cat) || {}).name)].join(" ").toLowerCase().includes(q));
   hb.hidden = true; sb.hidden = false;
-  sb.innerHTML = f.length ? `<h2>${f.length} ${t("pcs")}</h2><div class="grid">${f.map(card).join("")}</div>` : `<div class="empty"><div class="ei">${ic("search", "l")}</div><b>${t("nothing")}</b></div>`;
+  sb.innerHTML = f.length ? `<h2>${f.length} ${t("positions")}</h2>${f.map(row).join("")}` : `<div class="empty"><div class="ei">${ic("search", "l")}</div><b>${t("nothing")}</b></div>`;
 }
 /* banners */
 let bI = 0, bTm;
@@ -324,7 +391,6 @@ function setB(i, scroll = true) {
 }
 function nextB() { if (S.view === "home" && !document.hidden && !$(".modal")) setB(bI + 1); else { clearTimeout(bTm); bTm = setTimeout(nextB, 3000); } }
 function stopBanner() { clearTimeout(bTm); }
-/* category spy */
 let spy, spyLock = false;
 function setupSpy() {
   if (spy) spy.disconnect();
@@ -342,7 +408,7 @@ function modal(html, onclose) {
   m.addEventListener("click", e => { if (e.target === m) closeModal(); });
   m._close = onclose; document.body.appendChild(m);
   const sh = m.firstElementChild; let y0 = null;
-  sh.addEventListener("touchstart", e => { y0 = sh.scrollTop <= 0 ? e.touches[0].clientY : null; }, {passive: true});
+  sh.addEventListener("touchstart", e => { y0 = sh.scrollTop <= 0 && !e.target.closest("input,textarea") ? e.touches[0].clientY : null; }, {passive: true});
   sh.addEventListener("touchmove", e => { if (y0 == null) return; const d = e.touches[0].clientY - y0; if (d > 0) { sh.style.transform = `translateY(${d}px)`; sh.style.transition = "none"; } }, {passive: true});
   sh.addEventListener("touchend", e => { if (y0 == null) return; const d = e.changedTouches[0].clientY - y0; sh.style.transition = "transform .2s"; sh.style.transform = ""; y0 = null; if (d > 110) closeModal(); });
   updBack(); return m;
@@ -354,225 +420,285 @@ function closeModal(now) {
   setTimeout(updBack, 0);
 }
 
-/* ───────── product ───────── */
+/* ───────── mahsulot oynasi ───────── */
 let ps = null;
 function openProduct(id) {
   const p = P(id); if (!p) return; hap();
-  ps = {pid: id, vid: p.variants ? p.variants[Math.min(1, p.variants.length - 1)].id : null, qty: 1};
+  const units = sellUnits(p), u0 = units.find(u => inCart(id, u)) || units[0];
+  ps = {pid: id, unit: u0, qty: (inCart(id, u0) || {}).qty || 1};
   const off = p.available === false;
-  modal(`<div class="pimg">${img(p.img)}</div><h1>${esc(L(p.name))}</h1>${p.desc ? `<p class="desc">${esc(L(p.desc))}</p>` : ""}
-    ${p.variants ? `<div class="seg" id="vs">${p.variants.map(v => `<button data-v="${v.id}" class="${v.id === ps.vid ? "on" : ""}">${esc(L(v.name))}<small class="num">${money(v.price)}</small></button>`).join("")}</div>` : ""}
-    <div class="pfoot"><div class="qty"><button id="qm" aria-label="−">${ic("minus")}</button><b class="num" id="qn">1</b><button id="qp" aria-label="+">${ic("plus")}</button></div>
-    <button class="btn b" id="qa" ${off ? "disabled" : ""}></button></div>`, () => ps = null);
-  const upd = () => { const pr = p.variants ? p.variants.find(v => v.id === ps.vid).price : p.price; $("#qn").textContent = ps.qty; $("#qa").innerHTML = off ? t("soldout") : `<span>${t("add")}</span><span class="num">${money(pr * ps.qty)}</span>`; };
+  modal(`<div class="pimg">${pimg(p, true)}</div><h1>${esc(L(p.name))}</h1>${p.desc ? `<p class="desc">${esc(L(p.desc))}</p>` : ""}
+    ${units.length > 1 ? `<div class="seg useg" id="us">${units.map(u => `<button data-u="${u}" class="${u === ps.unit ? "on" : ""}"><b>${esc(unitName(p, u))}${u === "pack" ? ` · ${p.pack.qty} ${esc(baseU(p))}` : ""}</b><small class="num">${money(unitPrice(p, u))}</small></button>`).join("")}</div>`
+      : `<div class="box" style="display:flex;justify-content:space-between"><span class="mute">${esc(unitName(p, units[0]))}${units[0] === "pack" ? ` · ${p.pack.qty} ${esc(baseU(p))}` : ""}</span><b class="num">${money(unitPrice(p, units[0]))}</b></div>`}
+    <div class="qbig"><button class="st" id="qm" aria-label="−">${ic("minus")}</button><input id="qn" class="num" inputmode="numeric" pattern="[0-9]*" aria-label="${t("qtyL")}"><button class="st" id="qp" aria-label="+">${ic("plus")}</button></div>
+    <div class="qchips">${[5, 10, 20, 50].map(n => `<button data-qa="${n}">+${n}</button>`).join("")}</div>
+    <div class="qsum"><span id="qx"></span><b class="num" id="qt"></b></div>
+    <button class="btn b full" id="qa" ${off ? "disabled" : ""}></button>
+    <button class="link" id="qr" style="color:var(--red)" hidden>${ic("trash", "s")} ${t("remove")}</button>`, () => ps = null);
+  const upd = (fromInput) => {
+    const pr = unitPrice(p, ps.unit), inp = $("#qn"); if (!fromInput) inp.value = ps.qty;
+    const had = inCart(p.id, ps.unit);
+    $("#qx").textContent = ps.unit === "pack" ? `${num(ps.qty * p.pack.qty)} ${baseU(p)}` : `${ps.qty} ${baseU(p)}`;
+    $("#qt").textContent = money(pr * ps.qty);
+    $("#qa").innerHTML = off ? t("soldout") : `${ic(had ? "refresh" : "cart", "s")} ${t(had ? "update" : "add")}`;
+    $("#qa").disabled = off || ps.qty < 1; $("#qr").hidden = !had;
+  };
   $("#qm").onclick = () => { if (ps.qty > 1) { ps.qty--; hap("sel"); upd(); } };
-  $("#qp").onclick = () => { if (ps.qty < 50) { ps.qty++; hap("sel"); upd(); } };
-  $$("#vs button").forEach(b => b.onclick = () => { ps.vid = b.dataset.v; hap("sel"); $$("#vs button").forEach(x => x.classList.toggle("on", x === b)); upd(); });
-  $("#qa").onclick = () => { addCart(ps.pid, ps.vid, ps.qty); closeModal(); toast(t("added"), "cart"); };
+  $("#qp").onclick = () => { if (ps.qty < 9999) { ps.qty++; hap("sel"); upd(); } };
+  $("#qn").oninput = e => { ps.qty = clampQ(e.target.value.replace(/\D/g, "")); upd(true); };
+  $("#qn").onfocus = e => setTimeout(() => e.target.select(), 30);
+  $$("[data-qa]").forEach(b => b.onclick = () => { ps.qty = clampQ(ps.qty + +b.dataset.qa); hap("sel"); upd(); });
+  $$("#us button").forEach(b => b.onclick = () => { ps.unit = b.dataset.u; ps.qty = (inCart(p.id, ps.unit) || {}).qty || 1; hap("sel"); $$("#us button").forEach(x => x.classList.toggle("on", x === b)); upd(); });
+  $("#qa").onclick = () => { setQty(ps.pid, ps.unit, ps.qty); closeModal(); toast(t("added"), "cart"); };
+  $("#qr").onclick = () => { setQty(ps.pid, ps.unit, 0); closeModal(); };
   upd();
 }
 
-/* ───────── cart ───────── */
-function addCart(pid, vid, q = 1) {
+/* ───────── savat ───────── */
+function setQty(pid, unit, q) {
   const p = P(pid); if (!p || p.available === false) return;
-  const k = key(pid, vid), l = S.cart.find(c => key(c.pid, c.vid) === k);
-  if (l) l.qty = Math.min(50, l.qty + q); else S.cart.push({pid, vid: vid || null, qty: q});
+  q = clampQ(q); const l = inCart(pid, unit);
+  if (!q) S.cart = S.cart.filter(c => c !== l); else if (l) l.qty = q; else S.cart.push({pid, unit, qty: q});
   hap("medium"); saveCart(); afterCart();
 }
-function chQty(k, d) {
-  const l = S.cart.find(c => key(c.pid, c.vid) === k); if (!l) return;
-  l.qty = Math.min(50, l.qty + d); if (l.qty <= 0) S.cart = S.cart.filter(c => c !== l);
-  hap("sel"); saveCart(); afterCart();
-}
+function bump(pid, unit, d) { const l = inCart(pid, unit); setQty(pid, unit, (l ? l.qty : 0) + d); }
 function afterCart() {
-  if (S.view === "home") { refreshCards(); $("#app").classList.toggle("withcart", S.cart.length > 0); }
+  if (S.view === "home") { refreshRows(); $("#app").classList.toggle("withcart", S.cart.length > 0); }
   else if (S.view === "cart" || S.view === "checkout") { if (!S.cart.length && S.view === "checkout") return go("cart"); render(); }
   updCart();
 }
 function updCart() {
-  const n = cartCount(), b = $("#bdg"); b.hidden = !n; b.textContent = n;
+  const n = S.cart.length, b = $("#bdg"); b.hidden = !n; b.textContent = n;
   const slab = $("#slab");
   if (S.view === "home" && n) {
-    const html = `<div class="slab"><div><div style="flex:1;min-width:0"><small>${n} ${t("pcs")} · ${t("cart")}</small><b class="num">${money(cartTotal())}</b></div><button class="btn b" onclick="go('cart')">${t("cart")} ${ic("right", "s")}</button></div></div>`;
-    if (!slab.firstElementChild) slab.innerHTML = html; else { slab.querySelector("small").textContent = `${n} ${t("pcs")} · ${t("cart")}`; slab.querySelector("b").textContent = money(cartTotal()); }
+    const html = `<div class="slab"><div><div style="flex:1;min-width:0"><small>${n} ${t("positions")} · ${t("cart")}</small><b class="num">${money(cartTotal())}</b></div><button class="btn b" onclick="go('cart')">${t("cart")} ${ic("right", "s")}</button></div></div>`;
+    if (!slab.firstElementChild) slab.innerHTML = html; else { slab.querySelector("small").textContent = `${n} ${t("positions")} · ${t("cart")}`; slab.querySelector("b").textContent = money(cartTotal()); }
   } else slab.innerHTML = "";
 }
 function vCart() {
-  if (!S.cart.length) return `<div class="top"><h1>${t("cart")}</h1></div><div class="empty rise"><div class="ei">${ic("cart", "xl")}</div><b>${t("cartEmpty")}</b><p>${t("cartEmptyText")}</p><button class="btn b" style="margin:22px auto 0" onclick="go('home')">${t("toMenu")}</button></div>`;
+  if (!S.cart.length) return `<div class="top"><h1>${t("cart")}</h1></div><div class="empty rise"><div class="ei">${ic("cart", "xl")}</div><b>${t("cartEmpty")}</b><p>${t("cartEmptyText")}</p><button class="btn b" style="margin:22px auto 0" onclick="go('home')">${t("toCatalog")}</button></div>`;
   const min = S.set.min_order || 0, tot = cartTotal();
   return `<div class="top"><h1>${t("cart")}</h1><button class="pill red" onclick="clearCart()">${ic("trash", "xs")}${t("clear")}</button></div>
-    ${S.cart.map((c, i) => { const x = info(c); if (!x) return ""; const k = key(c.pid, c.vid);
-      return `<div class="card ci rise" style="animation-delay:${i * 30}ms"><div class="ico im">${img(x.p.img)}</div><div class="grow"><b>${esc(L(x.p.name))}</b>${x.v ? `<small>${esc(L(x.v.name))}</small>` : ""}<span class="pp num">${money(x.price * c.qty)}</span></div>
-      <div class="qty"><button data-q="${k}" data-d="-1" aria-label="−">${ic(c.qty === 1 ? "trash" : "minus", "s")}</button><b class="num">${c.qty}</b><button data-q="${k}" data-d="1" aria-label="+">${ic("plus", "s")}</button></div></div>`; }).join("")}
-    <div class="box"><div class="line"><span>${t("items")} · ${cartCount()} ${t("pcs")}</span><span class="num">${money(tot)}</span></div><div class="line total"><span>${t("total")}</span><span class="num">${money(tot)}</span></div></div>
-    ${tot < min ? `<div class="banner">${ic("info")}<div>${t("minOrder")}: <span class="num">${money(min)}</span></div></div>` : ""}
-    <button class="btn b full" style="margin-top:12px" onclick="go('checkout')" ${tot < min || S.set.accepting === false ? "disabled" : ""}>${t("checkout")} ${ic("right", "s")}</button>`;
+    ${S.cart.map((c, i) => { const x = line(c); if (!x) return ""; const k = key(c.pid, c.unit);
+      return `<div class="card ci rise" style="animation-delay:${Math.min(i, 10) * 25}ms"><div class="ico im" data-p="${c.pid}">${pimg(x.p)}</div><div class="grow"><b>${esc(L(x.p.name))}</b>
+        <small class="num">${esc(unitName(x.p, c.unit))}${c.unit === "pack" ? ` (${x.p.pack.qty} ${esc(baseU(x.p))})` : ""} × ${money(x.price)}</small><span class="pp num">${money(x.price * c.qty)}</span></div>
+      <div class="qty"><button data-q="${k}" data-d="-1" aria-label="−">${ic(c.qty === 1 ? "trash" : "minus", "s")}</button><input class="num" inputmode="numeric" value="${c.qty}" data-qi="${k}" aria-label="${t("qtyL")}"><button data-q="${k}" data-d="1" aria-label="+">${ic("plus", "s")}</button></div></div>`; }).join("")}
+    <div class="box"><div class="line"><span>${t("items")} · ${S.cart.length} ${t("positions")}</span><span class="num">${money(tot)}</span></div><div class="line total"><span>${t("total")}</span><span class="num">${money(tot)}</span></div></div>
+    ${tot < min ? `<div class="banner">${ic("info")}<div>${t("minOrder")}: <span class="num">${money(min)}</span><small>${S.lang === "ru" ? "Не хватает" : "Yetmayapti"}: ${money(min - tot)}</small></div></div>` : ""}
+    <button class="btn b full" style="margin-top:12px" onclick="toCheckout()" ${tot < min || S.set.accepting === false ? "disabled" : ""}>${t("checkout")} ${ic("right", "s")}</button>`;
 }
 function clearCart() { S.cart = []; saveCart(); hap("medium"); render(); }
+async function toCheckout() { await refreshAcc(); const ds = (S.acc.dates || []).map(d => d.date); if (!ds.includes(S.date)) S.date = ds[0] || null; go("checkout"); }
 
-/* ───────── checkout ───────── */
+/* ───────── rasmiylashtirish ───────── */
 function vCheckout() {
-  const r = S.set.restaurant || {}, tot = cartTotal();
-  const opts = [["courier", "scooter", t("courier"), t("courierSub")], ["yandex", null, t("yandex"), t("yandexSub")], ["pickup", "shop", t("pickup"), t("pickupSub")]];
-  const dl = S.delivery === "courier" ? t("courierPay") : S.delivery === "yandex" ? t("yandexPay") : t("free");
+  const u = S.user, tot = cartTotal(), acc = S.acc || {}, zones = S.set.zones || [], needZone = zones.length && !zones.some(z => z.id === u.zone);
+  const allowDebt = S.set.allow_debt !== false; if (!allowDebt) S.payment = "cash";
   return `<div class="top"><h1>${t("checkout")}</h1></div>
-    <h2>${t("howDeliver")}</h2>
-    ${opts.map(([id, i, n, s]) => `<button class="card opt ${S.delivery === id ? "on" : ""}" data-deliv="${id}"><div class="ico ${i ? "" : "ya"}">${i ? ic(i) : "Go"}</div><div class="grow"><b>${n}</b><small id="sub-${id}">${s}</small></div><span class="radio"></span></button>`).join("")}
-    ${S.delivery !== "pickup" ? `<h2>${t("address")}</h2>
-      <button class="card" onclick="openMap()"><div class="ico">${ic("pin")}</div><div class="grow"><b style="white-space:normal">${esc(isCoords(S.user.address) ? t("chooseAddr") : (S.user.address || t("chooseAddr")))}</b><small style="white-space:normal">${esc(addrDetails(S.user)) || t("addrExtra")}</small></div>${ic("pen", "chev")}</button>`
-    : `<h2>${t("pickupFrom")}</h2><div class="card"><div class="ico">${ic("shop")}</div><div class="grow"><b>${esc(r.name || "Gumbaz Express")}</b><small>${esc(L(r.address))}</small></div></div>`}
+    <h2>${t("shopL")}</h2>
+    <button class="card" onclick="openMap()"><div class="ico">${ic("shop")}</div><div class="grow"><b>${esc(u.shop || "—")}</b><small style="white-space:normal">${u.lat == null ? `<span class="red">${t("chooseAddr")}</span>` : esc(u.address || "") + (u.landmark ? " · " + esc(u.landmark) : "")}</small></div>${ic("pen", "chev")}</button>
+    ${zones.length ? `<button class="card" onclick="pickZone()"><div class="ico ${needZone ? "red" : ""}">${ic("route")}</div><div class="grow"><small>${t("zone")}</small><b class="${needZone ? "red" : ""}">${needZone ? t("chooseZone") : esc(zoneName(u.zone))}</b></div>${ic("right", "chev")}</button>` : ""}
+    <h2>${t("deliveryDay")}</h2>
+    ${needZone ? `<div class="banner">${ic("info")}<div>${t("zoneHint")}</div></div>` : `<div class="dates">${(acc.dates || []).map(d => { const p = dparts(d.date); return `<button data-date="${d.date}" class="${d.date === S.date ? "on" : ""}"><small>${p.rel ? esc(p.rel) : ic("calendar", "xs")}</small><b>${esc(p.wd)}</b><small class="num">${esc(p.dm)}</small></button>`; }).join("")}</div>`}
     <h2>${t("payment")}</h2>
-    <div class="seg" style="margin-bottom:10px"><button data-pay="cash" class="${S.payment === "cash" ? "on" : ""}">${t("cash")}</button><button data-pay="card" class="${S.payment === "card" ? "on" : ""}">${t("card")}</button></div>
-    <textarea id="cm" rows="2" maxlength="300" placeholder="${t("comment")}" oninput="S.comment=this.value">${esc(S.comment)}</textarea>
-    <h2>${t("items")}</h2>
-    <div class="box">${S.cart.map(c => { const x = info(c); return x ? `<div class="line"><span>${esc(L(x.p.name))}${x.v ? " · " + esc(L(x.v.name)) : ""} × ${c.qty}</span><span class="num">${money(x.price * c.qty)}</span></div>` : ""; }).join("")}
-      <div class="line"><span>${t("delivery")}</span><span id="dlv">${dl}</span></div></div>
+    <button class="card opt ${S.payment === "cash" ? "on" : ""}" data-pay="cash"><div class="ico okb">${ic("money")}</div><div class="grow"><b>${t("cash")}</b><small>${t("cashSub")}</small></div><span class="radio"></span></button>
+    ${allowDebt ? `<button class="card opt ${S.payment === "debt" ? "on" : ""}" data-pay="debt"><div class="ico gold">${ic("notebook")}</div><div class="grow"><b>${t("debtPay")}</b><small class="num">${t("curDebt")}: ${money(Math.max(0, acc.balance || 0))} · ${t("limit")}: ${acc.limit ? money(acc.limit) : t("noLimit")}</small></div><span class="radio"></span></button>
+      <div id="limw"></div>` : ""}
+    <textarea id="cm" rows="2" maxlength="300" placeholder="${t("comment")}" oninput="S.comment=this.value" style="margin-top:4px">${esc(S.comment)}</textarea>
+    <h2>${t("items")} · ${S.cart.length}</h2>
+    <div class="box">${S.cart.map(c => { const x = line(c); return x ? `<div class="line"><span>${esc(L(x.p.name))} · ${c.qty} ${esc(unitName(x.p, c.unit).toLowerCase())}</span><span class="num">${money(x.price * c.qty)}</span></div>` : ""; }).join("")}</div>
     <div class="foot"><div><div class="srow"><span>${t("total")}</span><b class="num">${money(tot)}</b></div><button class="btn b full" id="po" onclick="placeOrder()">${t("order")}</button></div></div>`;
 }
-function openExt(u) { try { if (tg && tg.openLink) return tg.openLink(u); } catch (e) {} window.open(u, "_blank"); }
+function checkLimit() {
+  const w = $("#limw"); if (!w) return; const acc = S.acc || {}, after = Math.max(0, acc.balance || 0) + cartTotal();
+  const over = S.payment === "debt" && acc.limit && after > acc.limit;
+  w.innerHTML = S.payment === "debt" ? `<div class="banner ${over ? "bad" : "info"}" style="margin-bottom:8px">${ic(over ? "danger" : "info")}<div>${over ? t("overLimit") : `${t("afterOrder")}: <span class="num">${money(after)}</span>`}</div></div>` : "";
+  const b = $("#po"); if (b) b.disabled = !!over;
+}
+function pickZone() {
+  const zs = S.set.zones || [];
+  modal(`<h3 style="margin-bottom:6px">${t("chooseZone")}</h3><small style="margin-bottom:12px">${t("zoneHint")}</small><div class="zl">${zs.map(z => `<button class="card opt ${z.id === S.user.zone ? "on" : ""}" data-zone="${z.id}"><div class="ico">${ic("route")}</div><div class="grow"><b>${esc(L(z.name))}</b><small>${(z.days || []).map(d => t("wd")[d]).join(", ") || "—"}</small></div><span class="radio"></span></button>`).join("")}</div>`);
+  $$("[data-zone]").forEach(b => b.onclick = async () => { b.disabled = true; if (await saveProfile({zone: b.dataset.zone})) { hap("ok"); closeModal(); S.date = ((S.acc || {}).dates || [{}])[0].date; render(); } else b.disabled = false; });
+}
 let placing = false, lastOrder = null;
 async function placeOrder() {
   if (placing || !S.cart.length) return;
-  if (S.delivery !== "pickup" && S.user.lat == null) return openMap();
+  if (S.user.lat == null) return openMap();
+  const zones = S.set.zones || []; if (zones.length && !zones.some(z => z.id === S.user.zone)) { toast(t("noZone"), "danger"); return pickZone(); }
   placing = true; const b = $("#po"); b.disabled = true; b.innerHTML = `<span class="skel" style="width:110px;height:14px;display:inline-block;background-color:rgba(255,255,255,.4)"></span>`;
   let res;
-  const body = {items: S.cart.map(c => ({pid: c.pid, vid: c.vid, qty: c.qty})), delivery: S.delivery, payment: S.payment, lat: S.user.lat, lon: S.user.lon, address: S.user.address, address_extra: addrDetails(S.user), comment: S.comment.trim()};
+  const body = {items: S.cart.map(c => ({pid: c.pid, unit: c.unit, qty: c.qty})), payment: S.payment, date: S.date, comment: S.comment.trim()};
   if (S.demo) {
-    await new Promise(r => setTimeout(r, 650));
+    await new Promise(r => setTimeout(r, 600));
     const id = store.get("demoSeq", 1040) + 1; store.set("demoSeq", id);
-    const o = {id, total: cartTotal(), delivery: S.delivery, status: "new", created: Date.now() / 1000 | 0, items: S.cart.map(c => { const x = info(c); return {pid: c.pid, name: x.p.name, variant: x.v ? x.v.name : null, price: x.price, qty: c.qty}; })};
+    const o = {id, total: cartTotal(), payment: S.payment, status: "new", created: Date.now() / 1000 | 0, delivery_date: S.date, date_label: dateLabel(S.date),
+      items: S.cart.map(c => { const x = line(c); return {pid: c.pid, name: x.p.name, unit: c.unit, unit_name: c.unit === "pack" ? x.p.pack.name : null, pack_qty: c.unit === "pack" ? x.p.pack.qty : null, price: x.price, qty: c.qty, base: {uz: I18N.uz.units[x.p.unit || "pc"], ru: I18N.ru.units[x.p.unit || "pc"]}}; })};
     const l = store.get("demoOrders", []); l.unshift(o); store.set("demoOrders", l.slice(0, 30));
-    res = {ok: true, order: o};
+    res = {ok: true, order: o, label: o.date_label};
   } else res = await api("order", body);
   placing = false;
   if (!res.ok) {
     hap("err"); b.disabled = false; b.textContent = t("order");
-    const M = {too_fast: t("tooFast"), item_unavailable: t("unavailable"), min_order: t("minOrder") + ": " + money(S.set.min_order || 0), no_address: t("chooseAddr"), closed: t("closedTitle")};
-    toast(M[res.error] || t("err"), "danger"); if (res.error === "item_unavailable" || res.error === "closed") reloadMenu(); return;
+    const M = {too_fast: t("tooFast"), item_unavailable: t("unavailable"), min_order: t("minOrder") + ": " + money(S.set.min_order || 0), no_address: t("chooseAddr"), closed: t("closedTitle"),
+      no_zone: t("noZone"), bad_date: t("badDate"), debt_limit: t("overLimit"), blocked: t("blockedT")};
+    toast(M[res.error] || t("err"), "danger");
+    if (res.error === "item_unavailable" || res.error === "closed") reloadMenu();
+    if (res.error === "bad_date" || res.error === "debt_limit") { await refreshAcc(); render(); }
+    return;
   }
   hap("ok"); lastOrder = res; S.cart = []; saveCart(); S.comment = ""; S.orders = null;
   go("success", true); S.stack = [];
 }
 function vSuccess() {
-  const o = lastOrder || {order: {id: "—", delivery: "courier"}}, d = o.order.delivery;
+  const o = lastOrder || {order: {id: "—"}};
   return `<div class="okc-ring">${ic("check", "xl")}</div><h1 style="text-align:center">${t("thanks")}</h1>
     <small style="text-align:center;margin:14px 0 6px">${t("orderNo")}</small><div class="codebox num">#${o.order.id}</div>
-    <div class="banner info" style="margin-top:10px">${ic("info")}<div>${t(d === "yandex" ? "yandexNote" : d === "courier" ? "courierNote" : "pickupNote")}</div></div>
-    <div class="foot"><div style="display:flex;flex-direction:column;gap:8px">
-    <div class="row"><button class="btn" onclick="go('orders')">${ic("orders", "s")} ${t("myOrders")}</button><button class="btn soft" onclick="go('home')">${ic("home", "s")} ${t("menu")}</button></div></div></div>`;
+    <div class="box" style="margin-top:10px"><div class="line"><span>${t("willDeliver")}</span><b>${esc(o.label || "")}</b></div>
+      <div class="line"><span>${t("payment")}</span><b>${t(o.order.payment === "debt" ? "debtPay" : "cash")}</b></div>
+      <div class="line"><span>${t("total")}</span><b class="num">${money(o.order.total || 0)}</b></div></div>
+    <div class="foot"><div class="row"><button class="btn" onclick="go('orders')">${ic("orders", "s")} ${t("myOrders")}</button><button class="btn soft" onclick="go('home')">${ic("box", "s")} ${t("catalog")}</button></div></div>`;
 }
-async function reloadMenu() { if (S.demo) return; const m = await api("menu"); if (m.products) { const sig = JSON.stringify([m.products, m.banners, m.categories, m.settings]); if (sig === S.sig) return; S.sig = sig; applyMenu(m); S.cart = S.cart.filter(c => { const x = info(c); return x && x.p.available !== false; }); saveCart(); render(); } }
+async function reloadMenu() { if (S.demo) return; const m = await api("menu"); if (m.products) { const sig = JSON.stringify([m.products, m.banners, m.categories, m.settings]); if (sig === S.sig) return; S.sig = sig; applyMenu(m); S.cart = S.cart.filter(c => { const x = line(c); return x && x.p.available !== false; }); saveCart(); render(); } }
 
-/* ───────── orders ───────── */
+/* ───────── buyurtmalar ───────── */
 function vOrders() { return `<div class="top"><h1>${t("myOrders")}</h1><button class="pill" onclick="hap();loadOrders()">${ic("refresh", "xs")}</button></div><div id="ol">${S.orders ? ordersHTML() : [1, 2, 3].map(() => `<div class="card"><div class="skel" style="width:44px;height:44px;border-radius:13px"></div><div class="grow"><div class="skel" style="height:14px;width:50%"></div><div class="skel" style="height:11px;width:80%;margin-top:8px"></div></div></div>`).join("")}</div>`; }
 async function loadOrders(silent) {
   let l; if (S.demo) l = store.get("demoOrders", []); else { const r = await api("orders", {}); if (!r.ok) { if (!silent) toast(t("err"), "danger"); return; } l = r.orders; }
-  S.orders = l; const ol = $("#ol"); if (ol && S.view === "orders") ol.innerHTML = ordersHTML(); if (S.view === "profile") { const s = $("#pstat"); if (s) s.innerHTML = pstat(); }
+  S.orders = l; const ol = $("#ol"); if (ol && S.view === "orders") ol.innerHTML = ordersHTML();
 }
+const iq = x => `${x.qty} ${esc((x.unit === "pack" ? L(x.unit_name) : L(x.base) || t("units").pc).toLowerCase())}`;
 function ordersHTML() {
-  if (!S.orders.length) return `<div class="empty rise"><div class="ei">${ic("orders", "xl")}</div><b>${t("noOrders")}</b><p>${t("noOrdersText")}</p><button class="btn b" style="margin:22px auto 0" onclick="go('home')">${t("toMenu")}</button></div>`;
-  const dt = s => { const d = new Date(s * 1000); return d.toLocaleDateString("ru-RU", {day: "2-digit", month: "2-digit"}) + " · " + d.toLocaleTimeString("ru-RU", {hour: "2-digit", minute: "2-digit"}); };
-  return S.orders.map((o, i) => `<div class="card rise" style="animation-delay:${Math.min(i, 8) * 30}ms;align-items:flex-start"><div class="ico">${ic(o.delivery === "pickup" ? "shop" : o.delivery === "yandex" ? "delivery" : "scooter")}</div>
+  if (!S.orders.length) return `<div class="empty rise"><div class="ei">${ic("orders", "xl")}</div><b>${t("noOrders")}</b><p>${t("noOrdersText")}</p><button class="btn b" style="margin:22px auto 0" onclick="go('home')">${t("toCatalog")}</button></div>`;
+  return S.orders.map((o, i) => `<div class="card rise" style="animation-delay:${Math.min(i, 8) * 30}ms;align-items:flex-start;flex-wrap:wrap" data-oi="${i}"><div class="ico">${ic(o.status === "on_way" ? "truck" : "box")}</div>
     <div class="grow"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b class="num">#${o.id}</b><span class="tag ${o.status}">${t("status")[o.status] || o.status}</span></div>
-    <small style="white-space:normal;margin-top:3px">${o.items.map(x => esc(L(x.name)) + (x.variant ? " (" + esc(L(x.variant)) + ")" : "") + " × " + x.qty).join(", ")}</small>
-    <div style="display:flex;justify-content:space-between;margin-top:8px"><small class="num">${dt(o.created)}</small><b class="num" style="font-weight:800">${money(o.total)}</b></div></div></div>`).join("");
+    <small style="white-space:normal;margin-top:3px">${o.items.map(x => esc(L(x.name)) + " — " + iq(x)).join(", ")}</small>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:6px"><small>${ic("calendar", "xs")} ${esc(o.date_label || "")}</small><b class="num" style="font-weight:800">${money(o.total)}</b></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><span class="tag ${o.payment}">${t(o.payment === "debt" ? "debtPay" : "cash")}</span><button class="pill" data-reo="${i}">${ic("repeat", "xs")}${t("reorder")}</button></div></div></div>`).join("");
+}
+function openOrder(i) {
+  const o = S.orders[i]; if (!o) return;
+  modal(`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h1 class="num">#${o.id}</h1><span class="tag ${o.status}" style="font-size:13px;padding:5px 12px">${t("status")[o.status]}</span></div>
+    <div class="box">${o.items.map(x => `<div class="line"><span>${esc(L(x.name))} · ${iq(x)}</span><span class="num">${money(x.price * x.qty)}</span></div>`).join("")}
+      <div class="line"><span>${t("willDeliver")}</span><span>${esc(o.date_label || "")}</span></div><div class="line"><span>${t("payment")}</span><span>${t(o.payment === "debt" ? "debtPay" : "cash")}</span></div>
+      ${o.status === "done" && o.paid != null ? `<div class="line"><span>${t("paidL")}</span><span class="num">${money(o.paid)}</span></div>${o.debt ? `<div class="line"><span>${t("debtL")}</span><span class="num red">${money(o.debt)}</span></div>` : ""}` : ""}
+      <div class="line total"><span>${t("total")}</span><span class="num">${money(o.total)}</span></div></div>
+    <button class="btn b full" id="reo" style="margin-top:6px">${ic("repeat", "s")} ${t("reorder")}</button>`);
+  $("#reo").onclick = () => reorder(i);
+}
+function reorder(i) {
+  const o = S.orders[i]; let miss = 0, added = 0;
+  o.items.forEach(x => { const p = P(x.pid); if (!p || p.available === false || !sellUnits(p).includes(x.unit)) { miss++; return; } const l = inCart(x.pid, x.unit); if (l) l.qty = clampQ(l.qty + x.qty); else S.cart.push({pid: x.pid, unit: x.unit, qty: x.qty}); added++; });
+  saveCart(); closeModal(true); hap(added ? "ok" : "err");
+  toast(miss ? t("partReorder") : t("reordered"), miss ? "info" : "cart"); if (added) go("cart");
 }
 
-/* ───────── profile ───────── */
-function pstat() { const l = (S.orders || []).filter(o => o.status !== "cancelled"); return `<div><small>${t("ordersCnt")}</small><b class="num">${S.orders ? l.length : "…"}</b></div><div><small>${t("spent")}</small><b class="num">${S.orders ? money(l.reduce((a, o) => a + o.total, 0)) : "…"}</b></div>`; }
+/* ───────── do'kon (profil) ───────── */
 function vProfile() {
-  const u = S.user;
-  return `<div class="top"><h1>${t("profile")}</h1>${S.demo ? `<span class="pill gold">${t("demo")}</span>` : ""}</div>
+  const u = S.user, bal = (S.acc || {}).balance || 0;
+  return `<div class="top"><h1>${t("shopTab")}</h1>${S.demo ? `<span class="pill gold">${t("demo")}</span>` : ""}</div>
     <div class="stat"><div style="display:flex;gap:14px;align-items:center;position:relative;z-index:1">
-      <button class="ph-av" onclick="$('#avFile').click()" aria-label="Rasm">${avatar(u)}<span class="cam">${ic("camera", "xs")}</span></button>
-      <div style="min-width:0"><b style="font-size:20px;font-weight:800;display:block">${esc(u.name || "—")}</b><small class="num">${esc(u.phone || "")}</small></div></div>
-      <div class="sp" id="pstat">${pstat()}</div></div>
-    <h2>${t("account")}</h2>
-    <button class="card" onclick="editName()"><div class="ico">${ic("user")}</div><div class="grow"><small>${t("name")}</small><b>${esc(u.name || "—")}</b></div>${ic("pen", "chev")}</button>
-    <button class="card" onclick="openMap()"><div class="ico">${ic("pin")}</div><div class="grow"><small>${t("address")}</small><b style="white-space:normal">${esc(isCoords(u.address) ? t("chooseAddr") : (u.address || t("chooseAddr")))}</b>${addrDetails(u) ? `<small style="white-space:normal">${esc(addrDetails(u))}</small>` : ""}</div>${ic("pen", "chev")}</button>
+      <div class="ph-av">${avatar(u)}</div>
+      <div style="min-width:0"><b style="font-size:20px;font-weight:800;display:block">${esc(u.shop || "—")}</b><small class="num">${esc(u.name || "")} · ${esc(u.phone || "")}</small></div></div>
+      <div class="sp"><div><small>${t("debt")}</small><b class="num">${bal > 0 ? money(bal) : t("noDebt")}</b></div><div><small>${t("nextDelivery")}</small><b>${(((S.acc || {}).dates || [])[0] || {}).date ? esc(dateLabel(S.acc.dates[0].date)) : "—"}</b></div></div></div>
+    <button class="card" onclick="go('ledger')"><div class="ico ${bal > 0 ? "red" : "okb"}">${ic("wallet")}</div><div class="grow"><b>${t("ledger")}</b><small>${t("ledgerSub")}</small></div>${ic("right", "chev")}</button>
+    <h2>${t("shopL")}</h2>
+    <button class="card" onclick="editField('shop')"><div class="ico">${ic("shop")}</div><div class="grow"><small>${t("shopName")}</small><b>${esc(u.shop || "—")}</b></div>${ic("pen", "chev")}</button>
+    <button class="card" onclick="editField('name')"><div class="ico">${ic("user")}</div><div class="grow"><small>${t("owner")}</small><b>${esc(u.name || "—")}</b></div>${ic("pen", "chev")}</button>
+    <button class="card" onclick="openMap()"><div class="ico">${ic("pin")}</div><div class="grow"><small>${t("address")}</small><b style="white-space:normal">${esc(u.lat == null ? t("chooseAddr") : (u.address || t("chooseAddr")))}</b>${u.landmark ? `<small style="white-space:normal">${esc(u.landmark)}</small>` : ""}</div>${ic("pen", "chev")}</button>
+    ${(S.set.zones || []).length ? `<button class="card" onclick="pickZone()"><div class="ico">${ic("route")}</div><div class="grow"><small>${t("zone")}</small><b>${esc(zoneName(u.zone) || t("chooseZone"))}</b><small>${esc(((S.set.zones || []).find(z => z.id === u.zone) || {days: []}).days.map(d => t("wdl")[d]).join(", "))}</small></div>${ic("right", "chev")}</button>` : ""}
     <div class="card"><div class="ico">${ic("globe")}</div><div class="grow"><b>${t("language")}</b></div><div class="seg lseg"><button data-lang="uz" class="${S.lang === "uz" ? "on" : ""}">UZ</button><button data-lang="ru" class="${S.lang === "ru" ? "on" : ""}">RU</button></div></div>
     <h2>${t("help")}</h2>
     <button class="card" onclick="support()"><div class="ico">${ic("phone")}</div><div class="grow"><b>${t("support")}</b><small class="num">${esc(S.set.support_phone || "")}</small></div>${ic("right", "chev")}</button>
     ${S.set.support_username ? `<button class="card" onclick="tgSupport()"><div class="ico">${ic("chat")}</div><div class="grow"><b>${t("writeUs")}</b><small>@${esc(S.set.support_username)}</small></div>${ic("right", "chev")}</button>` : ""}
     <button class="card" onclick="go('terms')"><div class="ico">${ic("doc")}</div><div class="grow"><b>${t("terms")}</b></div>${ic("right", "chev")}</button>
-    <div class="card"><div class="ico">${ic("clock")}</div><div class="grow"><b>${t("hours")}</b><small>${esc(S.set.work_hours || "24/7")}</small></div></div>
+    ${S.set.work_hours ? `<div class="card"><div class="ico">${ic("clock")}</div><div class="grow"><b>${t("hours")}</b><small>${esc(S.set.work_hours)}</small></div></div>` : ""}
     <button class="card" onclick="askLogout()" style="margin-top:12px"><div class="ico red">${ic("logout")}</div><div class="grow"><b class="red">${t("logout")}</b></div></button>
-    <small style="text-align:center;margin-top:16px">Gumbaz Express · v2.0</small>`;
+    <small style="text-align:center;margin-top:16px">${esc(S.set.company || "")} · v1.0</small>`;
 }
 function vTerms() { return `<div class="top"><h1>${t("terms")}</h1></div><div class="box terms">${TERMS[S.lang]}</div>`; }
-async function saveProfile(f) { if (S.demo) { Object.assign(S.user, f); store.set("demoUser", S.user); return true; } const r = await api("profile", f); if (r.ok) { S.user = r.user; return true; } toast(t("err"), "danger"); return false; }
-function editName() {
-  modal(`<h3 style="margin-bottom:12px">${t("editName")}</h3><input id="ni" maxlength="60" value="${esc(S.user.name || "")}" autocomplete="name"><button class="btn b full" id="ns" style="margin-top:12px">${t("save")}</button>`);
+async function saveProfile(f) {
+  if (S.demo) { Object.assign(S.user, f); store.set("demoUser", S.user); S.acc.dates = demoDates(S.user.zone); return true; }
+  const r = await api("profile", f); if (r.ok) { S.user = r.user; S.acc = r.account; return true; } toast(t("err"), "danger"); return false;
+}
+function editField(k) {
+  modal(`<h3 style="margin-bottom:12px">${t(k === "shop" ? "editShop" : "editName")}</h3><input id="ni" maxlength="60" value="${esc(S.user[k] || "")}"><button class="btn b full" id="ns" style="margin-top:12px">${t("save")}</button>`);
   const i = $("#ni"); setTimeout(() => i.focus(), 280);
-  const save = async () => { const v = i.value.trim(); if (!v) return i.focus(); if (await saveProfile({name: v})) { closeModal(); render(); toast(t("saved")); hap("ok"); } };
+  const save = async () => { const v = i.value.trim(); if (v.length < 2) return i.focus(); if (await saveProfile({[k]: v})) { closeModal(); render(); toast(t("saved")); hap("ok"); } };
   $("#ns").onclick = save; i.onkeydown = e => { if (e.key === "Enter") save(); };
 }
-async function setLang(l) { if (l === S.lang) return; S.lang = l; store.set("lang", l); hap("sel"); i18nStatic(); render(); saveProfile({lang: l}); }
+async function setLang(l) { if (l === S.lang) return; S.lang = l; store.set("lang", l); hap("sel"); i18nStatic(); if (S.demo) S.acc.dates = demoDates(S.user.zone); else await saveProfile({lang: l}); render(); }
 function support() {
   const ph = S.set.support_phone || "";
   modal(`<div class="empty" style="padding:6px 0 10px"><div class="ei">${ic("phone", "l")}</div><b>${t("support")}</b><div class="codebox num" style="font-size:24px;margin-top:12px">${esc(ph)}</div></div>
     <a class="btn b full" href="tel:${esc(ph.replace(/[^\d+]/g, ""))}">${ic("phone", "s")} ${t("call")}</a><button class="btn full" id="cp" style="margin-top:8px">${t("copy")}</button>`);
   $("#cp").onclick = () => { const ok = () => { toast(t("copied")); closeModal(); }; navigator.clipboard ? navigator.clipboard.writeText(ph).then(ok, ok) : ok(); };
 }
+function openExt(u) { try { if (tg && tg.openLink) return tg.openLink(u); } catch (e) {} window.open(u, "_blank"); }
 function tgSupport() { const u = "https://t.me/" + S.set.support_username; try { tg.openTelegramLink(u); } catch (e) { openExt(u); } }
 function askLogout() {
   modal(`<div class="empty" style="padding:6px 0 14px"><div class="ei" style="background:var(--redl);color:var(--red)">${ic("logout", "l")}</div><b>${t("logoutQ")}</b><p>${t("logoutText")}</p></div>
     <div class="row"><button class="btn" onclick="closeModal()">${t("cancel")}</button><button class="btn red" id="ly">${t("yes")}</button></div>`);
-  $("#ly").onclick = async () => { store.del("cart_" + (S.user.tg_id || 0)); if (S.demo) { store.del("demoUser"); store.del("demoOrders"); return location.reload(); } await api("logout", {}); hap("ok"); try { tg.close(); } catch (e) { location.reload(); } };
+  $("#ly").onclick = async () => {
+    if (S.demo) { ["demoUser", "demoOrders", "demoBal", "cart_0"].forEach(store.del); return location.reload(); }
+    const r = await api("logout", {}); if (!r.ok) { closeModal(); hap("err"); return toast(r.error === "has_debt" ? t("hasDebt") : t("err"), "danger"); }
+    store.del("cart_" + (S.user.tg_id || 0)); hap("ok"); try { tg.close(); } catch (e) { location.reload(); } };
 }
-$("#avFile").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (!f || !/^image\//.test(f.type)) return;
-  const im = new Image(), url = URL.createObjectURL(f);
-  im.onload = async () => { const s = Math.min(im.width, im.height), c = document.createElement("canvas"); c.width = c.height = 400; c.getContext("2d").drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 400, 400); URL.revokeObjectURL(url);
-    const data = c.toDataURL("image/jpeg", .86);
-    if (S.demo) { S.user.photo = data; store.set("demoUser", S.user); } else { const r = await api("avatar", {image: data}); if (!r.ok) return toast(t("err"), "danger"); S.user = r.user; }
-    render(); toast(t("photoSaved")); hap("ok"); };
-  im.onerror = () => toast(t("err"), "danger"); im.src = url; };
+
+/* ───────── hisob-kitob ───────── */
+function vLedger() {
+  const l = S.ledger, bal = l ? l.balance : (S.acc || {}).balance || 0;
+  return `<div class="top"><h1>${t("ledger")}</h1><button class="pill" onclick="hap();loadLedger()">${ic("refresh", "xs")}</button></div>
+    <div class="stat ${bal > 0 ? "red" : "ok"}"><small>${t(bal > 0 ? "balanceDebt" : bal < 0 ? "balanceOver" : "balanceZero")}</small><div class="big num">${money(Math.abs(bal))}</div>
+      <div class="sp"><div><small>${t("limit")}</small><b class="num">${(S.acc || {}).limit ? money(S.acc.limit) : t("noLimit")}</b></div></div></div>
+    <div id="lg">${l ? ledgerHTML(l.entries) : `<div class="card"><div class="skel" style="height:40px;width:100%"></div></div>`}</div>`;
+}
+async function loadLedger() {
+  let r; if (S.demo) r = {ok: true, balance: S.acc.balance, entries: store.get("demoLedger", [{id: 2, amount: -150000, kind: "payment", note: "Naqd", created: Date.now() / 1000 - 86400 * 2}, {id: 1, amount: 500000, kind: "order", order_id: 1037, note: "Buyurtma #1037", created: Date.now() / 1000 - 86400 * 6}])};
+  else r = await api("ledger", {});
+  if (!r.ok) return toast(t("err"), "danger");
+  S.ledger = r; if (S.acc) S.acc.balance = r.balance; if (S.view === "ledger") $("#app").innerHTML = `<div class="view" style="animation:none">${vLedger()}</div>`;
+}
+function ledgerHTML(es) {
+  if (!es.length) return `<div class="empty"><div class="ei">${ic("notebook", "xl")}</div><b>${t("ledgerEmpty")}</b></div>`;
+  const dt = s => { const d = new Date(s * 1000); return d.toLocaleDateString("ru-RU", {day: "2-digit", month: "2-digit", year: "2-digit"}) + " · " + d.toLocaleTimeString("ru-RU", {hour: "2-digit", minute: "2-digit"}); };
+  return es.map((e, i) => `<div class="card le rise" style="animation-delay:${Math.min(i, 10) * 20}ms"><div class="ico ${e.amount > 0 ? "red" : "okb"}">${ic(e.kind === "payment" ? "handmoney" : e.kind === "order" ? "box" : "pen")}</div>
+    <div class="grow"><b>${t(e.kind === "payment" ? "kPayment" : e.kind === "order" ? "kOrder" : "kAdjust")}</b><small>${esc(e.note || "")}${e.note ? " · " : ""}${dt(e.created)}</small></div>
+    <span class="amt num ${e.amount > 0 ? "plus" : "minus"}">${e.amount > 0 ? "+" : "−"}${num(Math.abs(e.amount))}</span></div>`).join("");
+}
 
 /*__MAPJS__*/
-function addrDetails(u) {
-  if (!u) return "";
-  const p = [];
-  if (u.apt) p.push(`${t("aptS")} ${u.apt}`); if (u.entrance) p.push(`${u.entrance}-${t("entS")}`); if (u.floor) p.push(`${u.floor}-${t("floorS")}`);
-  let s = p.join(", "); if (u.landmark) s += (s ? " · " : "") + `${t("landS")}: ${u.landmark}`;
-  return s;
-}
-
-let MP = null;   // xarita oynasi holati
+let MP = null;
 function openMap() {
   if ($("#mapLayer")) return;
-  const r = S.set.restaurant || {lat: 39.0578, lon: 66.8342}, u = S.user, has = u.lat != null;
-  const street0 = isCoords(u.address) ? "" : (u.address || "");  // koordinata — manzil emas
-  MP = {lat: has ? u.lat : r.lat, lon: has ? u.lon : r.lon, sug: street0, req: 0, gT: 0, map: null};
+  const b = S.set.base || {lat: 39.0578, lon: 66.8342}, u = S.user, has = u.lat != null;
+  const street0 = /^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(u.address || "") ? "" : (u.address || "");
+  MP = {lat: has ? u.lat : b.lat, lon: has ? u.lon : b.lon, sug: street0, req: 0, gT: 0, map: null};
   const el = document.createElement("div"); el.id = "mapLayer";
   el.innerHTML = `<div class="gmap" id="gmap"></div><div class="mshade"></div>
     <div class="mapfb" id="mfb" hidden>${ic("info", "s")}<span>${t("mapOffline")}</span></div>
-    <div class="pinw" id="pin"><i class="pshadow"></i><i class="pring"></i><div class="pinb">${PIN_SVG}</div><div class="pbub" id="pbub">${t("hereDeliver")}</div></div>
+    <div class="pinw" id="pin"><i class="pshadow"></i><i class="pring"></i><div class="pinb">${PIN_SVG}</div><div class="pbub">${t("hereShop")}</div></div>
     <div class="mtop"><button class="rbtn" onclick="closeMap()" aria-label="${t("cancel")}">${ic("left")}</button><div class="mtitle">${S.set.map_token ? "" : t("mapTitle")}</div>
       ${S.set.map_token ? `<div class="mstyle" id="mstyle"><button data-ms="sat">${t("satL")}</button><button data-ms="map">${t("schemeL")}</button></div>` : `<span class="ph"></span>`}</div>
     <div class="mctl" id="mctl"><div class="mzoom"><button id="zin" aria-label="+">${ic("plus")}</button><button id="zout" aria-label="−">${ic("minus")}</button></div>
       <button class="rbtn gps" id="mgps" aria-label="GPS">${ic("gps")}</button></div>
     <div class="mattr" id="mattr">© OpenStreetMap</div>
     <div class="msheet" id="msheet"><div><div class="grab"></div>
-      <div class="mhead"><h3>${t("mapTitle")}</h3><span class="pill" id="mdist" hidden></span></div>
+      <div class="mhead"><h3>${t("mapTitle")}</h3></div>
       <label class="mstreet" id="mst"><span class="ico">${ic("pin", "s")}</span><input id="ma" maxlength="200" placeholder="${t("streetPh")}" value="${esc(street0)}" autocomplete="street-address" enterkeyhint="next"></label>
-      <div class="mgrid"><label><small>${t("aptL")}</small><input id="m_apt" maxlength="12" inputmode="text" value="${esc(u.apt || "")}"></label>
-        <label><small>${t("entL")}</small><input id="m_ent" maxlength="12" inputmode="numeric" value="${esc(u.entrance || "")}"></label>
-        <label><small>${t("floorL")}</small><input id="m_flo" maxlength="12" inputmode="numeric" value="${esc(u.floor || "")}"></label></div>
       <input class="mland" id="m_land" maxlength="120" placeholder="${t("landPh")}" value="${esc(u.landmark || "")}">
       <button class="btn b full" id="msave">${ic("check", "s")} ${t("saveAddr")}</button></div></div>`;
   document.body.appendChild(el); updBack();
   const sheet = $("#msheet"), pin = $("#pin"), ctl = $("#mctl"), attr = $("#mattr");
   const mbx = S.set.map_token, st = mapStyle();
   if (mbx) { $("#gmap").classList.add("mbx"); $("#mattr").textContent = "© Mapbox · © OpenStreetMap · © Maxar"; el.classList.toggle("sat", st === "sat"); }
-  const map = MP.map = GMap($("#gmap"), {lat: MP.lat, lon: MP.lon, zoom: has ? 18 : 15,
-    tileUrl: tileFn(mbx, st),
+  const map = MP.map = GMap($("#gmap"), {lat: MP.lat, lon: MP.lon, zoom: has ? 18 : 15, tileUrl: tileFn(mbx, st),
     focusY: H => Math.max(150, (H - sheet.offsetHeight) / 2 + 40),
-    onMeasure: m => { pin.style.top = m.fy + "px"; const b = sheet.offsetHeight + 14; ctl.style.bottom = b + "px"; attr.style.bottom = (b - 4) + "px"; },
+    onMeasure: m => { pin.style.top = m.fy + "px"; const bb = sheet.offsetHeight + 14; ctl.style.bottom = bb + "px"; attr.style.bottom = (bb - 4) + "px"; },
     onMoveStart: () => { el.classList.add("moving"); pin.classList.remove("drop"); pin.classList.add("lift"); hap("sel"); },
     onMoveEnd: () => { el.classList.remove("moving"); pin.classList.remove("lift"); void pin.offsetWidth; pin.classList.add("drop"); hap("light"); onPin(); },
     onTileFail: () => { $("#mfb") && ($("#mfb").hidden = false); }, onTileOk: () => { $("#mfb") && ($("#mfb").hidden = true); }});
-  const rm = document.createElement("div"); rm.className = "rmk"; rm.innerHTML = `<i></i><div><img src="img/logo.png" alt=""></div><b>Gumbaz Express</b>`;
-  map.addMarker(r.lat, r.lon, rm);
+  const rm = document.createElement("div"); rm.className = "rmk"; rm.innerHTML = `<i></i><div><img src="img/logo.png" alt=""></div><b>${t("base")}</b>`;
+  map.addMarker(b.lat, b.lon, rm);
   $("#zin").onclick = () => { hap("sel"); map.zoomTo(Math.round(map.z) + 1); };
   $("#zout").onclick = () => { hap("sel"); map.zoomTo(Math.round(map.z) - 1); };
   $("#mgps").onclick = locate;
@@ -580,27 +706,23 @@ function openMap() {
     bt.onclick = () => { const v = mapStyle(bt.dataset.ms); hap("sel"); $$("#mstyle button").forEach(x => x.classList.toggle("on", x === bt)); el.classList.toggle("sat", v === "sat"); map.setTiles(tileFn(mbx, v)); }; });
   $("#msave").onclick = saveAddr;
   $("#ma").addEventListener("input", () => $("#mst").classList.remove("bad"));
-  [["#ma", "#m_apt"], ["#m_apt", "#m_ent"], ["#m_ent", "#m_flo"], ["#m_flo", "#m_land"]].forEach(([a, b]) => $(a).addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $(b).focus(); } }));
+  $("#ma").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("#m_land").focus(); } });
   $("#m_land").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } });
   setTimeout(() => { pin.classList.add("drop"); onPin(true); }, 60);
   if (!has) locate();
 }
 function closeMap() { const m = $("#mapLayer"); if (MP && MP.map) MP.map.destroy(); MP = null; if (m) { m.style.transition = "opacity .2s"; m.style.opacity = "0"; setTimeout(() => m.remove(), 200); } setTimeout(updBack, 0); }
 function onPin(initial) {
-  if (!MP) return; const map = MP.map, r = S.set.restaurant || {lat: 39.0578, lon: 66.8342};
-  MP.lat = map.lat; MP.lon = map.lon;
-  const km = dist(r.lat, r.lon, MP.lat, MP.lon), d = $("#mdist");
-  d.hidden = false; d.innerHTML = `${ic("delivery", "xs")}${t("fromRest").replace("{d}", kmTxt(km))}`; $("#pbub").textContent = kmTxt(km);
-  if (initial && $("#ma").value.trim()) return;  // saqlangan manzil — tegmaymiz
+  if (!MP) return; const map = MP.map; MP.lat = map.lat; MP.lon = map.lon;
+  if (initial && $("#ma").value.trim()) return;
   const inp = $("#ma"), cur = inp.value.trim(), canFill = !cur || cur === MP.sug;
-  clearTimeout(MP.gT);
-  if (canFill) inp.classList.add("loading");
+  clearTimeout(MP.gT); if (canFill) inp.classList.add("loading");
   MP.gT = setTimeout(async () => {
     const my = ++MP.req; let a = "";
     if (!S.demo) { const res = await api("geocode", {lat: MP.lat, lon: MP.lon, lang: S.lang}); if (res.ok) a = res.address; }
     if (!MP || my !== MP.req) return;
     inp.classList.remove("loading");
-    if (a && !isCoords(a)) { const now = inp.value.trim(); if (!now || now === MP.sug) { inp.value = a; } MP.sug = a; }
+    if (a && !/^-?\d+\.\d+,/.test(a)) { const now = inp.value.trim(); if (!now || now === MP.sug) inp.value = a; MP.sug = a; }
   }, 420);
 }
 function locate() {
@@ -618,7 +740,7 @@ async function saveAddr() {
   if (!MP) return;
   const street = $("#ma").value.trim();
   if (street.length < 3) { const st = $("#mst"); st.classList.remove("bad"); void st.offsetWidth; st.classList.add("bad"); hap("err"); toast(t("streetNeed"), "danger"); return $("#ma").focus(); }
-  const body = {lat: MP.map.lat, lon: MP.map.lon, address: street, apt: $("#m_apt").value.trim(), entrance: $("#m_ent").value.trim(), floor: $("#m_flo").value.trim(), landmark: $("#m_land").value.trim()};
+  const body = {lat: MP.map.lat, lon: MP.map.lon, address: street, landmark: $("#m_land").value.trim()};
   const b = $("#msave"); b.disabled = true;
   if (S.demo) { Object.assign(S.user, body); store.set("demoUser", S.user); }
   else { const r = await api("address", body); if (!r.ok) { b.disabled = false; hap("err"); return toast(t("err"), "danger"); } S.user = r.user; }
@@ -627,20 +749,23 @@ async function saveAddr() {
 
 /* ───────── events ───────── */
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-inc],[data-dec],[data-quick],[data-q],[data-p],[data-cat],[data-tab],[data-deliv],[data-pay],[data-lang]"); if (!el) return;
+  const el = e.target.closest("[data-inc],[data-dec],[data-quick],[data-q],[data-p],[data-cat],[data-tab],[data-pay],[data-lang],[data-date],[data-reo],[data-oi]"); if (!el) return;
   const d = el.dataset;
-  if (d.inc) { e.stopPropagation(); return addCart(d.inc, null, 1); }
-  if (d.dec) { e.stopPropagation(); return chQty(key(d.dec, null), -1); }
-  if (d.quick) { e.stopPropagation(); const p = P(d.quick); return p.variants ? openProduct(p.id) : addCart(p.id, null, 1); }
-  if (d.q) return chQty(d.q, +d.d);
+  if (d.inc) { e.stopPropagation(); const p = P(d.inc); return bump(p.id, defUnit(p), 1); }
+  if (d.dec) { e.stopPropagation(); const p = P(d.dec); return bump(p.id, defUnit(p), -1); }
+  if (d.quick) { e.stopPropagation(); const p = P(d.quick); if (S.cart.some(c => c.pid === p.id) || sellUnits(p).length > 1) return openProduct(p.id); return bump(p.id, defUnit(p), 1); }
+  if (d.q) { const [pid, u] = d.q.split("|"); return bump(pid, u, +d.d); }
+  if (d.reo) { e.stopPropagation(); return reorder(+d.reo); }
+  if (d.oi) return openOrder(+d.oi);
   if (d.p) { if (e.target.closest("[data-stop]")) return; return openProduct(d.p); }
   if (d.cat && el.classList.contains("chip")) { hap("sel"); return toCat(d.cat); }
   if (d.tab) { hap("sel"); if (d.tab === S.view && d.tab === "home") return window.scrollTo({top: 0, behavior: "smooth"}); return go(d.tab); }
-  if (d.deliv) { S.delivery = d.deliv; hap("sel"); render(); return; }
-  if (d.pay) { S.payment = d.pay; hap("sel"); $$("[data-pay]").forEach(b => b.classList.toggle("on", b === el)); return; }
+  if (d.pay) { S.payment = d.pay; hap("sel"); $$("[data-pay]").forEach(b => b.classList.toggle("on", b === el)); return checkLimit(); }
+  if (d.date) { S.date = d.date; hap("sel"); $$("[data-date]").forEach(b => b.classList.toggle("on", b === el)); return; }
   if (d.lang) return setLang(d.lang);
 });
-document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches(".pc[data-p]")) { e.preventDefault(); openProduct(e.target.dataset.p); } if (e.key === "Escape") back(); });
-document.addEventListener("visibilitychange", () => { if (document.hidden) return; if (S.view === "orders") loadOrders(true); if (!S.demo && S.view === "home") reloadMenu(); });
-boot().catch(err => { console.error(err); if (FALLBACK) { applyMenu(FALLBACK); S.demo = true; S.user = {tg_id: 0, name: "Mehmon"}; i18nStatic(); go("home", true); } splashOff(); });
+document.addEventListener("change", e => { const i = e.target.closest("[data-qi]"); if (!i) return; const [pid, u] = i.dataset.qi.split("|"); setQty(pid, u, clampQ(i.value.replace(/\D/g, ""))); });
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-qi]")) e.target.blur(); if ((e.key === "Enter" || e.key === " ") && e.target.matches(".pr[data-p]")) { e.preventDefault(); openProduct(e.target.dataset.p); } if (e.key === "Escape") back(); });
+document.addEventListener("visibilitychange", () => { if (document.hidden) return; if (S.view === "orders") loadOrders(true); if (S.view === "ledger") loadLedger(); if (!S.demo && S.view === "home") { reloadMenu(); refreshAcc().then(() => S.view === "home" && !$(".modal") && render()); } });
+boot().catch(err => { console.error(err); if (FALLBACK) { applyMenu(FALLBACK); S.demo = true; S.user = {tg_id: 0, name: "Mehmon", shop: "Demo"}; S.acc = {balance: 0, dates: demoDates(null)}; i18nStatic(); go("home", true); } splashOff(); });
 </script>

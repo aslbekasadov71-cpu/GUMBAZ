@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Gumbaz Express — Telegram botlar + Mini App server (v3).
+Ulgurji savdo — distribyutor uchun Telegram botlar + Mini App server.
 
-  • Mijozlar boti: /start → telefon → joylashuv → Menyu (Mini App) → buyurtma.
-  • Admin bot: rahbar va xodimlar. Yangi buyurtmalar, holat tugmalari, Admin panel (Mini App yoki brauzer).
-    Rahbar (ADMIN_IDS) xodimlarga login/parol beradi va har biriga ruxsatlarni belgilaydi.
+  • Do'konlar boti: /start → telefon → do'kon nomi → joylashuv → Katalog (Mini App) → buyurtma.
+    Do'konchi yetkazish kunini (hudud marshruti bo'yicha) va to'lovni (naqd / nasiya) tanlaydi.
+  • Admin bot: rahbar (distribyutor) va xodimlar. Yangi buyurtmalar, holat tugmalari, Admin panel:
+    katalog (dona + blok/korobka), do'konlar, qarz daftari (nasiya, to'lovlar), hududlar va
+    marshrut kunlari, yuklash ro'yxati (mashinaga nima ortish kerak).
   • ADMIN_BOT_TOKEN bo'lmasa — hammasi bitta botda (/admin buyrug'i).
   • Render (bepul) uchun: webhook rejimi va Telegram'dagi zaxira (disk o'chsa ham ma'lumot qoladi).
 
@@ -47,7 +49,7 @@ DATA_DIR = os.environ.get("DATA_DIR") or os.path.join(ROOT, "data")
 UPLOAD_DIR = os.path.join(WEBAPP_DIR, "uploads")
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-log = logging.getLogger("gumbaz")
+log = logging.getLogger("ulgurji")
 
 
 # ═════════════════════════════ Config ═════════════════════════════
@@ -66,7 +68,7 @@ def _cast(v, like):
 def load_config():
     with open(os.path.join(ROOT, "config.example.json"), encoding="utf-8") as f:
         cfg = json.load(f)
-    path = os.environ.get("GUMBAZ_CONFIG", os.path.join(ROOT, "config.json"))
+    path = os.environ.get("APP_CONFIG") or os.environ.get("GUMBAZ_CONFIG") or os.path.join(ROOT, "config.json")
     if os.path.exists(path):
         with open(path, encoding="utf-8") as f:
             cfg.update(json.load(f))
@@ -106,18 +108,22 @@ TOKENS = {CLIENT: CFG["CLIENT_BOT_TOKEN"], ADMIN: CFG["ADMIN_BOT_TOKEN"]}
 SINGLE_BOT = TOKENS[CLIENT] == TOKENS[ADMIN]
 
 SETTING_KEYS = {
-    "RESTAURANT_NAME": str, "RESTAURANT_ADDRESS_UZ": str, "RESTAURANT_ADDRESS_RU": str,
-    "RESTAURANT_LAT": float, "RESTAURANT_LON": float, "SUPPORT_PHONE": str, "SUPPORT_USERNAME": str,
-    "WORK_HOURS": str, "MIN_ORDER": int, "ACCEPTING": bool, "CLOSED_MSG_UZ": str, "CLOSED_MSG_RU": str,
+    "COMPANY_NAME": str, "BASE_ADDRESS_UZ": str, "BASE_ADDRESS_RU": str, "BASE_LAT": float, "BASE_LON": float,
+    "SUPPORT_PHONE": str, "SUPPORT_USERNAME": str, "WORK_HOURS": str, "MIN_ORDER": int, "ACCEPTING": bool,
+    "CLOSED_MSG_UZ": str, "CLOSED_MSG_RU": str,
+    "ALLOW_DEBT": bool,          # nasiyaga buyurtma berish mumkinmi
+    "DEBT_LIMIT": int,           # har bir do'kon uchun standart qarz chegarasi (0 = cheksiz)
+    "SAME_DAY_UNTIL": int,       # shu soatgacha berilgan buyurtma bugunga yetkazilishi mumkin (0 = faqat ertadan)
 }
-PERMS = ["stats", "orders", "stock", "menu", "banners", "customers", "broadcast", "settings"]
+BOOL_DEFAULTS = {"ACCEPTING": True, "ALLOW_DEBT": True}
+PERMS = ["stats", "orders", "stock", "menu", "banners", "shops", "debts", "broadcast", "settings"]
 
 
 # ═════════════════════════════ Zaxira (Telegram) ═════════════════════════════
 class Backup:
     """Bepul hostingda disk vaqtinchalik. Baza + menyu + rasmlar zip qilinib rahbarning admin bot
     chatidagi qadalgan (pinned) xabarga yoziladi; server qayta yonganda shu yerdan tiklanadi."""
-    NAME = "gumbaz_backup.zip"
+    NAME = "ulgurji_backup.zip"
 
     def __init__(self):
         self.on = CFG["BACKUP"] == "telegram" and bool(CFG["ADMIN_IDS"])
@@ -142,7 +148,7 @@ class Backup:
                 log.info("Zaxira topilmadi — yangi baza bilan boshlanadi")
                 return
             self.msg_id = pm["message_id"]
-            tmp = os.path.join(tempfile.gettempdir(), "gumbaz_restore.zip")
+            tmp = os.path.join(tempfile.gettempdir(), "ulgurji_restore.zip")
             if not tg_download(ADMIN, doc["file_id"], tmp):
                 log.warning("Zaxirani yuklab bo'lmadi")
                 return
@@ -165,12 +171,12 @@ class Backup:
             try:
                 buf = io.BytesIO()
                 with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-                    snap = os.path.join(tempfile.gettempdir(), "gumbaz_snap.db")
+                    snap = os.path.join(tempfile.gettempdir(), "ulgurji_snap.db")
                     with db.lock:
                         dst = sqlite3.connect(snap)
                         db.c.backup(dst)
                         dst.close()
-                    z.write(snap, "data/gumbaz.db")
+                    z.write(snap, "data/ulgurji.db")
                     for name in ("menu.json", "banners.json"):
                         p = os.path.join(DATA_DIR, name)
                         if os.path.exists(p):
@@ -183,7 +189,7 @@ class Backup:
                             if "uploads/" + rel not in big and fn != ".keep":
                                 z.write(full, "uploads/" + rel)
                 data = buf.getvalue()
-                caption = f"💾 Gumbaz zaxira · {time.strftime('%d.%m %H:%M')}\nBu xabarni o'chirmang va qadalgan holda qoldiring."
+                caption = f"💾 Zaxira · {time.strftime('%d.%m %H:%M')}\nBu xabarni o'chirmang va qadalgan holda qoldiring."
                 ok = False
                 if self.msg_id:
                     media = {"type": "document", "media": "attach://f", "caption": caption}
@@ -259,14 +265,22 @@ class DB:
             id INTEGER PRIMARY KEY AUTOINCREMENT, login TEXT UNIQUE COLLATE NOCASE, pass TEXT, name TEXT,
             perms TEXT, tg_id INTEGER, active INTEGER DEFAULT 1, created INTEGER, last_login INTEGER);
         CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY, staff_id INTEGER, owner INTEGER, expires INTEGER);
+        CREATE TABLE IF NOT EXISTS ledger(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, tg_id INTEGER, amount INTEGER, kind TEXT, order_id INTEGER,
+            note TEXT, by_name TEXT, created INTEGER);
+        CREATE INDEX IF NOT EXISTS ix_ledger_user ON ledger(tg_id, id);
         CREATE INDEX IF NOT EXISTS ix_orders_user ON orders(tg_id, id);
         CREATE INDEX IF NOT EXISTS ix_orders_created ON orders(created);
         CREATE INDEX IF NOT EXISTS ix_order_msgs ON order_msgs(order_id);
         """)
-        cols = {r[1] for r in self.c.execute("PRAGMA table_info(users)")}
-        for col in ("apt", "entrance", "floor", "landmark"):  # aniq manzil maydonlari (v3.1)
-            if col not in cols:
-                self.c.execute(f"ALTER TABLE users ADD COLUMN {col} TEXT")
+        for table, extra in (("users", (("landmark", "TEXT"), ("shop", "TEXT"), ("zone", "TEXT"), ("debt_limit", "INTEGER"),
+                                        ("note", "TEXT"), ("blocked", "INTEGER DEFAULT 0"))),
+                             ("orders", (("delivery_date", "TEXT"), ("zone", "TEXT"), ("paid", "INTEGER"), ("debt", "INTEGER")))):
+            cols = {r[1] for r in self.c.execute(f"PRAGMA table_info({table})")}
+            for col, typ in extra:
+                if col not in cols:
+                    self.c.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
+        self.c.execute("CREATE INDEX IF NOT EXISTS ix_orders_date ON orders(delivery_date)")
         self.c.commit()
 
     def q(self, sql, args=(), one=False):
@@ -304,8 +318,17 @@ class DB:
     def kv_set(self, k, v):
         self.x("INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v", (k, json.dumps(v)))
 
+    # ── qarz daftari: amount > 0 — qarz oshdi (nasiyaga mahsulot), amount < 0 — to'lov ──
+    def balance(self, uid):
+        return int(self.q("SELECT COALESCE(SUM(amount),0) s FROM ledger WHERE tg_id=?", (uid,), one=True)["s"])
 
-db = DB(os.path.join(DATA_DIR, "gumbaz.db"))
+    def ledger_add(self, uid, amount, kind, order_id=None, note="", by_name=""):
+        self.x("INSERT INTO ledger(tg_id,amount,kind,order_id,note,by_name,created) VALUES(?,?,?,?,?,?,?)",
+               (uid, int(amount), kind, order_id, str(note or "")[:200], str(by_name or "")[:60], int(time.time())))
+        return self.balance(uid)
+
+
+db = DB(os.path.join(DATA_DIR, "ulgurji.db"))
 
 
 class JsonStore:
@@ -339,7 +362,7 @@ def setting(key):
     s = db.kv_get("settings", {})
     if key in s:
         return s[key]
-    return CFG.get(key, True if key == "ACCEPTING" else "")
+    return CFG.get(key, BOOL_DEFAULTS.get(key, ""))
 
 
 def all_settings():
@@ -357,49 +380,80 @@ def is_available(p):
 # ═════════════════════════════ Texts ═════════════════════════════
 T = {
     "uz": {
-        "hello": "Assalomu alaykum! <b>Gumbaz Express</b> ga xush kelibsiz 🍕\n\nBuyurtma berish uchun telefon raqamingizni yuboring 👇",
+        "hello": "Assalomu alaykum! <b>{company}</b> ulgurji buyurtma botiga xush kelibsiz 📦\n\n"
+                 "Endi har safar agentni kutmaysiz — kerakli mahsulotni o'zingiz buyurtma qilasiz.\n\n"
+                 "Ro'yxatdan o'tish uchun telefon raqamingizni yuboring 👇",
         "send_phone": "📱 Raqamni yuborish",
         "own_phone": "Iltimos, o'zingizning raqamingizni tugma orqali yuboring 👇",
-        "ask_loc": "Rahmat! Endi yetkazib berish manzilini aniqlash uchun joylashuvingizni yuboring 📍",
+        "ask_shop": "Rahmat! Endi <b>do'koningiz nomini</b> yozing ✍️\n\nMasalan: <i>Baraka market</i>",
+        "bad_shop": "Do'kon nomini matn bilan yozing (2–60 belgi) ✍️",
+        "ask_loc": "Endi do'koningiz <b>joylashuvini</b> yuboring 📍\nMahsulot shu manzilga yetkaziladi.",
         "send_loc": "📍 Joylashuvni yuborish",
         "skip_loc": "Keyinroq kiritaman",
-        "ready": "Hammasi tayyor! ✅\nPastdagi tugmani bosib menyuni oching 👇",
+        "ready": "Hammasi tayyor! ✅\nPastdagi tugma orqali katalogni oching va buyurtma bering 👇",
         "addr": "📍 Manzil: {a}",
-        "open": "🍔 Menyuni ochish",
-        "menu_btn": "Menyu",
-        "status": {"new": "🆕 Yangi", "accepted": "✅ Qabul qilindi", "cooking": "👨‍🍳 Tayyorlanmoqda",
-                   "on_way": "🛵 Yo'lda", "ready": "📦 Tayyor — olib ketishingiz mumkin",
+        "shop_line": "🏪 Do'kon: <b>{s}</b>",
+        "open": "📦 Katalogni ochish",
+        "menu_btn": "Katalog",
+        "status": {"new": "🆕 Yangi", "accepted": "✅ Qabul qilindi", "on_way": "🚚 Yo'lda",
                    "done": "🏁 Yetkazildi", "cancelled": "❌ Bekor qilindi"},
-        "order_user": "Buyurtmangiz qabul qilindi! ✅\n\n<b>Buyurtma #{id}</b>\n{items}\n\n💰 Jami: <b>{total} so'm</b>\n🚚 {delivery}\n{extra}\nHolati o'zgarganda sizga xabar beramiz.",
+        "order_user": "Buyurtmangiz qabul qilindi! ✅\n\n<b>Buyurtma #{id}</b>\n{items}\n\n💰 Jami: <b>{total} so'm</b>\n"
+                      "📅 Yetkazish: <b>{date}</b>\n💳 To'lov: {pay}\n\nHolati o'zgarganda xabar beramiz.",
         "status_user": "<b>Buyurtma #{id}</b>\nHolati: {status}",
-        "deliv": {"courier": "Gumbaz Express kuryeri", "yandex": "Yandex kuryeri", "pickup": "Olib ketish"},
-        "courier_note": "Yetkazish narxini kuryer yetkazganda aytadi.",
-        "yandex_note": "Yandex kuryeri orqali yetkaziladi. Yetkazish narxini kuryer yetib borganda aytadi.",
+        "done_user": "🏁 <b>Buyurtma #{id} yetkazildi</b>\n\n💰 Jami: {total} so'm\n💵 To'langan: {paid} so'm{debt_line}\n\n{bal_line}",
+        "debt_line": "\n📒 Nasiyaga: {debt} so'm",
+        "bal_debt": "📒 Umumiy qarzingiz: <b>{bal} so'm</b>",
+        "bal_zero": "✅ Qarzingiz yo'q. Rahmat!",
+        "bal_over": "✅ Oldindan to'lov (haqdorlik): <b>{bal} so'm</b>",
+        "pay_user": "💵 <b>To'lov qabul qilindi: {amount} so'm</b>\n{note}\n{bal_line}",
+        "adj_user": "📒 Hisobingizga tuzatish kiritildi: {amount} so'm\n{note}\n{bal_line}",
+        "pay": {"cash": "💵 Naqd", "debt": "📒 Nasiya"},
         "logout": "Hisobdan chiqdingiz. Qayta kirish uchun /start ni bosing.",
+        "blocked": "Hisobingiz vaqtincha to'xtatilgan. Ma'lumot uchun: {phone}",
+        "wd": ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"],
+        "mon": ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"],
+        "date_fmt": "{wd}, {d}-{m}",
+        "pcs": "dona",
     },
     "ru": {
-        "hello": "Здравствуйте! Добро пожаловать в <b>Gumbaz Express</b> 🍕\n\nДля оформления заказа отправьте свой номер телефона 👇",
+        "hello": "Здравствуйте! Добро пожаловать в бот оптовых заказов <b>{company}</b> 📦\n\n"
+                 "Больше не нужно ждать агента — заказывайте нужный товар сами.\n\n"
+                 "Для регистрации отправьте свой номер телефона 👇",
         "send_phone": "📱 Отправить номер",
         "own_phone": "Пожалуйста, отправьте свой номер кнопкой ниже 👇",
-        "ask_loc": "Спасибо! Теперь отправьте геолокацию, чтобы определить адрес доставки 📍",
+        "ask_shop": "Спасибо! Теперь напишите <b>название магазина</b> ✍️\n\nНапример: <i>Барака маркет</i>",
+        "bad_shop": "Напишите название магазина текстом (2–60 символов) ✍️",
+        "ask_loc": "Теперь отправьте <b>геолокацию магазина</b> 📍\nТовар будет доставлен по этому адресу.",
         "send_loc": "📍 Отправить геолокацию",
         "skip_loc": "Укажу позже",
-        "ready": "Всё готово! ✅\nНажмите кнопку ниже, чтобы открыть меню 👇",
+        "ready": "Всё готово! ✅\nОткройте каталог кнопкой ниже и сделайте заказ 👇",
         "addr": "📍 Адрес: {a}",
-        "open": "🍔 Открыть меню",
-        "menu_btn": "Меню",
-        "status": {"new": "🆕 Новый", "accepted": "✅ Принят", "cooking": "👨‍🍳 Готовится",
-                   "on_way": "🛵 В пути", "ready": "📦 Готов — можно забрать",
+        "shop_line": "🏪 Магазин: <b>{s}</b>",
+        "open": "📦 Открыть каталог",
+        "menu_btn": "Каталог",
+        "status": {"new": "🆕 Новый", "accepted": "✅ Принят", "on_way": "🚚 В пути",
                    "done": "🏁 Доставлен", "cancelled": "❌ Отменён"},
-        "order_user": "Ваш заказ принят! ✅\n\n<b>Заказ #{id}</b>\n{items}\n\n💰 Итого: <b>{total} сум</b>\n🚚 {delivery}\n{extra}\nМы сообщим, когда статус изменится.",
+        "order_user": "Ваш заказ принят! ✅\n\n<b>Заказ #{id}</b>\n{items}\n\n💰 Итого: <b>{total} сум</b>\n"
+                      "📅 Доставка: <b>{date}</b>\n💳 Оплата: {pay}\n\nМы сообщим, когда статус изменится.",
         "status_user": "<b>Заказ #{id}</b>\nСтатус: {status}",
-        "deliv": {"courier": "Курьер Gumbaz Express", "yandex": "Курьер Яндекс", "pickup": "Самовывоз"},
-        "courier_note": "Стоимость доставки курьер скажет при доставке.",
-        "yandex_note": "Доставка курьером Яндекс. Стоимость доставки курьер скажет по прибытии.",
+        "done_user": "🏁 <b>Заказ #{id} доставлен</b>\n\n💰 Итого: {total} сум\n💵 Оплачено: {paid} сум{debt_line}\n\n{bal_line}",
+        "debt_line": "\n📒 В долг: {debt} сум",
+        "bal_debt": "📒 Ваш общий долг: <b>{bal} сум</b>",
+        "bal_zero": "✅ Долгов нет. Спасибо!",
+        "bal_over": "✅ Предоплата: <b>{bal} сум</b>",
+        "pay_user": "💵 <b>Оплата получена: {amount} сум</b>\n{note}\n{bal_line}",
+        "adj_user": "📒 В ваш счёт внесена корректировка: {amount} сум\n{note}\n{bal_line}",
+        "pay": {"cash": "💵 Наличные", "debt": "📒 В долг"},
         "logout": "Вы вышли из аккаунта. Нажмите /start, чтобы войти снова.",
+        "blocked": "Ваш аккаунт временно приостановлен. Справки: {phone}",
+        "wd": ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"],
+        "mon": ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"],
+        "date_fmt": "{wd}, {d} {m}",
+        "pcs": "шт",
     },
 }
-STATUS_ORDER = ["new", "accepted", "cooking", "on_way", "ready", "done", "cancelled"]
+STATUS_ORDER = ["new", "accepted", "on_way", "done", "cancelled"]
+ACTIVE = ("new", "accepted", "on_way")
 
 
 def tr(lang, key):
@@ -412,6 +466,100 @@ def fmt(n):
 
 def esc(s):
     return html.escape(str(s or ""), quote=False)
+
+
+def company():
+    return setting("COMPANY_NAME") or "Ulgurji savdo"
+
+
+# ── birliklar va qadoq (dona / blok / korobka) ──
+UNITS = {"pc": {"uz": "dona", "ru": "шт"}, "kg": {"uz": "kg", "ru": "кг"}, "l": {"uz": "litr", "ru": "л"},
+         "pack": {"uz": "pachka", "ru": "пачка"}}
+
+
+def unit_name(p, lang="uz"):
+    return UNITS.get(p.get("unit") or "pc", UNITS["pc"])[lang if lang in ("uz", "ru") else "uz"]
+
+
+def sell_units(p):
+    """Mahsulotni qaysi birlikda sotish mumkin: ['pack', 'pc'] dan bir yoki ikkalasi."""
+    if not p.get("pack"):
+        return ["pc"]
+    mode = p.get("sell") or "both"
+    return ["pack"] if mode == "pack" else ["pc"] if mode == "pc" else ["pack", "pc"]
+
+
+def unit_price(p, unit):
+    if unit == "pack" and p.get("pack"):
+        return int(p["pack"].get("price") or int(p["price"]) * int(p["pack"]["qty"]))
+    return int(p["price"])
+
+
+def qty_text(item, lang="uz"):
+    """'3 korobka (72 dona)' yoki '5 dona'"""
+    nm = item.get("unit_name") or {}
+    if item.get("unit") == "pack":
+        return f"{item['qty']} {(nm.get(lang) or nm.get('uz', '')).lower()} ({item['qty'] * item['pack_qty']} {item['base'].get(lang) or item['base']['uz']})"
+    return f"{item['qty']} {(item.get('base') or UNITS['pc']).get(lang) or 'dona'}"
+
+
+# ── hududlar va marshrut kunlari ──
+def zones():
+    return db.kv_get("zones", [])
+
+
+def zone_by_id(zid):
+    return next((z for z in zones() if z["id"] == zid), None)
+
+
+def _today():
+    lt = time.localtime()
+    import datetime
+    return datetime.date(lt.tm_year, lt.tm_mon, lt.tm_mday), lt.tm_hour
+
+
+def delivery_dates(zone_id, n=4):
+    """Do'kon hududining marshrut kunlaridan eng yaqin n tasi (ISO sana)."""
+    import datetime
+    today, hour = _today()
+    until = int(setting("SAME_DAY_UNTIL") or 0)
+    start = today if until and hour < until else today + datetime.timedelta(days=1)
+    z = zone_by_id(zone_id) if zone_id else None
+    days = set(z.get("days") or []) if z else set()
+    if not days:
+        days = set(range(7))
+    out = []
+    for i in range(28):
+        d = start + datetime.timedelta(days=i)
+        if d.weekday() in days:
+            out.append(d.isoformat())
+            if len(out) >= n:
+                break
+    return out
+
+
+def date_label(iso, lang="uz"):
+    import datetime
+    try:
+        d = datetime.date.fromisoformat(str(iso))
+    except ValueError:
+        return str(iso or "—")
+    L_ = T[lang if lang in T else "uz"]
+    return L_["date_fmt"].format(wd=L_["wd"][d.weekday()], d=d.day, m=L_["mon"][d.month - 1])
+
+
+def bal_line(bal, lang):
+    L_ = T[lang if lang in T else "uz"]
+    if bal > 0:
+        return L_["bal_debt"].format(bal=fmt(bal))
+    if bal < 0:
+        return L_["bal_over"].format(bal=fmt(-bal))
+    return L_["bal_zero"]
+
+
+def debt_limit(user):
+    lim = user.get("debt_limit")
+    return int(lim) if lim not in (None, "") else int(setting("DEBT_LIMIT") or 0)
 
 
 # ═════════════════════════════ Telegram API ═════════════════════════════
@@ -544,7 +692,7 @@ def yandex_geocode(lat, lon, lang):
             {"apikey": YANDEX_GEOCODER_KEY, "geocode": f"{lon},{lat}", "format": "json", "results": 1,
              "kind": "house", "lang": yl})
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "GumbazExpressBot/3.3", "Referer": CFG["WEBAPP_URL"] + "/"})
+            req = urllib.request.Request(url, headers={"User-Agent": "UlgurjiBot/1.0", "Referer": CFG["WEBAPP_URL"] + "/"})
             with urllib.request.urlopen(req, timeout=8) as r:
                 d = json.loads(r.read())
             fm = d["response"]["GeoObjectCollection"]["featureMember"]
@@ -598,7 +746,7 @@ def reverse_geocode(lat, lon, lang="uz"):
             {"format": "jsonv2", "lat": lat, "lon": lon, "zoom": 18, "addressdetails": 1,
              "accept-language": "ru" if lang == "ru" else "uz,ru"})
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": f"GumbazExpressBot/3.2 (+{CFG['WEBAPP_URL']})"})
+            req = urllib.request.Request(url, headers={"User-Agent": f"UlgurjiBot/1.0 (+{CFG['WEBAPP_URL']})"})
             with urllib.request.urlopen(req, timeout=8) as r:
                 a = json.loads(r.read()).get("address", {})
             res = format_address(a, lang)
@@ -650,7 +798,7 @@ def get_tile(z, x, y):
     for tpl in TILE_SOURCES:
         url = tpl.format(s="abc"[(x + y) % 3], z=z, x=x, y=y)
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": f"GumbazExpress/3.1 (+{CFG['WEBAPP_URL']})",
+            req = urllib.request.Request(url, headers={"User-Agent": f"UlgurjiBot/1.0 (+{CFG['WEBAPP_URL']})",
                                                        "Referer": CFG["WEBAPP_URL"] + "/"})
             with urllib.request.urlopen(req, timeout=8) as r:
                 data = r.read(2 * 1024 * 1024)
@@ -709,108 +857,120 @@ def order_targets():
 
 
 # ═════════════════════════════ Orders ═════════════════════════════
-NEXT = {"new": ["accepted", "cancelled"], "accepted": ["cooking", "cancelled"],
-        "cooking": ["on_way", "cancelled"], "on_way": ["done"], "ready": ["done"]}
-BTN = {"accepted": "✅ Qabul qilish", "cooking": "👨‍🍳 Tayyorlanmoqda", "on_way": "🛵 Yo'lga chiqdi",
-       "ready": "📦 Tayyor", "done": "🏁 Yetkazildi", "cancelled": "❌ Bekor qilish"}
+NEXT = {"new": ["accepted", "cancelled"], "accepted": ["on_way", "cancelled"], "on_way": ["done", "cancelled"]}
+BTN = {"accepted": "✅ Qabul qilish", "on_way": "🚚 Yo'lga chiqdi", "done": "🏁 Yetkazildi", "cancelled": "❌ Bekor qilish"}
 
 
 def allowed_next(order):
-    nxt = list(NEXT.get(order["status"], []))
-    if order["delivery"] == "pickup":
-        nxt = ["ready" if s == "on_way" else s for s in nxt]
-    return nxt
+    return list(NEXT.get(order["status"], []))
 
 
 def admin_kb(order, private=True):
-    row = []
-    for s in allowed_next(order):
-        label = "🏁 Berildi" if s == "done" and order["delivery"] == "pickup" else BTN[s]
-        row.append({"text": label, "callback_data": f"st:{order['id']}:{s}"})
-    kb = [row] if row else []
+    row = [{"text": BTN[s], "callback_data": f"st:{order['id']}:{s}"} for s in allowed_next(order)]
+    kb = [row[:2], row[2:]] if len(row) > 2 else ([row] if row else [])
     extra = []
-    if order.get("lat") and order["delivery"] != "pickup":
+    if order.get("lat"):
         extra.append({"text": "🗺 Xarita", "url": f"https://maps.google.com/?q={order['lat']},{order['lon']}"})
     if private:  # web_app tugmasi faqat shaxsiy chatda ishlaydi
         extra.append({"text": "📋 Panel", "web_app": {"url": app_url("admin.html") + f"#order-{order['id']}"}})
     if extra:
         kb.append(extra)
-    return {"inline_keyboard": kb}
+    return {"inline_keyboard": [r for r in kb if r]}
 
 
 def items_text(items, lang):
     lines = []
     for it in items:
         name = it["name"].get(lang) or it["name"]["uz"]
-        if it.get("variant"):
-            name += f" ({it['variant'].get(lang) or it['variant']['uz']})"
-        lines.append(f"• {esc(name)} × {it['qty']} = {fmt(it['price'] * it['qty'])}")
+        lines.append(f"• {esc(name)} — {esc(qty_text(it, lang))} = {fmt(it['price'] * it['qty'])}")
     return "\n".join(lines)
+
+
+def zone_name(zid, lang="uz"):
+    z = zone_by_id(zid) if zid else None
+    return (z["name"].get(lang) or z["name"]["uz"]) if z else ""
+
+
+SHOP_FALLBACK = "Do'kon"
 
 
 def admin_text(order, user):
     items = json.loads(order["items"]) if isinstance(order["items"], str) else order["items"]
-    pay = {"cash": "💵 Naqd", "card": "💳 Karta"}.get(order["payment"], order["payment"])
     who = esc(user.get("name") or "—")
     if user.get("username"):
         who += f" (@{esc(user['username'])})"
     lines = [f"<b>🧾 Buyurtma #{order['id']}</b>  —  {T['uz']['status'][order['status']]}", "",
-             f"👤 {who}", f"📞 <code>{esc(user.get('phone'))}</code>", f"🚚 {T['uz']['deliv'][order['delivery']]}"]
-    if order["delivery"] != "pickup":
+             f"🏪 <b>{esc(user.get('shop') or SHOP_FALLBACK)}</b>", f"👤 {who}", f"📞 <code>{esc(user.get('phone'))}</code>"]
+    if order.get("address"):
         lines.append(f"📍 {esc(order['address'])}")
-    lines += [pay, "", items_text(items, "uz"), "", f"💰 <b>Jami: {fmt(order['total'])} so'm</b>"]
+    zn = zone_name(order.get("zone"))
+    lines.append(f"📅 <b>{date_label(order.get('delivery_date'))}</b>" + (f"  ·  🗺 {esc(zn)}" if zn else ""))
+    lines.append(T["uz"]["pay"].get(order["payment"], order["payment"]))
+    bal = db.balance(order["tg_id"])
+    if bal > 0:
+        lines.append(f"📒 Joriy qarzi: {fmt(bal)} so'm")
+    lines += ["", items_text(items, "uz"), "", f"💰 <b>Jami: {fmt(order['total'])} so'm</b>"]
+    if order["status"] == "done" and order.get("paid") is not None:
+        lines.append(f"💵 To'landi: {fmt(order['paid'])}" + (f"  ·  📒 Nasiyaga: {fmt(order['debt'])}" if order.get("debt") else ""))
     if order["comment"]:
         lines.append(f"💬 {esc(order['comment'])}")
     lines.append(f"🕒 {time.strftime('%d.%m %H:%M', time.localtime(order['created']))}")
     return "\n".join(lines)
 
 
-def create_order(user, body):
-    if not setting("ACCEPTING"):
-        raise ValueError("closed")
+def build_items(raw):
     pm = product_map()
-    raw = body.get("items") or []
-    if not isinstance(raw, list) or not raw or len(raw) > 60:
+    if not isinstance(raw, list) or not raw or len(raw) > 100:
         raise ValueError("cart_empty")
     items, total = [], 0
     for it in raw:
         p = pm.get(str(it.get("pid")))
-        qty = int(it.get("qty") or 0)
-        if not p or not is_available(p) or not (1 <= qty <= 50):
+        unit = it.get("unit") if it.get("unit") in ("pack", "pc") else "pc"
+        try:
+            qty = int(it.get("qty") or 0)
+        except (TypeError, ValueError):
+            qty = 0
+        if not p or not is_available(p) or unit not in sell_units(p) or not (1 <= qty <= 9999):
             raise ValueError("item_unavailable")
-        variant, price = None, p.get("price")
-        if p.get("variants"):
-            v = next((v for v in p["variants"] if v["id"] == it.get("vid")), None)
-            if not v:
-                raise ValueError("item_unavailable")
-            variant, price = v["name"], v["price"]
-        items.append({"pid": p["id"], "vid": it.get("vid"), "name": p["name"], "variant": variant,
-                      "price": int(price), "qty": qty})
-        total += int(price) * qty
+        price = unit_price(p, unit)
+        rec = {"pid": p["id"], "name": p["name"], "unit": unit, "price": price, "qty": qty,
+               "base": UNITS.get(p.get("unit") or "pc", UNITS["pc"])}
+        if unit == "pack":
+            rec["pack_qty"] = int(p["pack"]["qty"])
+            rec["unit_name"] = p["pack"]["name"]
+        items.append(rec)
+        total += price * qty
+    return items, total
+
+
+def create_order(user, body):
+    if not setting("ACCEPTING"):
+        raise ValueError("closed")
+    if user.get("blocked"):
+        raise ValueError("blocked")
+    items, total = build_items(body.get("items"))
     if total < int(setting("MIN_ORDER") or 0):
         raise ValueError("min_order")
-    delivery = body.get("delivery")
-    if delivery not in ("courier", "yandex", "pickup"):
-        raise ValueError("bad_delivery")
-    payment = body.get("payment") if body.get("payment") in ("cash", "card") else "cash"
-    lat = lon = None
-    address = ""
-    if delivery != "pickup":
-        try:
-            lat, lon = float(body["lat"]), float(body["lon"])
-        except Exception:
-            raise ValueError("no_address")
-        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
-            raise ValueError("no_address")
-        address = str(body.get("address") or "")[:300] or reverse_geocode(lat, lon, user.get("lang"))
-        extra = str(body.get("address_extra") or "")[:200]
-        if extra:
-            address += " — " + extra
+    if zones() and not zone_by_id(user.get("zone")):
+        raise ValueError("no_zone")
+    date = str(body.get("date") or "")
+    if date not in delivery_dates(user.get("zone"), 7):
+        raise ValueError("bad_date")
+    payment = "debt" if body.get("payment") == "debt" and setting("ALLOW_DEBT") else "cash"
+    if payment == "debt":
+        lim = debt_limit(user)
+        if lim and db.balance(user["tg_id"]) + total > lim:
+            raise ValueError("debt_limit")
+    if user.get("lat") is None:
+        raise ValueError("no_address")
+    address = user.get("address") or ""
+    if user.get("landmark"):
+        address += " — " + user["landmark"]
     now = int(time.time())
-    oid = db.x("INSERT INTO orders(tg_id,items,total,delivery,payment,address,lat,lon,comment,status,created,updated)"
-               " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-               (user["tg_id"], json.dumps(items, ensure_ascii=False), total, delivery, payment, address,
-                lat, lon, str(body.get("comment") or "")[:500], "new", now, now))
+    oid = db.x("INSERT INTO orders(tg_id,items,total,delivery,payment,address,lat,lon,comment,status,created,updated,delivery_date,zone)"
+               " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+               (user["tg_id"], json.dumps(items, ensure_ascii=False), total, "route", payment, address[:320],
+                user["lat"], user["lon"], str(body.get("comment") or "")[:500], "new", now, now, date, user.get("zone")))
     order = db.q("SELECT * FROM orders WHERE id=?", (oid,), one=True)
     threading.Thread(target=notify_new_order, args=(order, user), daemon=True).start()
     return order
@@ -825,44 +985,86 @@ def notify_new_order(order, user):
                 db.x("INSERT INTO order_msgs(order_id,chat_id,msg_id) VALUES(?,?,?)", (order["id"], chat, msg["message_id"]))
         lang = user.get("lang") or "uz"
         L = T[lang]
-        if order["delivery"] == "pickup":
-            extra = "🏪 " + esc(setting("RESTAURANT_ADDRESS_RU" if lang == "ru" else "RESTAURANT_ADDRESS_UZ")) + "\n"
-        else:
-            extra = "📍 " + esc(order["address"]) + "\nℹ️ " + L["yandex_note" if order["delivery"] == "yandex" else "courier_note"] + "\n"
         tg(CLIENT, "sendMessage", chat_id=user["tg_id"], parse_mode="HTML",
            text=L["order_user"].format(id=order["id"], items=items_text(json.loads(order["items"]), lang),
-                                       total=fmt(order["total"]), delivery=L["deliv"][order["delivery"]], extra=extra))
+                                       total=fmt(order["total"]), date=date_label(order["delivery_date"], lang),
+                                       pay=L["pay"][order["payment"]]))
     except Exception:
         log.error("notify xato:\n%s", traceback.format_exc())
 
 
-def set_status(oid, status):
-    order = db.q("SELECT * FROM orders WHERE id=?", (oid,), one=True)
-    if not order:
-        return None, "Buyurtma topilmadi"
-    if status not in allowed_next(order):
-        return order, "Bu holatga o'tkazib bo'lmaydi"
-    db.x("UPDATE orders SET status=?, updated=? WHERE id=?", (status, int(time.time()), oid))
-    order["status"] = status
+def refresh_admin_msgs(order, user):
+    text = admin_text(order, user)
+    for m in db.q("SELECT chat_id,msg_id FROM order_msgs WHERE order_id=?", (order["id"],)):
+        tg(ADMIN, "editMessageText", chat_id=m["chat_id"], message_id=m["msg_id"], text=text,
+           parse_mode="HTML", reply_markup=admin_kb(order, m["chat_id"] > 0))
+
+
+def set_status(oid, status, paid=None, by_name=""):
+    with db.lock:
+        order = db.q("SELECT * FROM orders WHERE id=?", (oid,), one=True)
+        if not order:
+            return None, "Buyurtma topilmadi"
+        if status not in allowed_next(order):
+            return order, "Bu holatga o'tkazib bo'lmaydi"
+        now = int(time.time())
+        if status == "done":
+            total = int(order["total"])
+            if paid is None:
+                paid = total if order["payment"] == "cash" else 0
+            paid = max(0, min(total, int(paid)))
+            debt = total - paid
+            db.x("UPDATE orders SET status=?, paid=?, debt=?, updated=? WHERE id=?", (status, paid, debt, now, oid))
+            if debt:
+                db.ledger_add(order["tg_id"], debt, "order", oid, f"Buyurtma #{oid}", by_name)
+            order.update(paid=paid, debt=debt)
+        else:
+            db.x("UPDATE orders SET status=?, updated=? WHERE id=?", (status, now, oid))
+        order["status"] = status
     user = db.get_user(order["tg_id"]) or {"tg_id": order["tg_id"], "lang": "uz"}
 
     def _notify():
-        text = admin_text(order, user)
-        for m in db.q("SELECT chat_id,msg_id FROM order_msgs WHERE order_id=?", (oid,)):
-            tg(ADMIN, "editMessageText", chat_id=m["chat_id"], message_id=m["msg_id"], text=text,
-               parse_mode="HTML", reply_markup=admin_kb(order, m["chat_id"] > 0))
+        refresh_admin_msgs(order, user)
         lang = user.get("lang") or "uz"
-        st = T[lang]["status"][status]
-        if status == "done" and order["delivery"] == "pickup":
-            st = "🏁 " + ("Выдан" if lang == "ru" else "Berildi")
-        tg(CLIENT, "sendMessage", chat_id=order["tg_id"], parse_mode="HTML",
-           text=T[lang]["status_user"].format(id=oid, status=st))
+        L = T[lang]
+        if status == "done":
+            text = L["done_user"].format(id=oid, total=fmt(order["total"]), paid=fmt(order["paid"]),
+                                         debt_line=L["debt_line"].format(debt=fmt(order["debt"])) if order["debt"] else "",
+                                         bal_line=bal_line(db.balance(order["tg_id"]), lang))
+        else:
+            text = L["status_user"].format(id=oid, status=L["status"][status])
+        tg(CLIENT, "sendMessage", chat_id=order["tg_id"], parse_mode="HTML", text=text)
 
     threading.Thread(target=_notify, daemon=True).start()
     return order, None
 
 
-# ═════════════════════════════ Bot: mijozlar ═════════════════════════════
+def record_payment(uid, amount, kind, note, by_name):
+    """kind='payment' — do'kon pul berdi (qarz kamayadi); kind='adjust' — qo'lda tuzatish (+/-)."""
+    user = db.get_user(uid)
+    if not user:
+        raise ValueError("not_found")
+    amount = int(amount)
+    if kind == "payment":
+        if amount <= 0:
+            raise ValueError("bad_amount")
+        bal = db.ledger_add(uid, -amount, "payment", None, note, by_name)
+    else:
+        if amount == 0:
+            raise ValueError("bad_amount")
+        bal = db.ledger_add(uid, amount, "adjust", None, note, by_name)
+    lang = user.get("lang") or "uz"
+    L = T[lang]
+    nt = ("💬 " + esc(note)) if note else ""
+    text = (L["pay_user"] if kind == "payment" else L["adj_user"]).format(
+        amount=fmt(abs(amount)) if kind == "payment" else ("+" if amount > 0 else "−") + fmt(abs(amount)),
+        note=nt, bal_line=bal_line(bal, lang))
+    threading.Thread(target=tg, args=(CLIENT, "sendMessage"), kwargs={"chat_id": uid, "text": re.sub(r"\n\n+", "\n\n", text),
+                                                                      "parse_mode": "HTML"}, daemon=True).start()
+    return bal
+
+
+# ═════════════════════════════ Bot: do'konlar ═════════════════════════════
 def user_lang(frm):
     u = db.get_user(frm["id"])
     if u and u.get("lang"):
@@ -880,21 +1082,30 @@ def set_client_menu(chat_id, lang):
 
 
 def ask_phone(chat_id, lang):
-    tg(CLIENT, "sendMessage", chat_id=chat_id, text=tr(lang, "hello"), parse_mode="HTML",
+    tg(CLIENT, "sendMessage", chat_id=chat_id, text=tr(lang, "hello").format(company=esc(company())), parse_mode="HTML",
        reply_markup={"keyboard": [[{"text": tr(lang, "send_phone"), "request_contact": True}]],
                      "resize_keyboard": True, "one_time_keyboard": True})
 
 
+def ask_shop(chat_id, lang):
+    tg(CLIENT, "sendMessage", chat_id=chat_id, text=tr(lang, "ask_shop"), parse_mode="HTML", reply_markup={"remove_keyboard": True})
+
+
 def ask_location(chat_id, lang):
-    tg(CLIENT, "sendMessage", chat_id=chat_id, text=tr(lang, "ask_loc"),
+    tg(CLIENT, "sendMessage", chat_id=chat_id, text=tr(lang, "ask_loc"), parse_mode="HTML",
        reply_markup={"keyboard": [[{"text": tr(lang, "send_loc"), "request_location": True}],
                                   [{"text": tr(lang, "skip_loc")}]], "resize_keyboard": True, "one_time_keyboard": True})
 
 
-def send_ready(chat_id, lang, address=None):
+def send_ready(chat_id, lang, user=None):
     text = tr(lang, "ready")
-    if address:
-        text = tr(lang, "addr").format(a=esc(address)) + "\n\n" + text
+    head = []
+    if user and user.get("shop"):
+        head.append(tr(lang, "shop_line").format(s=esc(user["shop"])))
+    if user and user.get("address"):
+        head.append(tr(lang, "addr").format(a=esc(user["address"])))
+    if head:
+        text = "\n".join(head) + "\n\n" + text
     tg(CLIENT, "sendMessage", chat_id=chat_id, text="✅", reply_markup={"remove_keyboard": True})
     tg(CLIENT, "sendMessage", chat_id=chat_id, text=text, parse_mode="HTML", reply_markup=client_webapp_kb(lang))
     set_client_menu(chat_id, lang)
@@ -910,9 +1121,12 @@ def client_message(msg):
     text = (msg.get("text") or "").strip()
     lang = user_lang(frm)
     name = " ".join(x for x in [frm.get("first_name"), frm.get("last_name")] if x)
+    u = db.get_user(uid)
+    if u and u.get("blocked"):
+        tg(CLIENT, "sendMessage", chat_id=chat, text=tr(lang, "blocked").format(phone=setting("SUPPORT_PHONE")))
+        return
 
     if text.split("@")[0].split(" ")[0] == "/start":
-        u = db.get_user(uid)
         if not u:
             u = db.upsert_user(uid, name=name, username=frm.get("username"), lang=lang)
         elif u.get("username") != frm.get("username"):
@@ -921,10 +1135,12 @@ def client_message(msg):
             tg(CLIENT, "sendMessage", chat_id=chat, text="👨‍💼 Admin panel uchun /admin buyrug'ini yuboring.")
         if not u.get("phone"):
             ask_phone(chat, lang)
+        elif not u.get("shop"):
+            ask_shop(chat, lang)
         elif u.get("lat") is None:
             ask_location(chat, lang)
         else:
-            send_ready(chat, lang, u.get("address"))
+            send_ready(chat, lang, u)
         return
 
     if msg.get("contact"):
@@ -935,27 +1151,40 @@ def client_message(msg):
         phone = re.sub(r"[^\d+]", "", c.get("phone_number", ""))
         if not phone.startswith("+"):
             phone = "+" + phone
-        db.upsert_user(uid, phone=phone, name=(db.get_user(uid) or {}).get("name") or name,
-                       username=frm.get("username"), lang=lang)
-        ask_location(chat, lang)
+        u = db.upsert_user(uid, phone=phone, name=(u or {}).get("name") or name, username=frm.get("username"), lang=lang)
+        if not u.get("shop"):
+            ask_shop(chat, lang)
+        else:
+            ask_location(chat, lang)
+        return
+
+    if not u or not u.get("phone"):
+        ask_phone(chat, lang)
         return
 
     if msg.get("location"):
-        u = db.get_user(uid)
-        if not u or not u.get("phone"):
-            ask_phone(chat, lang)
-            return
         lat, lon = msg["location"]["latitude"], msg["location"]["longitude"]
         addr = reverse_geocode(lat, lon, lang)
-        db.upsert_user(uid, lat=lat, lon=lon, address=addr)
-        send_ready(chat, lang, addr)
+        u = db.upsert_user(uid, lat=lat, lon=lon, address=addr)
+        if not u.get("shop"):
+            ask_shop(chat, lang)
+        else:
+            send_ready(chat, lang, u)
         return
 
-    u = db.get_user(uid)
-    if text in (T["uz"]["skip_loc"], T["ru"]["skip_loc"]) and u and u.get("phone"):
-        send_ready(chat, lang)
-    elif not u or not u.get("phone"):
-        ask_phone(chat, lang)
+    if not u.get("shop"):
+        if text and not text.startswith("/") and 2 <= len(text) <= 60:
+            u = db.upsert_user(uid, shop=re.sub(r"\s+", " ", text))
+            if u.get("lat") is None:
+                ask_location(chat, lang)
+            else:
+                send_ready(chat, lang, u)
+        else:
+            tg(CLIENT, "sendMessage", chat_id=chat, text=tr(lang, "bad_shop"))
+        return
+
+    if text in (T["uz"]["skip_loc"], T["ru"]["skip_loc"]):
+        send_ready(chat, lang, u)
     else:
         tg(CLIENT, "sendMessage", chat_id=chat, text=tr(lang, "ready"), reply_markup=client_webapp_kb(lang))
 
@@ -974,17 +1203,30 @@ def admin_message(msg):
         return True
     if not private:
         return True
-    admin_cmds = ("/admin", "/panel", "/stats", "/myid") if SINGLE_BOT else ("/admin", "/panel", "/stats", "/myid", "/start", "")
+    admin_cmds = ("/admin", "/panel", "/stats", "/myid", "/yuk") if SINGLE_BOT else \
+        ("/admin", "/panel", "/stats", "/myid", "/yuk", "/start", "")
     if cmd not in admin_cmds:
         return False
     if cmd == "/myid":
         tg(ADMIN, "sendMessage", chat_id=chat, text=f"Sizning Telegram ID: <code>{uid}</code>", parse_mode="HTML")
         return True
     owner, staff = is_owner(uid), staff_by_tg(uid)
-    if cmd == "/stats" and (owner or (staff and "stats" in staff["perms"])):
+    perms = PERMS if owner else (staff["perms"] if staff else [])
+    if cmd == "/stats" and "stats" in perms:
         r = stats_today()
+        d = debt_summary()
         tg(ADMIN, "sendMessage", chat_id=chat, parse_mode="HTML",
-           text=f"📊 <b>Bugun</b>\nBuyurtmalar: {r['orders']}\nSavdo: {fmt(r['revenue'])} so'm\nO'rtacha chek: {fmt(r['avg'])} so'm")
+           text=f"📊 <b>Bugun</b>\nBuyurtmalar: {r['orders']}\nSavdo: {fmt(r['revenue'])} so'm\n\n"
+                f"📒 Umumiy qarz: <b>{fmt(d['total'])} so'm</b> ({d['count']} ta do'kon)")
+        return True
+    if cmd == "/yuk" and "orders" in perms:
+        dates = [r["d"] for r in db.q("SELECT DISTINCT delivery_date d FROM orders WHERE status IN ('new','accepted','on_way') "
+                                      "AND delivery_date>=? ORDER BY delivery_date LIMIT 1", (_today()[0].isoformat(),))]
+        if not dates:
+            tg(ADMIN, "sendMessage", chat_id=chat, text="🚚 Yetkaziladigan faol buyurtma yo'q.")
+        else:
+            for part in split_msg(loadlist_text(loadlist(dates[0]))):
+                tg(ADMIN, "sendMessage", chat_id=chat, text=part, parse_mode="HTML")
         return True
     kb = {"inline_keyboard": [[{"text": "📊 Admin panelni ochish", "web_app": {"url": app_url("admin.html")}}]]}
     if not SINGLE_BOT:
@@ -994,13 +1236,14 @@ def admin_message(msg):
         new = db.q("SELECT COUNT(*) c FROM orders WHERE status='new'", one=True)["c"]
         who = "Rahbar" if owner else esc(staff["name"] or staff["login"])
         tg(ADMIN, "sendMessage", chat_id=chat, parse_mode="HTML", reply_markup=kb,
-           text=f"Salom, <b>{who}</b>! 👋\n\nYangi buyurtmalar shu chatga keladi.\nHozir kutilayotgan: <b>{new}</b> ta.")
+           text=f"Salom, <b>{who}</b>! 👋\n\nDo'konlardan yangi buyurtmalar shu chatga keladi.\n"
+                f"Hozir kutilayotgan: <b>{new}</b> ta.\n\n/yuk — eng yaqin kunning yuklash ro'yxati")
         if owner and BACKUP.on and (not BACKUP.msg_id or BACKUP.fails):
             BACKUP.fails = 0
             threading.Thread(target=BACKUP.run, kwargs={"force": True}, daemon=True).start()
     else:
         tg(ADMIN, "sendMessage", chat_id=chat, parse_mode="HTML", reply_markup=kb,
-           text="👨‍💼 <b>Gumbaz Express — xodimlar paneli</b>\n\nRahbar bergan login va parol bilan kiring. "
+           text=f"👨‍💼 <b>{esc(company())} — xodimlar paneli</b>\n\nRahbar bergan login va parol bilan kiring. "
                 "Kirganingizdan keyin buyurtma xabarlari shu chatga keladi.")
     return True
 
@@ -1014,8 +1257,12 @@ def admin_callback(cq):
         tg(ADMIN, "answerCallbackQuery", callback_query_id=cq["id"], text="⛔ Ruxsat yo'q", show_alert=True)
         return
     _, oid, st = data.split(":")
-    order, err = set_status(int(oid), st)
-    tg(ADMIN, "answerCallbackQuery", callback_query_id=cq["id"], text=err or T["uz"]["status"][st])
+    who = "Rahbar" if is_owner(uid) else ((staff_by_tg(uid) or {}).get("name") or "")
+    order, err = set_status(int(oid), st, None, who)
+    msg = err or T["uz"]["status"][st]
+    if not err and st == "done" and order.get("debt"):
+        msg += f" · nasiyaga {fmt(order['debt'])}"
+    tg(ADMIN, "answerCallbackQuery", callback_query_id=cq["id"], text=msg)
 
 
 def handle_update(bot, up):
@@ -1035,16 +1282,17 @@ def handle_update(bot, up):
 
 def bot_setup(bot):
     me = tg(bot, "getMe")
-    log.info("%s bot: @%s", "Mijozlar" if bot == CLIENT else "Admin", (me or {}).get("username"))
+    log.info("%s bot: @%s", "Do'konlar" if bot == CLIENT else "Admin", (me or {}).get("username"))
     if bot == CLIENT:
         tg(bot, "setMyCommands", commands=[{"command": "start", "description": "Boshlash / Начать"}])
         if SINGLE_BOT:
             for oid in CFG["ADMIN_IDS"]:
                 tg(bot, "setMyCommands", scope={"type": "chat", "chat_id": oid},
                    commands=[{"command": "start", "description": "Boshlash"}, {"command": "admin", "description": "Admin panel"},
-                             {"command": "stats", "description": "Bugungi statistika"}])
+                             {"command": "yuk", "description": "Yuklash ro'yxati"}, {"command": "stats", "description": "Bugungi statistika"}])
     else:
         tg(bot, "setMyCommands", commands=[{"command": "start", "description": "Admin panel"},
+                                           {"command": "yuk", "description": "Yuklash ro'yxati"},
                                            {"command": "stats", "description": "Bugungi statistika"},
                                            {"command": "myid", "description": "Telegram ID"}])
 
@@ -1074,7 +1322,7 @@ def polling(bot):
             time.sleep(2)
 
 
-# ═════════════════════════════ Statistics ═════════════════════════════
+# ═════════════════════════════ Statistics / reports ═════════════════════════════
 def day_start(ts=None):
     lt = time.localtime(ts or time.time())
     return int(time.mktime((lt.tm_year, lt.tm_mon, lt.tm_mday, 0, 0, 0, 0, 0, -1)))
@@ -1086,29 +1334,123 @@ def stats_today():
     return {"orders": r["c"], "revenue": r["s"], "avg": (r["s"] // r["c"]) if r["c"] else 0}
 
 
+def debt_summary():
+    rows = db.q("SELECT tg_id, SUM(amount) b FROM ledger GROUP BY tg_id HAVING b>0")
+    return {"total": sum(r["b"] for r in rows), "count": len(rows)}
+
+
+def item_pcs(it):
+    return it["qty"] * (it.get("pack_qty") or 1) if it.get("unit") == "pack" else it["qty"]
+
+
 def dashboard(days=7):
     days = max(1, min(int(days), 31))
     start = day_start() - (days - 1) * 86400
     by_day = [{"day": start + i * 86400, "revenue": 0, "orders": 0} for i in range(days)]
-    top, deliv = {}, {"courier": 0, "yandex": 0, "pickup": 0}
-    for r in db.q("SELECT total,status,created,items,delivery FROM orders WHERE created>=?", (start,)):
+    top, pay = {}, {"cash": 0, "debt": 0}
+    for r in db.q("SELECT total,status,created,items,payment FROM orders WHERE created>=?", (start,)):
         if r["status"] == "cancelled":
             continue
         i = min(days - 1, (day_start(r["created"]) - start) // 86400)
         by_day[i]["revenue"] += r["total"]
         by_day[i]["orders"] += 1
-        deliv[r["delivery"]] = deliv.get(r["delivery"], 0) + 1
+        pay[r["payment"]] = pay.get(r["payment"], 0) + r["total"]
         for it in json.loads(r["items"]):
-            t = top.setdefault(it["pid"], {"pid": it["pid"], "name": it["name"], "qty": 0, "revenue": 0})
-            t["qty"] += it["qty"]
+            t = top.setdefault(it["pid"], {"pid": it["pid"], "name": it["name"], "pcs": 0, "revenue": 0,
+                                           "base": it.get("base") or UNITS["pc"]})
+            t["pcs"] += item_pcs(it)
             t["revenue"] += it["qty"] * it["price"]
     yest = db.q("SELECT COALESCE(SUM(total),0) s, COUNT(*) c FROM orders WHERE created>=? AND created<? AND status!='cancelled'",
                 (day_start() - 86400, day_start()), one=True)
-    active = db.q("SELECT COUNT(*) c FROM orders WHERE status IN ('new','accepted','cooking','on_way','ready')", one=True)["c"]
+    active = db.q("SELECT COUNT(*) c FROM orders WHERE status IN ('new','accepted','on_way')", one=True)["c"]
+    up = db.q("SELECT delivery_date d, COUNT(*) c, COALESCE(SUM(total),0) s FROM orders WHERE status IN ('new','accepted','on_way') "
+              "AND delivery_date>=? GROUP BY delivery_date ORDER BY delivery_date LIMIT 7", (_today()[0].isoformat(),))
     return {"today": stats_today(), "yesterday": {"revenue": yest["s"], "orders": yest["c"]}, "by_day": by_day,
-            "top": sorted(top.values(), key=lambda x: -x["qty"])[:5], "delivery": deliv, "active": active,
-            "customers": db.q("SELECT COUNT(*) c FROM users WHERE phone IS NOT NULL", one=True)["c"],
-            "new_customers": db.q("SELECT COUNT(*) c FROM users WHERE phone IS NOT NULL AND created>=?", (day_start(),), one=True)["c"]}
+            "top": sorted(top.values(), key=lambda x: -x["revenue"])[:5], "pay": pay, "active": active,
+            "debt": debt_summary(), "upcoming": [{"date": r["d"], "orders": r["c"], "sum": r["s"], "label": date_label(r["d"])} for r in up],
+            "shops": db.q("SELECT COUNT(*) c FROM users WHERE phone IS NOT NULL", one=True)["c"],
+            "new_shops": db.q("SELECT COUNT(*) c FROM users WHERE phone IS NOT NULL AND created>=?", (day_start(),), one=True)["c"]}
+
+
+def loadlist(date, zone=None):
+    """Bir kunlik yuklash ro'yxati: qaysi mahsulotdan qancha ortish va qaysi do'konlarga borish."""
+    sql = ("SELECT o.*, u.shop ushop, u.name uname, u.phone uphone, u.landmark ulandmark FROM orders o "
+           "LEFT JOIN users u ON u.tg_id=o.tg_id WHERE o.delivery_date=? AND o.status IN ('new','accepted','on_way')")
+    args = [date]
+    if zone:
+        sql += " AND o.zone=?"
+        args.append(zone)
+    rows = db.q(sql + " ORDER BY o.zone, o.id", args)
+    prods, pm = {}, product_map()
+    tot = {"orders": len(rows), "sum": 0, "cash": 0, "debt": 0, "new": 0}
+    out = []
+    for r in rows:
+        items = json.loads(r["items"])
+        tot["sum"] += r["total"]
+        tot["cash" if r["payment"] == "cash" else "debt"] += r["total"]
+        tot["new"] += r["status"] == "new"
+        for it in items:
+            p = prods.setdefault(it["pid"], {"pid": it["pid"], "name": it["name"], "pcs": 0, "sum": 0,
+                                             "base": it.get("base") or UNITS["pc"], "pack_qty": 0, "pack_name": None})
+            p["pcs"] += item_pcs(it)
+            p["sum"] += it["qty"] * it["price"]
+            cur = pm.get(it["pid"]) or {}
+            pk = (cur.get("pack") or {}) if cur else {}
+            if it.get("pack_qty") or pk.get("qty"):
+                p["pack_qty"] = int(it.get("pack_qty") or pk.get("qty"))
+                p["pack_name"] = it.get("unit_name") or pk.get("name")
+        out.append({"id": r["id"], "status": r["status"], "shop": r["ushop"], "name": r["uname"], "phone": r["uphone"],
+                    "address": r["address"], "lat": r["lat"], "lon": r["lon"], "zone": r["zone"], "zone_name": zone_name(r["zone"]),
+                    "total": r["total"], "payment": r["payment"], "comment": r["comment"], "items": items})
+    for p in prods.values():
+        if p["pack_qty"]:
+            p["packs"], p["rest"] = divmod(p["pcs"], p["pack_qty"])
+    return {"date": date, "label": date_label(date), "orders": out, "totals": tot,
+            "products": sorted(prods.values(), key=lambda x: L_uz(x["name"]))}
+
+
+def L_uz(n):
+    return (n or {}).get("uz") or ""
+
+
+def pcs_text(p):
+    base = p["base"].get("uz", "dona")
+    if p.get("pack_qty"):
+        pk = (p.get("pack_name") or {}).get("uz", "qadoq")
+        s = f"{p['packs']} {pk}" if p["packs"] else ""
+        if p["rest"]:
+            s += (" + " if s else "") + f"{p['rest']} {base}"
+        return f"{s} ({p['pcs']} {base})"
+    return f"{p['pcs']} {base}"
+
+
+def loadlist_text(ll):
+    t = ll["totals"]
+    lines = [f"🚚 <b>Yuklash ro'yxati — {ll['label']}</b>",
+             f"Buyurtmalar: {t['orders']} ta · Jami: <b>{fmt(t['sum'])} so'm</b>",
+             f"💵 Naqd: {fmt(t['cash'])}  ·  📒 Nasiya: {fmt(t['debt'])}", "", "📦 <b>Mahsulotlar</b>"]
+    lines += [f"• {esc(L_uz(p['name']))} — {esc(pcs_text(p))}" for p in ll["products"]]
+    lines += ["", "🏪 <b>Do'konlar</b>"]
+    zn = None
+    for i, o in enumerate(ll["orders"], 1):
+        if o["zone_name"] and o["zone_name"] != zn:
+            zn = o["zone_name"]
+            lines.append(f"\n🗺 <b>{esc(zn)}</b>")
+        lines.append(f"{i}. <b>{esc(o['shop'] or '—')}</b> · #{o['id']} · {fmt(o['total'])} so'm · "
+                     f"{'Naqd' if o['payment'] == 'cash' else 'Nasiya'}\n    📞 {esc(o['phone'] or '')}  📍 {esc(o['address'] or '')}")
+    return "\n".join(lines)
+
+
+def split_msg(text, n=3900):
+    parts, cur = [], ""
+    for line in text.split("\n"):
+        if len(cur) + len(line) + 1 > n:
+            parts.append(cur)
+            cur = ""
+        cur += line + "\n"
+    if cur.strip():
+        parts.append(cur)
+    return parts
 
 
 # ═════════════════════════════ Web helpers ═════════════════════════════
@@ -1153,17 +1495,25 @@ def login_blocked(key):
 
 def public_user(u):
     return {k: u.get(k) for k in ("tg_id", "phone", "name", "lang", "photo", "lat", "lon", "address",
-                                  "apt", "entrance", "floor", "landmark")} if u else None
+                                  "landmark", "shop", "zone")} if u else None
 
 
 def client_settings():
     s = all_settings()
-    return {"restaurant": {"name": s["RESTAURANT_NAME"], "lat": s["RESTAURANT_LAT"], "lon": s["RESTAURANT_LON"],
-                           "address": {"uz": s["RESTAURANT_ADDRESS_UZ"], "ru": s["RESTAURANT_ADDRESS_RU"]}},
+    return {"company": company(), "base": {"lat": s["BASE_LAT"], "lon": s["BASE_LON"],
+                                           "address": {"uz": s["BASE_ADDRESS_UZ"], "ru": s["BASE_ADDRESS_RU"]}},
             "support_phone": s["SUPPORT_PHONE"], "support_username": s["SUPPORT_USERNAME"],
-            "work_hours": s["WORK_HOURS"] or "24/7", "min_order": int(s["MIN_ORDER"] or 0),
+            "work_hours": s["WORK_HOURS"] or "", "min_order": int(s["MIN_ORDER"] or 0),
             "accepting": bool(s["ACCEPTING"]), "closed_msg": {"uz": s["CLOSED_MSG_UZ"], "ru": s["CLOSED_MSG_RU"]},
-            "map_token": MAPBOX_TOKEN}
+            "allow_debt": bool(s["ALLOW_DEBT"]), "map_token": MAPBOX_TOKEN,
+            "zones": [{"id": z["id"], "name": z["name"], "days": z.get("days") or []} for z in zones()]}
+
+
+def account(user):
+    """Do'konchi uchun: qarz, chegara, yetkazish sanalari."""
+    lang = user.get("lang") or "uz"
+    return {"balance": db.balance(user["tg_id"]), "limit": debt_limit(user),
+            "dates": [{"date": d, "label": date_label(d, lang)} for d in delivery_dates(user.get("zone"), 4)]}
 
 
 def slug(s):
@@ -1181,10 +1531,21 @@ def clean_l10n(v, required=True, limit=80):
     return out
 
 
+def _int(v, lo, hi, err):
+    try:
+        n = int(float(str(v).replace(" ", "")))
+    except (TypeError, ValueError):
+        raise ValueError(err)
+    if not lo <= n <= hi:
+        raise ValueError(err)
+    return n
+
+
 def clean_product(p, existing=None):
     if p.get("cat") not in {c["id"] for c in MENU.data["categories"]}:
         raise ValueError("bad_category")
     out = dict(existing or {})
+    out.pop("variants", None)
     out["cat"] = p["cat"]
     out["name"] = clean_l10n(p.get("name"))
     d = clean_l10n(p.get("desc"), required=False, limit=240)
@@ -1196,30 +1557,31 @@ def clean_product(p, existing=None):
     if img and not re.match(r"^(img|uploads)/[\w./-]+$", img):
         raise ValueError("bad_image")
     out["img"] = img
-    if p.get("badge") in ("hit", "spicy", "new"):
+    if p.get("badge") in ("hit", "new", "sale"):
         out["badge"] = p["badge"]
     else:
         out.pop("badge", None)
     out["available"] = p.get("available", True) is not False
-    variants = p.get("variants") or []
-    if variants:
-        vs = []
-        for i, v in enumerate(variants[:6]):
-            price = int(v.get("price") or 0)
-            if price <= 0:
-                raise ValueError("bad_price")
-            vs.append({"id": str(v.get("id") or f"v{i + 1}")[:12], "name": clean_l10n(v.get("name"), limit=30), "price": price})
-        if len({v["id"] for v in vs}) != len(vs):
-            raise ValueError("bad_variant")
-        out["variants"] = vs
-        out.pop("price", None)
+    out["price"] = _int(p.get("price"), 1, 10 ** 10, "bad_price")
+    out["unit"] = p.get("unit") if p.get("unit") in UNITS else "pc"
+    pk = p.get("pack") or None
+    if pk and pk.get("qty"):
+        pack = {"name": clean_l10n(pk.get("name") or {"uz": "Korobka", "ru": "Коробка"}, limit=20),
+                "qty": _int(pk.get("qty"), 2, 100000, "bad_pack")}
+        if pk.get("price") not in (None, "", 0, "0"):
+            pack["price"] = _int(pk.get("price"), 1, 10 ** 11, "bad_price")
+        out["pack"] = pack
+        out["sell"] = p.get("sell") if p.get("sell") in ("both", "pack", "pc") else "both"
     else:
-        price = int(p.get("price") or 0)
-        if price <= 0:
-            raise ValueError("bad_price")
-        out["price"] = price
-        out.pop("variants", None)
+        out.pop("pack", None)
+        out.pop("sell", None)
     return out
+
+
+def clean_zone(z):
+    name = clean_l10n(z.get("name"), limit=40)
+    days = sorted({int(d) for d in (z.get("days") or []) if str(d).isdigit() and 0 <= int(d) <= 6})
+    return {"id": str(z.get("id") or "") or slug(name["uz"]), "name": name, "days": days}
 
 
 def remove_upload(src):
@@ -1236,15 +1598,16 @@ def remove_upload(src):
             db.kv_set("tg_files", files)
 
 
-def broadcast(text, notify_chat):
-    users = db.q("SELECT tg_id FROM users WHERE phone IS NOT NULL")
+def broadcast(text, notify_chat, zone=None):
+    users = db.q("SELECT tg_id FROM users WHERE phone IS NOT NULL AND COALESCE(blocked,0)=0" + (" AND zone=?" if zone else ""),
+                 (zone,) if zone else ())
     ok = 0
     for u in users:
         if tg(CLIENT, "sendMessage", chat_id=u["tg_id"], text=text):
             ok += 1
         time.sleep(0.05)
     if notify_chat:
-        tg(ADMIN, "sendMessage", chat_id=notify_chat, text=f"📣 Xabar yuborildi: {ok}/{len(users)} mijoz")
+        tg(ADMIN, "sendMessage", chat_id=notify_chat, text=f"📣 Xabar yuborildi: {ok}/{len(users)} do'kon")
 
 
 def public_staff(s):
@@ -1255,19 +1618,23 @@ def public_staff(s):
 
 # admin marshrut → kerakli ruxsat (None = har qanday kirgan xodim; "owner" = faqat rahbar)
 ROUTE_PERM = {
-    "me": None, "logout": None, "settings": None, "menu": None,
+    "me": None, "logout": None, "settings": None, "menu": None, "zones": None,
     "dashboard": "stats", "orders": "orders", "order": "orders", "order/status": "orders",
+    "loadlist": "orders", "loadlist/send": "orders",
     "product/toggle": ("stock", "menu"), "product/save": "menu", "product/delete": "menu",
     "category/save": "menu", "category/delete": "menu",
     "banner/save": "banners", "banner/delete": "banners",
-    "settings/save": "settings", "geocode": "settings", "customers": "customers", "broadcast": "broadcast",
+    "settings/save": "settings", "geocode": "settings", "zone/save": "settings", "zone/delete": "settings",
+    "shops": ("shops", "debts"), "shop": ("shops", "debts"), "shop/save": "shops",
+    "debts": "debts", "payment": "debts", "adjust": "debts", "ledger/delete": "owner",
+    "broadcast": "broadcast",
     "staff": "owner", "staff/save": "owner", "staff/delete": "owner",
 }
 UPLOAD_TYPES = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "video/mp4": "mp4", "video/quicktime": "mov"}
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "Gumbaz/3.0"
+    server_version = "Ulgurji/1.0"
     protocol_version = "HTTP/1.1"
 
     def log_message(self, f, *args):
@@ -1368,22 +1735,35 @@ class Handler(BaseHTTPRequestHandler):
         uid = int(tu["id"])
         user = db.get_user(uid)
         if route == "me":
-            return self.send_json({"ok": True, "user": public_user(user), "registered": bool(user and user.get("phone"))})
+            reg = bool(user and user.get("phone") and user.get("shop"))
+            if user and user.get("blocked"):
+                return self.send_json({"ok": False, "error": "blocked", "phone": setting("SUPPORT_PHONE")}, 403)
+            return self.send_json({"ok": True, "user": public_user(user), "registered": reg,
+                                   "account": account(user) if reg else None})
         if not user or not user.get("phone"):
             return self.send_json({"ok": False, "error": "not_registered"}, 403)
+        if user.get("blocked"):
+            return self.send_json({"ok": False, "error": "blocked"}, 403)
+        if route == "account":
+            return self.send_json({"ok": True, "user": public_user(user), "account": account(user)})
         if route == "profile":
             f = {}
-            if "name" in body:
-                nm = str(body["name"]).strip()[:60]
-                if not nm:
-                    raise ValueError("bad_name")
-                f["name"] = nm
+            for k, lim in (("name", 60), ("shop", 60)):
+                if k in body:
+                    v = re.sub(r"\s+", " ", str(body[k])).strip()[:lim]
+                    if len(v) < 2:
+                        raise ValueError("bad_" + k)
+                    f[k] = v
             if body.get("lang") in ("uz", "ru"):
                 f["lang"] = body["lang"]
+            if "zone" in body:
+                if body["zone"] and not zone_by_id(body["zone"]):
+                    raise ValueError("bad_zone")
+                f["zone"] = body["zone"] or None
             u = db.upsert_user(uid, **f)
             if "lang" in f:
                 set_client_menu(uid, f["lang"])
-            return self.send_json({"ok": True, "user": public_user(u)})
+            return self.send_json({"ok": True, "user": public_user(u), "account": account(u)})
         if route == "avatar":
             m = re.match(r"^data:image/(jpeg|png|webp);base64,(.+)$", str(body.get("image", "")), re.S)
             if not m:
@@ -1402,27 +1782,42 @@ class Handler(BaseHTTPRequestHandler):
             if not (-90 <= lat <= 90 and -180 <= lon <= 180):
                 raise ValueError("bad_coords")
             addr = re.sub(r"\s+", " ", str(body.get("address") or "")).strip()[:200] or reverse_geocode(lat, lon, user.get("lang"))
-            det = {k: re.sub(r"\s+", " ", str(body.get(k) or "")).strip()[:lim] for k, lim in
-                   (("apt", 12), ("entrance", 12), ("floor", 12), ("landmark", 120))}
-            return self.send_json({"ok": True, "user": public_user(db.upsert_user(uid, lat=lat, lon=lon, address=addr, **det))})
+            land = re.sub(r"\s+", " ", str(body.get("landmark") or "")).strip()[:120]
+            return self.send_json({"ok": True, "user": public_user(db.upsert_user(uid, lat=lat, lon=lon, address=addr, landmark=land))})
         if route == "geocode":
             return self.send_json({"ok": True, "address": reverse_geocode(float(body["lat"]), float(body["lon"]),
                                                                           body.get("lang") or user.get("lang"))})
         if route == "order":
-            if not rate_ok(("order", uid), 15):
+            if not user.get("shop"):
+                return self.send_json({"ok": False, "error": "not_registered"}, 403)
+            if not rate_ok(("order", uid), 10):
                 return self.send_json({"ok": False, "error": "too_fast"}, 429)
             try:
                 order = create_order(user, body)
             except ValueError as e:
                 _rate.pop(("order", uid), None)
-                return self.send_json({"ok": False, "error": str(e)}, 400)
-            return self.send_json({"ok": True, "order": {k: order[k] for k in ("id", "total", "status", "delivery")}})
+                extra = {}
+                if str(e) == "debt_limit":
+                    extra = {"balance": db.balance(uid), "limit": debt_limit(user)}
+                return self.send_json({"ok": False, "error": str(e), **extra}, 400)
+            return self.send_json({"ok": True, "order": {k: order[k] for k in ("id", "total", "status", "payment", "delivery_date")},
+                                   "label": date_label(order["delivery_date"], user.get("lang") or "uz")})
         if route == "orders":
-            rows = db.q("SELECT id,items,total,delivery,payment,address,status,created FROM orders WHERE tg_id=? ORDER BY id DESC LIMIT 30", (uid,))
+            rows = db.q("SELECT id,items,total,payment,address,status,created,delivery_date,paid,debt,comment FROM orders "
+                        "WHERE tg_id=? ORDER BY id DESC LIMIT 40", (uid,))
+            lang = user.get("lang") or "uz"
             for r in rows:
                 r["items"] = json.loads(r["items"])
+                r["date_label"] = date_label(r["delivery_date"], lang)
             return self.send_json({"ok": True, "orders": rows})
+        if route == "ledger":
+            rows = db.q("SELECT id,amount,kind,order_id,note,created FROM ledger WHERE tg_id=? ORDER BY id DESC LIMIT 60", (uid,))
+            return self.send_json({"ok": True, "entries": rows, "balance": db.balance(uid), "limit": debt_limit(user)})
         if route == "logout":
+            if db.balance(uid) > 0 or db.q("SELECT 1 FROM orders WHERE tg_id=? AND status IN ('new','accepted','on_way')", (uid,), one=True):
+                # qarzi yoki faol buyurtmasi bor do'kon o'chirilmaydi — faqat bot menyusi yopiladi
+                tg(CLIENT, "setChatMenuButton", chat_id=uid, menu_button={"type": "default"})
+                return self.send_json({"ok": False, "error": "has_debt"}, 400)
             db.x("DELETE FROM users WHERE tg_id=?", (uid,))
             tg(CLIENT, "setChatMenuButton", chat_id=uid, menu_button={"type": "default"})
             tg(CLIENT, "sendMessage", chat_id=uid, text=tr(user.get("lang") or "uz", "logout"), reply_markup={"remove_keyboard": True})
@@ -1538,39 +1933,62 @@ class Handler(BaseHTTPRequestHandler):
 
         if route == "orders":
             st = body.get("status") or "active"
-            groups = {"active": ("new", "accepted", "cooking", "on_way", "ready"), "done": ("done",), "cancelled": ("cancelled",)}
+            groups = {"active": ACTIVE, "done": ("done",), "cancelled": ("cancelled",)}
             sts = groups.get(st, (st,) if st in STATUS_ORDER else groups["active"])
-            sql = (f"SELECT o.*, u.name uname, u.phone uphone, u.username uusername FROM orders o "
+            sql = (f"SELECT o.*, u.name uname, u.phone uphone, u.username uusername, u.shop ushop FROM orders o "
                    f"LEFT JOIN users u ON u.tg_id=o.tg_id WHERE o.status IN ({','.join('?' * len(sts))})")
             args = list(sts)
+            if body.get("date"):
+                sql += " AND o.delivery_date=?"
+                args.append(str(body["date"]))
             if body.get("q"):
                 qq = str(body["q"]).strip().lstrip("#")
                 if qq.isdigit():
                     sql += " AND (o.id=? OR u.phone LIKE ?)"
                     args += [int(qq), f"%{qq}%"]
                 else:
-                    sql += " AND u.name LIKE ?"
-                    args.append(f"%{qq}%")
-            rows = db.q(sql + " ORDER BY o.id DESC LIMIT 40", args)
+                    sql += " AND (u.name LIKE ? OR u.shop LIKE ?)"
+                    args += [f"%{qq}%", f"%{qq}%"]
+            rows = db.q(sql + " ORDER BY o.id DESC LIMIT 60", args)
             for r in rows:
                 r["items"] = json.loads(r["items"])
                 r["next"] = allowed_next(r)
+                r["date_label"] = date_label(r["delivery_date"])
+                r["zone_name"] = zone_name(r["zone"])
                 r.pop("admin_msg_id", None)
-            counts = {r["status"]: r["c"] for r in db.q("SELECT status, COUNT(*) c FROM orders WHERE status IN ('new','accepted','cooking','on_way','ready') GROUP BY status")}
+            counts = {r["status"]: r["c"] for r in db.q("SELECT status, COUNT(*) c FROM orders WHERE status IN ('new','accepted','on_way') GROUP BY status")}
             return self.send_json({"ok": True, "orders": rows, "active_counts": counts})
         if route == "order":
-            r = db.q("SELECT o.*, u.name uname, u.phone uphone, u.username uusername FROM orders o "
+            r = db.q("SELECT o.*, u.name uname, u.phone uphone, u.username uusername, u.shop ushop FROM orders o "
                      "LEFT JOIN users u ON u.tg_id=o.tg_id WHERE o.id=?", (int(body["id"]),), one=True)
             if not r:
                 return self.send_json({"ok": False, "error": "not_found"}, 404)
             r["items"] = json.loads(r["items"])
             r["next"] = allowed_next(r)
+            r["date_label"] = date_label(r["delivery_date"])
+            r["zone_name"] = zone_name(r["zone"])
+            r["balance"] = db.balance(r["tg_id"])
             return self.send_json({"ok": True, "order": r})
         if route == "order/status":
-            order, err = set_status(int(body["id"]), str(body["status"]))
+            paid = body.get("paid")
+            order, err = set_status(int(body["id"]), str(body["status"]), None if paid in (None, "") else int(paid), me["name"])
             if err:
                 return self.send_json({"ok": False, "error": err}, 400)
-            return self.send_json({"ok": True, "status": order["status"], "next": allowed_next(order)})
+            return self.send_json({"ok": True, "status": order["status"], "next": allowed_next(order),
+                                   "paid": order.get("paid"), "debt": order.get("debt")})
+        if route == "loadlist":
+            date = str(body.get("date") or _today()[0].isoformat())
+            days = db.q("SELECT delivery_date d, COUNT(*) c FROM orders WHERE status IN ('new','accepted','on_way') AND delivery_date>=? "
+                        "GROUP BY delivery_date ORDER BY delivery_date LIMIT 10", (_today()[0].isoformat(),))
+            return self.send_json({"ok": True, **loadlist(date, body.get("zone") or None),
+                                   "days": [{"date": d["d"], "orders": d["c"], "label": date_label(d["d"])} for d in days]})
+        if route == "loadlist/send":
+            chat = (tu or {}).get("id") or ((me.get("staff") or {}).get("tg_id")) or (CFG["ADMIN_IDS"][0] if me["owner"] and CFG["ADMIN_IDS"] else None)
+            if not chat:
+                raise ValueError("no_chat")
+            for part in split_msg(loadlist_text(loadlist(str(body.get("date")), body.get("zone") or None))):
+                tg(ADMIN, "sendMessage", chat_id=chat, text=part, parse_mode="HTML")
+            return self.send_json({"ok": True})
 
         if route == "menu":
             return self.send_json({"ok": True, "categories": MENU.data["categories"],
@@ -1714,26 +2132,113 @@ class Handler(BaseHTTPRequestHandler):
                         s[k] = "" if typ is str else CFG.get(k, 0)
                     else:
                         s[k] = typ(v)
-            if not (-90 <= float(s.get("RESTAURANT_LAT", setting("RESTAURANT_LAT"))) <= 90):
+            if not (-90 <= float(s.get("BASE_LAT", setting("BASE_LAT")) or 0) <= 90):
                 raise ValueError("bad_coords")
             db.kv_set("settings", s)
             return self.send_json({"ok": True, "settings": all_settings()})
 
-        if route == "customers":
-            rows = db.q("SELECT u.tg_id,u.name,u.phone,u.username,u.address,u.created,"
-                        " (SELECT COUNT(*) FROM orders o WHERE o.tg_id=u.tg_id AND o.status!='cancelled') orders,"
-                        " (SELECT COALESCE(SUM(total),0) FROM orders o WHERE o.tg_id=u.tg_id AND o.status!='cancelled') spent"
-                        " FROM users u WHERE u.phone IS NOT NULL ORDER BY spent DESC, u.created DESC LIMIT 100")
-            return self.send_json({"ok": True, "customers": rows,
-                                   "total": db.q("SELECT COUNT(*) c FROM users WHERE phone IS NOT NULL", one=True)["c"]})
+        if route == "zones":
+            cnt = {r["zone"]: r["c"] for r in db.q("SELECT zone, COUNT(*) c FROM users WHERE phone IS NOT NULL GROUP BY zone")}
+            return self.send_json({"ok": True, "zones": [dict(z, shops=cnt.get(z["id"], 0)) for z in zones()],
+                                   "no_zone": cnt.get(None, 0)})
+        if route == "zone/save":
+            z = clean_zone(body.get("zone") or {})
+            lst = zones()
+            cur = next((x for x in lst if x["id"] == (body.get("zone") or {}).get("id")), None)
+            if cur:
+                cur.update(name=z["name"], days=z["days"])
+                z = cur
+            else:
+                lst.append(z)
+            db.kv_set("zones", lst)
+            return self.send_json({"ok": True, "zone": z})
+        if route == "zone/delete":
+            zid = str(body.get("id") or "")
+            db.kv_set("zones", [x for x in zones() if x["id"] != zid])
+            db.x("UPDATE users SET zone=NULL WHERE zone=?", (zid,))
+            return self.send_json({"ok": True})
+
+        if route in ("shops", "debts"):
+            sql = ("SELECT u.tg_id,u.shop,u.name,u.phone,u.username,u.address,u.zone,u.created,u.blocked,u.debt_limit,"
+                   " (SELECT COALESCE(SUM(amount),0) FROM ledger l WHERE l.tg_id=u.tg_id) balance,"
+                   " (SELECT COUNT(*) FROM orders o WHERE o.tg_id=u.tg_id AND o.status!='cancelled') orders,"
+                   " (SELECT COALESCE(SUM(total),0) FROM orders o WHERE o.tg_id=u.tg_id AND o.status='done') spent,"
+                   " (SELECT MAX(created) FROM orders o WHERE o.tg_id=u.tg_id) last_order"
+                   " FROM users u WHERE u.phone IS NOT NULL")
+            args = []
+            if body.get("q"):
+                qq = f"%{str(body['q']).strip()}%"
+                sql += " AND (u.shop LIKE ? OR u.name LIKE ? OR u.phone LIKE ?)"
+                args += [qq, qq, qq]
+            if body.get("zone"):
+                sql += " AND u.zone=?" if body["zone"] != "-" else " AND u.zone IS NULL"
+                if body["zone"] != "-":
+                    args.append(body["zone"])
+            rows = db.q(sql, args)
+            if route == "debts":
+                rows = sorted([r for r in rows if r["balance"] > 0], key=lambda r: -r["balance"])
+            else:
+                rows.sort(key=lambda r: (-(r["last_order"] or 0), -r["created"]))
+            for r in rows:
+                r["zone_name"] = zone_name(r["zone"])
+                r["limit"] = debt_limit(r)
+            return self.send_json({"ok": True, "shops": rows[:300], "total": len(rows), "debt": debt_summary()})
+        if route == "shop":
+            uid = int(body["id"])
+            u = db.get_user(uid)
+            if not u:
+                return self.send_json({"ok": False, "error": "not_found"}, 404)
+            u["zone_name"] = zone_name(u.get("zone"))
+            u["balance"] = db.balance(uid)
+            u["limit"] = debt_limit(u)
+            led = db.q("SELECT * FROM ledger WHERE tg_id=? ORDER BY id DESC LIMIT 40", (uid,))
+            ords = db.q("SELECT id,total,status,payment,delivery_date,paid,debt,created FROM orders WHERE tg_id=? ORDER BY id DESC LIMIT 15", (uid,))
+            for o in ords:
+                o["date_label"] = date_label(o["delivery_date"])
+            return self.send_json({"ok": True, "shop": u, "ledger": led, "orders": ords})
+        if route == "shop/save":
+            uid = int(body["id"])
+            if not db.get_user(uid):
+                return self.send_json({"ok": False, "error": "not_found"}, 404)
+            f = {}
+            if "shop" in body:
+                v = re.sub(r"\s+", " ", str(body["shop"] or "")).strip()[:60]
+                if len(v) < 2:
+                    raise ValueError("bad_shop")
+                f["shop"] = v
+            if "zone" in body:
+                if body["zone"] and not zone_by_id(body["zone"]):
+                    raise ValueError("bad_zone")
+                f["zone"] = body["zone"] or None
+            if "debt_limit" in body:
+                f["debt_limit"] = None if body["debt_limit"] in (None, "") else _int(body["debt_limit"], 0, 10 ** 12, "bad_amount")
+            if "note" in body:
+                f["note"] = str(body["note"] or "")[:300]
+            if "blocked" in body:
+                f["blocked"] = 1 if body["blocked"] else 0
+            u = db.upsert_user(uid, **f)
+            return self.send_json({"ok": True, "shop": u})
+        if route in ("payment", "adjust"):
+            amount = _int(body.get("amount"), -10 ** 12, 10 ** 12, "bad_amount")
+            bal = record_payment(int(body["id"]), amount, route, str(body.get("note") or "").strip()[:200], me["name"])
+            return self.send_json({"ok": True, "balance": bal})
+        if route == "ledger/delete":
+            e = db.q("SELECT * FROM ledger WHERE id=?", (int(body["id"]),), one=True)
+            if not e or e["kind"] == "order":
+                raise ValueError("cannot_delete")
+            db.x("DELETE FROM ledger WHERE id=?", (e["id"],))
+            return self.send_json({"ok": True, "balance": db.balance(e["tg_id"])})
+
         if route == "broadcast":
             text = str(body.get("text") or "").strip()[:3500]
             if not text:
                 raise ValueError("empty")
             if not rate_ok(("bc", me["id"], me["owner"]), 60):
                 return self.send_json({"ok": False, "error": "too_fast"}, 429)
-            n = db.q("SELECT COUNT(*) c FROM users WHERE phone IS NOT NULL", one=True)["c"]
-            threading.Thread(target=broadcast, args=(text, (tu or {}).get("id")), daemon=True).start()
+            zone = body.get("zone") or None
+            n = db.q("SELECT COUNT(*) c FROM users WHERE phone IS NOT NULL AND COALESCE(blocked,0)=0" + (" AND zone=?" if zone else ""),
+                     (zone,) if zone else (), one=True)["c"]
+            threading.Thread(target=broadcast, args=(text, (tu or {}).get("id"), zone), daemon=True).start()
             return self.send_json({"ok": True, "queued": n})
 
         if route == "staff":
@@ -1853,7 +2358,7 @@ def keep_alive():
     while True:
         time.sleep(600)
         try:
-            urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "gumbaz-keepalive"}), timeout=20).read()
+            urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "ulgurji-keepalive"}), timeout=20).read()
         except Exception as e:
             log.info("keep-alive: %s", e)
 
@@ -1879,6 +2384,9 @@ def main():
     db.open()
     MENU.load()
     BANNERS.load()
+    if db.kv_get("zones") is None and os.path.exists(os.path.join(seed, "zones.json")):
+        with open(os.path.join(seed, "zones.json"), encoding="utf-8") as f:
+            db.kv_set("zones", json.load(f))
     BACKUP.dirty = False
 
     srv = ThreadingHTTPServer((CFG.get("HOST", "0.0.0.0"), int(CFG.get("PORT", 8080))), Handler)

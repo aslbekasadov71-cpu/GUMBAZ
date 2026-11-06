@@ -32,7 +32,7 @@
 .mattr{position:absolute;left:max(10px,env(safe-area-inset-left,0px));z-index:5;font-size:10px;font-weight:600;color:#5d6b7e;background:rgba(255,255,255,.75);padding:2px 6px;border-radius:6px;transition:bottom .35s var(--ease)}
 /* pin */
 .pinw{position:absolute;left:50%;z-index:5;pointer-events:none;width:0;height:0}
-.pinb{position:absolute;left:-24px;top:-62px;width:48px;height:60px;transition:transform .32s cubic-bezier(.3,1.5,.5,1);filter:drop-shadow(0 8px 10px rgba(11,61,44,.35))}
+.pinb{position:absolute;left:-24px;top:-62px;width:48px;height:60px;transition:transform .32s cubic-bezier(.3,1.5,.5,1);filter:drop-shadow(0 8px 10px rgba(15,47,110,.35))}
 .pinw.lift .pinb{transform:translateY(-16px) scale(1.05);transition:transform .22s var(--ease)}
 .pinw.drop .pinb{animation:pdrop .5s cubic-bezier(.3,1.6,.5,1)}
 @keyframes pdrop{0%{transform:translateY(-16px)}55%{transform:translateY(2px) scaleY(.92)}100%{transform:none}}
@@ -50,7 +50,7 @@
 .rmk img{width:38px;height:38px;border-radius:50%}
 .rmk b{position:absolute;left:50%;top:26px;transform:translateX(-50%);white-space:nowrap;font-size:11.5px;font-weight:800;color:var(--bd);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff}
 .rmk i,.udot i{position:absolute;border-radius:50%;animation:rpulse 2.4s ease-out infinite}
-.rmk i{left:-22px;top:-22px;width:44px;height:44px;background:rgba(15,110,76,.35)}
+.rmk i{left:-22px;top:-22px;width:44px;height:44px;background:rgba(29,91,216,.35)}
 @keyframes rpulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.4);opacity:0}}
 .udot{position:absolute;left:0;top:0;width:0;height:0}
 .udot>span{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;background:#2b6cf6;border:3px solid #fff;box-shadow:0 2px 8px rgba(43,108,246,.5)}

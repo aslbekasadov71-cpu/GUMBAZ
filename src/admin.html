@@ -1,4 +1,4 @@
-<title>Gumbaz Admin</title>
+<title>Ulgurji Admin</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f2f4f7">
@@ -25,7 +25,7 @@
 .oc .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .oc .hd b{font-size:16px;font-weight:800}
 .oc .ft{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
-.oc .ft b{font-weight:800}
+.oc .ft b{font-weight:800;white-space:nowrap}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .acts .btn.big{grid-column:1/-1}
 .pr-row .ico.im{width:58px;height:48px;border-radius:12px}
@@ -68,7 +68,7 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
 <nav class="tabs" id="nav">
   <button data-tab="dash" class="on"><svg class="ic"><use href="#i-chart"/></svg><span>Asosiy</span></button>
   <button data-tab="orders"><svg class="ic"><use href="#i-orders"/></svg><span>Buyurtmalar</span><i class="bdg num" id="bdg" hidden></i></button>
-  <button data-tab="menu"><svg class="ic"><use href="#i-box"/></svg><span>Menyu</span></button>
+  <button data-tab="menu"><svg class="ic"><use href="#i-box"/></svg><span>Katalog</span></button>
   <button data-tab="more"><svg class="ic"><use href="#i-widget"/></svg><span>Boshqaruv</span></button>
 </nav>
 <input type="file" id="fileIn" hidden>
@@ -87,10 +87,10 @@ const money = n => (Math.round(n) + "").replace(/\B(?=(\d{3})+(?!\d))/g, " ") + 
 const short = n => n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(".0", "") + " mln" : n >= 1e3 ? Math.round(n / 1e3) + " ming" : String(n);
 const hap = k => { try { const h = tg && tg.HapticFeedback; if (!h) return; k === "ok" ? h.notificationOccurred("success") : k === "err" ? h.notificationOccurred("error") : k === "warn" ? h.notificationOccurred("warning") : k === "sel" ? h.selectionChanged() : h.impactOccurred(k || "light"); } catch (e) {} };
 let tT; function toast(m, i = "check") { const e = $("#toast"); e.innerHTML = ic(i, "s") + esc(m); e.classList.add("show"); clearTimeout(tT); tT = setTimeout(() => e.classList.remove("show"), 2300); }
-const ST = {new: "Yangi", accepted: "Qabul qilindi", cooking: "Tayyorlanmoqda", on_way: "Yo'lda", ready: "Tayyor", done: "Yetkazildi", cancelled: "Bekor qilindi"};
-const NEXTL = {accepted: ["Qabul qilish", "check"], cooking: ["Tayyorlanmoqda", "chef"], on_way: ["Yo'lga chiqdi", "scooter"], ready: ["Tayyor", "box"], done: ["Yetkazildi", "flag"], cancelled: ["Bekor qilish", "close"]};
-const DELIV = {courier: ["Kuryer", "scooter"], yandex: ["Yandex Go", "delivery"], pickup: ["Olib ketish", "shop"]};
-const ERR = {bad_login: "Login yoki parol noto'g'ri", too_many: "Ko'p urinish. 10 daqiqadan keyin qayta urinib ko'ring", login_taken: "Bu login band", bad_login_format: "Login: 3–32 ta lotin harf, raqam, _ . -", short_password: "Parol kamida 6 ta belgidan iborat bo'lsin", too_large_20: "Fayl 19 MB dan katta bo'lmasin", login_required: "Qayta kiring", category_not_empty: "Avval bo'limdagi mahsulotlarni o'chiring yoki ko'chiring", bad_price: "Narxni to'g'ri kiriting", name_required: "Nomini kiriting", bad_category: "Bo'limni tanlang", too_fast: "Biroz kuting", forbidden: "Ruxsat yo'q", network: "Internet aloqasi yo'q", bad_type: "Faqat JPG, PNG, WEBP yoki MP4", too_large: "Fayl juda katta (25 MB gacha)", already: "Allaqachon admin"};
+const ST = {new: "Yangi", accepted: "Qabul qilindi", on_way: "Yo'lda", done: "Yetkazildi", cancelled: "Bekor qilindi"};
+const NEXTL = {accepted: ["Qabul qilish", "check"], on_way: ["Yo'lga chiqdi", "truck"], done: ["Yetkazildi", "flag"], cancelled: ["Bekor qilish", "close"]};
+const num = n => (Math.round(n) + "").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+const ERR = {bad_login: "Login yoki parol noto'g'ri", too_many: "Ko'p urinish. 10 daqiqadan keyin qayta urinib ko'ring", login_taken: "Bu login band", bad_login_format: "Login: 3–32 ta lotin harf, raqam, _ . -", short_password: "Parol kamida 6 ta belgidan iborat bo'lsin", too_large_20: "Fayl 19 MB dan katta bo'lmasin", login_required: "Qayta kiring", category_not_empty: "Avval bo'limdagi mahsulotlarni o'chiring yoki ko'chiring", bad_price: "Narxni to'g'ri kiriting", name_required: "Nomini kiriting", bad_category: "Bo'limni tanlang", too_fast: "Biroz kuting", forbidden: "Ruxsat yo'q", network: "Internet aloqasi yo'q", bad_type: "Faqat JPG, PNG, WEBP yoki MP4", too_large: "Fayl juda katta (25 MB gacha)", already: "Allaqachon admin", bad_pack: "Qadoqdagi sonini to'g'ri kiriting", bad_amount: "Summani to'g'ri kiriting", bad_zone: "Hudud topilmadi", bad_shop: "Do'kon nomini kiriting", cannot_delete: "Bu yozuvni o'chirib bo'lmaydi", no_chat: "Telegram chat topilmadi — admin botni oching", not_found: "Topilmadi"};
 const A = {me: null, view: "dash", stack: [], menu: null, cat: "all", sortMode: false, ordFilter: "active", orders: null, oq: "", activeCount: 0};
 const L = o => o ? (o.uz || o.ru || "") : "";
 const ago = s => { const d = Date.now() / 1000 - s; if (d < 60) return "hozir"; if (d < 3600) return Math.floor(d / 60) + " daq oldin"; if (d < 86400) return Math.floor(d / 3600) + " soat oldin"; return new Date(s * 1000).toLocaleDateString("ru-RU", {day: "2-digit", month: "2-digit"}) + " " + new Date(s * 1000).toLocaleTimeString("ru-RU", {hour: "2-digit", minute: "2-digit"}); };
@@ -171,7 +171,7 @@ function back() {
   if (A.view !== "dash") go("dash");
 }
 function updBack() { try { (!!$(".modal") || !!$("#mapLayer") || A.stack.length || A.view !== "dash" || A.sortMode) ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {} }
-const VIEWS = {dash: vDash, orders: vOrders, menu: vMenu, more: vMore, cats: vCats, banners: vBanners, customers: vCustomers, broadcast: vBroadcast, settings: vSettings, staff: vStaff};
+const VIEWS = {dash: vDash, orders: vOrders, menu: vMenu, more: vMore, cats: vCats, banners: vBanners, shops: vShops, debts: vDebts, loadlist: vLoadlist, zones: vZones, broadcast: vBroadcast, settings: vSettings, staff: vStaff};
 async function render() {
   const v = A.view;
   $("#nav").hidden = !TABS.includes(v);
@@ -213,21 +213,23 @@ async function vDash() {
   A.settings = s.settings || {};
   const td = d.today, y = d.yesterday, delta = y.revenue ? Math.round((td.revenue - y.revenue) / y.revenue * 100) : null;
   const max = Math.max(1, ...d.by_day.map(x => x.revenue)), wd = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"];
-  const topMax = Math.max(1, ...d.top.map(x => x.qty)), dt = d.delivery, dsum = Math.max(1, dt.courier + dt.yandex + dt.pickup);
+  const topMax = Math.max(1, ...d.top.map(x => x.revenue)), pay = d.pay || {}, psum = Math.max(1, (pay.cash || 0) + (pay.debt || 0));
   const acc = A.settings.ACCEPTING !== false;
   return `<div class="top"><div class="grow"><small>Salom, ${esc(A.me.name || "admin")} 👋</small><h1>Bugun</h1></div>${DEMO ? `<span class="pill gold">DEMO</span>` : `<button class="pill" onclick="render()">${ic("refresh", "xs")}</button>`}</div>
-    <div class="card" style="margin-bottom:10px"><div class="ico ${acc ? "okb" : "red"}">${ic(acc ? "shop" : "clock")}</div><div class="grow"><b>${acc ? "Buyurtma qabul qilinmoqda" : "Buyurtma qabul yopiq"}</b><small>${acc ? "Mijozlar buyurtma bera oladi" : "Mijozlar menyuni ko'radi, lekin buyurtma bera olmaydi"}</small></div>${can("settings") ? `<button class="sw ${acc ? "on" : ""}" id="accSw" aria-label="Qabul"></button>` : ""}</div>
-    <div class="stat"><small>Bugungi savdo</small><div class="big num">${money(td.revenue)}</div>
+    <div class="card" style="margin-bottom:10px"><div class="ico ${acc ? "okb" : "red"}">${ic(acc ? "shop" : "clock")}</div><div class="grow"><b>${acc ? "Buyurtma qabul qilinmoqda" : "Buyurtma qabul yopiq"}</b><small>${acc ? "Do'konlar buyurtma bera oladi" : "Do'konlar katalogni ko'radi, lekin buyurtma bera olmaydi"}</small></div>${can("settings") ? `<button class="sw ${acc ? "on" : ""}" id="accSw" aria-label="Qabul"></button>` : ""}</div>
+    <div class="stat"><small>Bugungi buyurtmalar summasi</small><div class="big num">${money(td.revenue)}</div>
       ${delta != null ? `<small style="position:relative;z-index:1;margin-top:2px">${delta >= 0 ? "▲" : "▼"} ${Math.abs(delta)}% kechagiga nisbatan</small>` : ""}
-      <div class="sp"><div><small>Buyurtmalar</small><b class="num">${td.orders}</b></div><div><small>O'rtacha chek</small><b class="num">${short(td.avg)}</b></div></div></div>
+      <div class="sp"><div><small>Buyurtmalar</small><b class="num">${td.orders}</b></div><div><small>O'rtacha</small><b class="num">${short(td.avg)}</b></div></div></div>
     <div class="dtiles"><button class="dtile card tap" style="display:block;margin:0" onclick="if(can('orders')){A.ordFilter='active';go('orders')}"><small>${ic("clock", "xs")} Faol</small><b class="num" style="color:var(--warn)">${d.active}</b></button>
-      <button class="dtile card tap" style="display:block;margin:0" onclick="if(can('customers'))go('customers')"><small>${ic("users", "xs")} Mijozlar</small><b class="num">${d.customers}${d.new_customers ? `<span style="font-size:13px;color:#16a34a"> +${d.new_customers}</span>` : ""}</b></button></div>
+      <button class="dtile card tap" style="display:block;margin:0" onclick="if(can('debts'))go('debts')"><small>${ic("wallet", "xs")} Umumiy qarz</small><b class="num" style="color:var(--red)">${short(d.debt.total)}</b><small>${d.debt.count} ta do'kon</small></button>
+      <button class="dtile card tap" style="display:block;margin:0" onclick="if(can('shops'))go('shops')"><small>${ic("shop", "xs")} Do'konlar</small><b class="num">${d.shops}${d.new_shops ? `<span style="font-size:13px;color:#16a34a"> +${d.new_shops}</span>` : ""}</b></button></div>
+    ${d.upcoming.length && can("orders") ? `<h2>Yetkazish rejasi</h2>${d.upcoming.map(u => `<button class="card" onclick="A.llDate='${u.date}';go('loadlist')"><div class="ico">${ic("truck")}</div><div class="grow"><b>${esc(u.label)}</b><small class="num">${u.orders} ta buyurtma · ${money(u.sum)}</small></div><span class="pill">${ic("clip", "xs")}Yuklash</span></button>`).join("")}` : ""}
     <h2>Oxirgi 7 kun</h2>
     <div class="bars">${d.by_day.map((x, i) => `<div class="${i === d.by_day.length - 1 ? "today" : ""}"><em class="num">${x.revenue ? short(x.revenue).replace(" ming", "k").replace(" mln", "M") : ""}</em><i style="height:${Math.max(3, x.revenue / max * 100)}%"></i><small>${wd[new Date(x.day * 1000).getDay()]}</small></div>`).join("")}</div>
+    <h2>To'lov turi (7 kun)</h2>
+    <div class="dtiles"><div class="dtile"><small>${ic("money", "xs")} Naqd</small><b class="num">${Math.round((pay.cash || 0) / psum * 100)}%</b><small class="num">${short(pay.cash || 0)}</small></div><div class="dtile"><small>${ic("notebook", "xs")} Nasiya</small><b class="num">${Math.round((pay.debt || 0) / psum * 100)}%</b><small class="num">${short(pay.debt || 0)}</small></div></div>
     <h2>Eng ko'p sotilgan</h2>
-    ${d.top.length ? `<div class="box">${d.top.map((x, i) => `<div class="acc" style="${i ? "margin-top:12px" : ""}"><span class="rank">${i + 1}</span><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px"><b style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(L(x.name))}</b><b class="num" style="font-weight:800;flex:none">${x.qty} ta</b></div><div class="pbar"><i style="width:${x.qty / topMax * 100}%"></i></div></div></div>`).join("")}</div>` : `<div class="box mute" style="text-align:center">Hali sotuv yo'q</div>`}
-    <h2>Yetkazish usuli</h2>
-    <div class="dtiles">${Object.entries(DELIV).map(([k, [n, i]]) => `<div class="dtile"><small>${ic(i, "xs")} ${n}</small><b class="num">${Math.round(dt[k] / dsum * 100)}%</b></div>`).join("")}</div>`;
+    ${d.top.length ? `<div class="box">${d.top.map((x, i) => `<div class="acc" style="${i ? "margin-top:12px" : ""}"><span class="rank">${i + 1}</span><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px"><b style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(L(x.name))}</b><b class="num" style="font-weight:800;flex:none">${short(x.revenue)}</b></div><small class="num">${num(x.pcs)} ${esc(L(x.base) || "dona")}</small><div class="pbar"><i style="width:${x.revenue / topMax * 100}%"></i></div></div></div>`).join("")}</div>` : `<div class="box mute" style="text-align:center">Hali sotuv yo'q</div>`}`;
 }
 vDash.after = () => { const sw = $("#accSw"); if (sw) sw.onclick = async () => { const on = !sw.classList.contains("on"); sw.classList.toggle("on", on); hap("medium"); const r = await api("settings/save", {settings: {ACCEPTING: on}}); if (!r.ok) { sw.classList.toggle("on", !on); return fail(r); } A.settings = r.settings; toast(on ? "Buyurtma qabul ochildi" : "Buyurtma qabul yopildi"); render(); }; };
 const errBox = r => `<div class="empty"><div class="ei" style="background:var(--redl);color:var(--red)">${ic("danger", "xl")}</div><b>${esc(ERR[r.error] || "Yuklab bo'lmadi")}</b><button class="btn b" style="margin:18px auto 0" onclick="render()">Qayta urinish</button></div>`;
@@ -235,7 +237,7 @@ const errBox = r => `<div class="empty"><div class="ei" style="background:var(--
 /* ───────── ORDERS ───────── */
 async function pollOrders() {
   const r = await api("orders", {status: "active"}, null, true); if (!r.ok) return;
-  const n = Object.values(r.active_counts || {}).reduce((a, b) => a + b, 0), fresh = (r.active_counts || {}).new || 0;
+  const fresh = (r.active_counts || {}).new || 0;
   if (fresh > (A.lastNew || 0) && A.lastNew != null) { hap("warn"); toast("Yangi buyurtma keldi!", "bell"); if (A.view === "orders" && !$(".modal")) render(); }
   A.lastNew = fresh; const b = $("#bdg"); b.hidden = !fresh; b.textContent = fresh;
 }
@@ -243,44 +245,61 @@ async function vOrders() {
   const r = await api("orders", {status: A.ordFilter, q: A.oq});
   if (!r.ok) return errBox(r);
   A.orders = r.orders; const ac = r.active_counts || {}, an = Object.values(ac).reduce((a, b) => a + b, 0);
-  const F = [["active", "Faol", an], ["new", "Yangi", ac.new || 0], ["done", "Yetkazildi"], ["cancelled", "Bekor"]];
-  return `${titleBar("Buyurtmalar")}
-    <label class="field" style="margin-bottom:10px">${ic("search")}<input id="oq" type="search" placeholder="Raqam, telefon yoki ism" value="${esc(A.oq)}" enterkeyhint="search"></label>
+  const F = [["active", "Faol", an], ["new", "Yangi", ac.new || 0], ["accepted", "Qabul qilingan", ac.accepted || 0], ["on_way", "Yo'lda", ac.on_way || 0], ["done", "Yetkazildi"], ["cancelled", "Bekor"]];
+  return `${titleBar("Buyurtmalar", `<button class="btn soft sm" onclick="go('loadlist')">${ic("clip", "s")} Yuklash</button>`)}
+    <label class="field" style="margin-bottom:10px">${ic("search")}<input id="oq" type="search" placeholder="Raqam, do'kon, telefon" value="${esc(A.oq)}" enterkeyhint="search"></label>
     <div class="chips" style="margin-bottom:12px">${F.map(([k, n, c]) => `<button class="chip ${A.ordFilter === k ? "on" : ""}" data-of="${k}">${n}${c ? `<span class="n num">${c}</span>` : ""}</button>`).join("")}</div>
-    <div id="olist">${r.orders.length ? r.orders.map(orderCard).join("") : `<div class="empty"><div class="ei">${ic("orders", "xl")}</div><b>Buyurtma yo'q</b><p>${A.ordFilter === "active" ? "Yangi buyurtma kelsa, shu yerda va botda ko'rinadi." : "Bu bo'limda hozircha hech narsa yo'q."}</p></div>`}</div>`;
+    <div id="olist">${r.orders.length ? r.orders.map(orderCard).join("") : `<div class="empty"><div class="ei">${ic("orders", "xl")}</div><b>Buyurtma yo'q</b><p>${A.ordFilter === "active" ? "Do'kondan buyurtma kelsa, shu yerda va botda ko'rinadi." : "Bu bo'limda hozircha hech narsa yo'q."}</p></div>`}</div>`;
 }
 vOrders.after = () => {
   const q = $("#oq"); q.onkeydown = e => { if (e.key === "Enter") { A.oq = q.value.trim(); q.blur(); render(); } };
   q.onsearch = () => { A.oq = q.value.trim(); render(); };
 };
+const qtyTxt = x => x.unit === "pack" ? `${x.qty} ${L(x.unit_name).toLowerCase()} (${num(x.qty * x.pack_qty)} ${L(x.base) || "dona"})` : `${x.qty} ${L(x.base) || "dona"}`;
 function orderCard(o, i) {
-  const [dn, di] = DELIV[o.delivery];
-  return `<button class="card oc rise ${o.status === "new" ? "fresh" : ""}" style="animation-delay:${Math.min(i || 0, 8) * 25}ms" data-o="${o.id}"><div class="ico ${o.status === "new" ? "gold" : ""}">${ic(di)}</div>
-    <div class="grow"><div class="hd"><b class="num">#${o.id}</b><span class="tag ${o.status}">${ST[o.status]}</span></div>
-    <small style="margin-top:2px">${esc(o.uname || "Mijoz")} · ${esc(o.uphone || "")}</small>
+  return `<button class="card oc rise ${o.status === "new" ? "fresh" : ""}" style="animation-delay:${Math.min(i || 0, 8) * 25}ms" data-o="${o.id}"><div class="ico ${o.status === "new" ? "gold" : ""}">${ic(o.status === "on_way" ? "truck" : "box")}</div>
+    <div class="grow"><div class="hd"><b class="num">#${o.id} · ${esc(o.ushop || "Do'kon")}</b><span class="tag ${o.status}">${ST[o.status]}</span></div>
+    <small style="margin-top:2px">${esc(o.uname || "")} · ${esc(o.uphone || "")}</small>
     <small style="white-space:nowrap">${o.items.map(x => esc(L(x.name)) + " ×" + x.qty).join(", ")}</small>
-    <div class="ft"><small>${ago(o.created)} · ${dn}</small><b class="num">${money(o.total)}</b></div></div></button>`;
+    <div class="ft"><small>${ic("calendar", "xs")} ${esc(o.date_label || "")}${o.zone_name ? " · " + esc(o.zone_name) : ""}</small><span style="display:flex;gap:6px;align-items:center"><span class="tag ${o.payment}">${o.payment === "debt" ? "Nasiya" : "Naqd"}</span><b class="num">${short(o.total)}</b></span></div></div></button>`;
 }
 async function openOrder(id) {
   const r = await api("order", {id}); if (!r.ok) return fail(r);
-  const o = r.order, [dn, di] = DELIV[o.delivery], tel = String(o.uphone || "").replace(/[^\d+]/g, "");
+  const o = r.order, tel = String(o.uphone || "").replace(/[^\d+]/g, "");
   modal(`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h1 class="num">#${o.id}</h1><span class="tag ${o.status}" style="font-size:13px;padding:5px 12px">${ST[o.status]}</span></div>
-    <div class="card"><div class="ico">${ic("user")}</div><div class="grow"><b>${esc(o.uname || "Mijoz")}</b><small class="num">${esc(o.uphone || "")}${o.uusername ? " · @" + esc(o.uusername) : ""}</small></div>
+    <div class="card"><div class="ico">${ic("shop")}</div><div class="grow"><b>${esc(o.ushop || "Do'kon")}</b><small class="num">${esc(o.uname || "")} · ${esc(o.uphone || "")}${o.uusername ? " · @" + esc(o.uusername) : ""}</small></div>
       ${tel ? `<a class="ico okb" href="tel:${esc(tel)}" aria-label="Qo'ng'iroq">${ic("phone")}</a>` : ""}${o.uusername ? `<button class="ico" style="border:0" onclick="openTg('${esc(o.uusername)}')" aria-label="Telegram">${ic("chat")}</button>` : ""}</div>
-    <div class="card" style="align-items:flex-start"><div class="ico">${ic(di)}</div><div class="grow"><b>${dn}</b><small style="white-space:normal">${o.delivery === "pickup" ? "Mijoz o'zi olib ketadi" : esc(o.address)}</small>
+    <div class="card" style="align-items:flex-start"><div class="ico">${ic("pin")}</div><div class="grow"><b style="white-space:normal">${esc(o.address || "—")}</b><small>${ic("calendar", "xs")} ${esc(o.date_label || "")}${o.zone_name ? " · " + esc(o.zone_name) : ""}</small>
       ${o.lat ? `<div style="display:flex;gap:6px;margin-top:8px"><button class="pill" onclick="openExt('https://maps.google.com/?q=${o.lat},${o.lon}')">${ic("pin", "xs")}Google</button><button class="pill" onclick="openExt('https://yandex.uz/maps/?pt=${o.lon},${o.lat}&z=17&l=map')">${ic("pin", "xs")}Yandex</button></div>` : ""}</div></div>
-    <div class="box">${o.items.map(x => `<div class="line"><span>${esc(L(x.name))}${x.variant ? " · " + esc(L(x.variant)) : ""} × ${x.qty}</span><span class="num">${money(x.price * x.qty)}</span></div>`).join("")}
-      <div class="line"><span>To'lov</span><span>${o.payment === "card" ? "Karta" : "Naqd"}</span></div>
+    <div class="box">${o.items.map(x => `<div class="line"><span>${esc(L(x.name))} · ${esc(qtyTxt(x))}</span><span class="num">${money(x.price * x.qty)}</span></div>`).join("")}
+      <div class="line"><span>To'lov</span><span class="tag ${o.payment}">${o.payment === "debt" ? "Nasiya" : "Naqd"}</span></div>
+      ${o.status === "done" && o.paid != null ? `<div class="line"><span>To'landi</span><span class="num">${money(o.paid)}</span></div>${o.debt ? `<div class="line"><span>Nasiyaga</span><span class="num red">${money(o.debt)}</span></div>` : ""}` : ""}
       <div class="line total"><span>Jami</span><span class="num">${money(o.total)}</span></div></div>
+    ${o.balance > 0 ? `<button class="banner bad" style="width:100%;border:0;margin-bottom:8px;text-align:left" onclick="openShop(${o.tg_id})">${ic("wallet")}<div>Do'konning joriy qarzi: <span class="num">${money(o.balance)}</span><small>Bosing — hisob-kitobni ochish</small></div></button>` : ""}
     ${o.comment ? `<div class="banner" style="margin-bottom:8px">${ic("chat")}<div>${esc(o.comment)}</div></div>` : ""}
     <small style="text-align:center;margin:6px 0">${new Date(o.created * 1000).toLocaleString("ru-RU")}</small>
-    ${o.next.length ? `<div class="acts">${o.next.map((s, i) => { const [n, ii] = NEXTL[s]; const label = s === "done" && o.delivery === "pickup" ? "Berildi" : n;
-      return `<button class="btn ${s === "cancelled" ? "red" : "b"} ${o.next.length === 1 || (i === 0 && o.next.length === 2 && false) ? "big" : ""}" data-st="${s}" data-oid="${o.id}">${ic(ii, "s")} ${label}</button>`; }).join("")}</div>` : ""}`);
+    ${o.next.length ? `<div class="acts">${o.next.map(s => { const [n, ii] = NEXTL[s]; return `<button class="btn ${s === "cancelled" ? "red" : "b"} ${o.next.length === 1 ? "big" : ""}" data-st="${s}" data-oid="${o.id}">${ic(ii, "s")} ${n}</button>`; }).join("")}</div>` : ""}`);
+  A.curOrder = o;
 }
 async function setStatus(id, st) {
-  if (st === "cancelled" && !(await confirmBox("Buyurtmani bekor qilasizmi?", `#${id} bekor qilinadi va mijozga xabar boradi.`, "Bekor qilish", true))) return;
+  if (st === "cancelled" && !(await confirmBox("Buyurtmani bekor qilasizmi?", `#${id} bekor qilinadi va do'konga xabar boradi.`, "Bekor qilish", true))) return;
+  if (st === "done") return doneBox(A.curOrder && A.curOrder.id === id ? A.curOrder : (await api("order", {id})).order);
   const r = await api("order/status", {id, status: st}); if (!r.ok) return fail(r);
-  hap("ok"); toast(`#${id}: ${ST[st]}`); closeModal(); pollOrders(); if (A.view === "orders") render(); else if (A.view === "dash") render();
+  hap("ok"); toast(`#${id}: ${ST[st]}`); closeModal(); pollOrders(); if (A.view === "orders" || A.view === "dash" || A.view === "loadlist") render();
+}
+function doneBox(o) {
+  const def = o.payment === "cash" ? o.total : 0;
+  modal(`<h3 style="margin-bottom:4px">#${o.id} yetkazildi</h3><small style="margin-bottom:12px">${esc(o.ushop || "")} · jami <span class="num">${money(o.total)}</span></small>
+    <label class="lbl">Olingan pul (so'm)</label>
+    <div class="field"><input id="pdA" inputmode="numeric" class="num" value="${def}"><span class="mute" style="font-weight:700">so'm</span></div>
+    <div class="chips" style="margin-top:8px"><button class="chip" data-pd="${o.total}">To'liq to'ladi</button><button class="chip" data-pd="0">Hammasi nasiyaga</button></div>
+    <div class="box" style="margin-top:10px"><div class="line"><span>Nasiyaga yoziladi</span><b class="num red" id="pdD"></b></div></div>
+    <button class="btn ok full" id="pdS" style="margin-top:6px">${ic("flag", "s")} Yetkazildi</button>`);
+  const inp = $("#pdA"), upd = () => { const v = Math.max(0, Math.min(o.total, +inp.value.replace(/\D/g, "") || 0)); $("#pdD").textContent = money(o.total - v); return v; };
+  inp.oninput = upd; $$("[data-pd]").forEach(b => b.onclick = () => { inp.value = b.dataset.pd; hap("sel"); upd(); }); upd();
+  $("#pdS").onclick = async () => { const b = $("#pdS"); b.disabled = true; const paid = upd();
+    const r = await api("order/status", {id: o.id, status: "done", paid}); b.disabled = false; if (!r.ok) return fail(r);
+    hap("ok"); toast(r.debt ? `#${o.id} yetkazildi · nasiya ${short(r.debt)}` : `#${o.id} yetkazildi`); closeModal(); pollOrders(); if (["orders", "dash", "loadlist", "debts", "shops"].includes(A.view)) render(); };
 }
 function openExt(u) { try { if (tg && tg.openLink) return tg.openLink(u); } catch (e) {} window.open(u, "_blank"); }
 function openTg(u) { const url = "https://t.me/" + u; try { tg.openTelegramLink(url); } catch (e) { openExt(url); } }
@@ -293,8 +312,8 @@ async function vMenu() {
   const offN = m.products.filter(p => !p.available).length;
   if (A.sortMode && A.cat === "all") A.sortMode = false;
   const full = can("menu");
-  return `${titleBar("Menyu", full ? `<button class="btn b sm" onclick="editProduct()">${ic("add", "s")} Mahsulot</button>` : "")}
-    ${offN ? `<div class="banner" style="margin-bottom:10px">${ic("danger")}<div>${offN} ta mahsulot tugagan deb belgilangan<small>Mijozlar ularni "Tugagan" deb ko'radi</small></div></div>` : ""}
+  return `${titleBar("Katalog", full ? `<button class="btn b sm" onclick="editProduct()">${ic("add", "s")} Mahsulot</button>` : "")}
+    ${offN ? `<div class="banner" style="margin-bottom:10px">${ic("danger")}<div>${offN} ta mahsulot tugagan deb belgilangan<small>Do'konlar ularni "Tugagan" deb ko'radi</small></div></div>` : ""}
     <div class="chips" style="margin-bottom:10px"><button class="chip ${A.cat === "all" ? "on" : ""}" data-mc="all">Hammasi<span class="n num">${m.products.length}</span></button>
       ${cats.map(c => `<button class="chip ${A.cat === c.id ? "on" : ""}" data-mc="${c.id}">${esc(L(c.name))}</button>`).join("")}</div>
     ${!full ? `<small style="margin:0 4px 10px">Sizda faqat "sotuvda / tugagan" belgilash ruxsati bor</small>` : A.cat !== "all" ? `<div style="display:flex;gap:8px;margin-bottom:10px">${A.sortMode ? `<button class="btn b sm" style="flex:1" id="sortDone">${ic("check", "s")} Tartibni saqlash</button><button class="btn sm" onclick="A.sortMode=false;render()">Bekor</button>`
@@ -302,12 +321,13 @@ async function vMenu() {
     <div id="plist">${list.map((p, i) => prodRow(p, i, list.length)).join("") || `<div class="empty"><div class="ei">${ic("box", "xl")}</div><b>Bo'limda mahsulot yo'q</b><button class="btn b" style="margin:18px auto 0" onclick="editProduct()">${ic("add", "s")} Qo'shish</button></div>`}</div>`;
 }
 vMenu.after = () => { const b = $("#sortDone"); if (b) b.onclick = saveSort; };
-function priceLabel(p) { return p.variants ? p.variants.map(v => short(v.price).replace(" ming", "k")).join(" / ") : money(p.price); }
+const UNL = {pc: "dona", kg: "kg", l: "litr", pack: "pachka"};
+function priceLabel(p) { return `${money(p.price)} / ${UNL[p.unit || "pc"]}` + (p.pack ? ` · ${esc(L(p.pack.name))} (${p.pack.qty}) ${short(p.pack.price || p.price * p.pack.qty)}` : ""); }
 function prodRow(p, i, n) {
   const cat = (A.menu.categories.find(c => c.id === p.cat) || {}).name;
   return `<div class="card pr-row ${p.available ? "" : "off"}" data-pid="${p.id}">${A.sortMode ? `<div class="mv"><button data-mv="-1" ${i === 0 ? "disabled" : ""} aria-label="Yuqoriga">${ic("up", "s")}</button><button data-mv="1" ${i === n - 1 ? "disabled" : ""} aria-label="Pastga">${ic("down", "s")}</button></div>` : ""}
-    <div class="ico im">${img(p.img)}</div><div class="grow" ${A.sortMode || !can("menu") ? "" : `data-edit="${p.id}" role="button" tabindex="0"`}><b>${esc(L(p.name))}</b><small class="num">${priceLabel(p)}${A.cat === "all" && cat ? " · " + esc(L(cat)) : ""}</small>
-    ${p.available ? (p.badge ? `<span class="tag" style="margin-top:4px;${p.badge === "spicy" ? "background:var(--redl);color:var(--red)" : p.badge === "hit" ? "background:var(--gl);color:var(--gd)" : ""}">${{hit: "Xit", spicy: "Achchiq", new: "Yangi"}[p.badge]}</span>` : "") : `<span class="tag off" style="margin-top:4px">Tugagan</span>`}</div>
+    <div class="ico im">${p.img ? img(p.img) : ic("box")}</div><div class="grow" ${A.sortMode || !can("menu") ? "" : `data-edit="${p.id}" role="button" tabindex="0"`}><b>${esc(L(p.name))}</b><small class="num" style="white-space:normal">${priceLabel(p)}${A.cat === "all" && cat ? " · " + esc(L(cat)) : ""}</small>
+    ${p.available ? (p.badge ? `<span class="tag" style="margin-top:4px;${p.badge === "sale" ? "background:var(--redl);color:var(--red)" : p.badge === "hit" ? "background:var(--gl);color:var(--gd)" : ""}">${{hit: "Xit", sale: "Aksiya", new: "Yangi"}[p.badge]}</span>` : "") : `<span class="tag off" style="margin-top:4px">Tugagan</span>`}</div>
     ${A.sortMode ? "" : `<button class="sw ${p.available ? "on" : ""}" data-tog="${p.id}" aria-label="Sotuvda"></button>`}</div>`;
 }
 async function toggleProd(id, sw) {
@@ -333,53 +353,68 @@ async function saveSort() {
 
 /* product editor */
 let ed = null;
+const PACKS = [["Korobka", "Коробка"], ["Blok", "Блок"], ["Yashik", "Ящик"], ["Qop", "Мешок"], ["Upakovka", "Упаковка"]];
 async function editProduct(id) {
   const m = await getMenu(); if (!m) return;
-  const p = id ? JSON.parse(JSON.stringify(m.products.find(x => x.id === id))) : {cat: A.cat !== "all" ? A.cat : (m.categories[0] || {}).id, name: {uz: "", ru: ""}, desc: {uz: "", ru: ""}, price: "", available: true, img: ""};
-  p.desc = p.desc || {uz: "", ru: ""}; ed = p; ed.multi = !!p.variants;
-  drawEditor();
+  const p = id ? JSON.parse(JSON.stringify(m.products.find(x => x.id === id))) : {cat: A.cat !== "all" ? A.cat : (m.categories[0] || {}).id, name: {uz: "", ru: ""}, desc: {uz: "", ru: ""}, price: "", unit: "pc", available: true, img: "", pack: {name: {uz: "Korobka", ru: "Коробка"}, qty: "", price: ""}, sell: "both"};
+  p.desc = p.desc || {uz: "", ru: ""}; p.hasPack = !!(p.pack && p.pack.qty); if (!p.pack) p.pack = {name: {uz: "Korobka", ru: "Коробка"}, qty: "", price: ""}; p.sell = p.sell || "both";
+  ed = p; drawEditor();
 }
 function drawEditor() {
   const p = ed, m = A.menu;
   modal(`<h3 style="margin-bottom:12px">${p.id ? "Mahsulotni tahrirlash" : "Yangi mahsulot"}</h3>
     <button class="photo" id="phBtn">${p.img ? img(p.img) + `<span class="ov">${ic("camera", "xs")} Almashtirish</span>` : `<div style="text-align:center">${ic("gallery", "xl")}<small style="margin-top:6px">Rasm yuklash (4:3)</small></div>`}</button>
     <label class="lbl">Nomi</label><div class="two"><input id="nUz" placeholder="O'zbekcha" value="${esc(p.name.uz)}" maxlength="80"><input id="nRu" placeholder="Русский" value="${esc(p.name.ru)}" maxlength="80"></div>
-    <label class="lbl">Tavsif (tarkibi)</label><div class="two"><textarea id="dUz" rows="2" placeholder="O'zbekcha" maxlength="240">${esc(p.desc.uz)}</textarea><textarea id="dRu" rows="2" placeholder="Русский" maxlength="240">${esc(p.desc.ru)}</textarea></div>
-    <label class="lbl">Bo'lim</label><select id="cSel">${m.categories.map(c => `<option value="${c.id}" ${c.id === p.cat ? "selected" : ""}>${esc(L(c.name))}</option>`).join("")}</select>
-    <label class="lbl">Narx</label><div class="seg" style="margin-bottom:8px"><button data-pm="0" class="${p.multi ? "" : "on"}">Bitta narx</button><button data-pm="1" class="${p.multi ? "on" : ""}">O'lchamlar bilan</button></div>
-    <div id="priceBox"></div>
-    <label class="lbl">Belgi</label><div class="seg" id="bdSeg">${[["", "Yo'q"], ["hit", "Xit"], ["spicy", "Achchiq"], ["new", "Yangi"]].map(([k, n]) => `<button data-bd="${k}" class="${(p.badge || "") === k ? "on" : ""}">${n}</button>`).join("")}</div>
+    <label class="lbl">Tavsif (ixtiyoriy)</label><div class="two"><textarea id="dUz" rows="2" placeholder="O'zbekcha" maxlength="240">${esc(p.desc.uz)}</textarea><textarea id="dRu" rows="2" placeholder="Русский" maxlength="240">${esc(p.desc.ru)}</textarea></div>
+    <label class="lbl">Brend / bo'lim</label><select id="cSel">${m.categories.map(c => `<option value="${c.id}" ${c.id === p.cat ? "selected" : ""}>${esc(L(c.name))}</option>`).join("")}</select>
+    <label class="lbl">Asosiy birlik va narxi</label>
+    <div class="seg" id="unSeg" style="margin-bottom:8px">${Object.entries(UNL).map(([k, n]) => `<button data-un="${k}" class="${(p.unit || "pc") === k ? "on" : ""}">${n}</button>`).join("")}</div>
+    <div class="field"><input id="pr1" inputmode="numeric" class="num" placeholder="1 ${UNL[p.unit || "pc"]} narxi" value="${esc(p.price || "")}"><span class="mute" style="font-weight:700;white-space:nowrap">so'm / <span id="unL">${UNL[p.unit || "pc"]}</span></span></div>
+    <div class="card" style="margin-top:12px"><div class="ico">${ic("box")}</div><div class="grow"><b>Qadoqda ham sotiladi</b><small>Blok, korobka, yashik…</small></div><button class="sw ${p.hasPack ? "on" : ""}" id="pkSw"></button></div>
+    <div id="pkBox"></div>
+    <label class="lbl">Belgi</label><div class="seg" id="bdSeg">${[["", "Yo'q"], ["hit", "Xit"], ["new", "Yangi"], ["sale", "Aksiya"]].map(([k, n]) => `<button data-bd="${k}" class="${(p.badge || "") === k ? "on" : ""}">${n}</button>`).join("")}</div>
     <div class="card" style="margin-top:12px"><div class="ico okb">${ic("shop")}</div><div class="grow"><b>Sotuvda</b><small>O'chirilsa "Tugagan" bo'lib ko'rinadi</small></div><button class="sw ${p.available ? "on" : ""}" id="avSw"></button></div>
     <button class="btn b full" id="pSave" style="margin-top:10px">${ic("check", "s")} Saqlash</button>
     ${p.id ? `<button class="link" id="pDel" style="color:var(--red)">${ic("trash", "s")} Mahsulotni o'chirish</button>` : ""}`);
-  drawPrice();
+  drawPack();
   const sync = () => { p.name = {uz: $("#nUz").value, ru: $("#nRu").value}; p.desc = {uz: $("#dUz").value, ru: $("#dRu").value}; p.cat = $("#cSel").value; readPrice(); };
   $("#phBtn").onclick = () => pickFile("image/*", async f => { const blob = await resizeImg(f, 960, 720); const r = await upload(blob, "product"); if (r) { sync(); p.img = r; drawEditor(); } });
-  $$("[data-pm]").forEach(b => b.onclick = () => { sync(); p.multi = b.dataset.pm === "1"; if (p.multi && !(p.variants || []).length) p.variants = [{id: "s", name: {uz: "Kichik", ru: "Маленькая"}, price: p.price || ""}, {id: "m", name: {uz: "O'rta", ru: "Средняя"}, price: ""}, {id: "l", name: {uz: "Katta", ru: "Большая"}, price: ""}]; hap("sel"); $$("[data-pm]").forEach(x => x.classList.toggle("on", x === b)); drawPrice(); });
+  $$("[data-un]").forEach(b => b.onclick = () => { p.unit = b.dataset.un; hap("sel"); $$("[data-un]").forEach(x => x.classList.toggle("on", x === b)); $("#unL").textContent = UNL[p.unit]; readPrice(); drawPack(); });
+  $("#pkSw").onclick = e => { readPrice(); p.hasPack = !p.hasPack; e.currentTarget.classList.toggle("on", p.hasPack); hap("sel"); drawPack(); };
   $$("[data-bd]").forEach(b => b.onclick = () => { p.badge = b.dataset.bd || undefined; hap("sel"); $$("[data-bd]").forEach(x => x.classList.toggle("on", x === b)); });
   $("#avSw").onclick = e => { p.available = !p.available; e.currentTarget.classList.toggle("on", p.available); hap("sel"); };
+  $("#pr1").oninput = () => { readPrice(); const h = $("#pkAuto"); if (h) h.textContent = autoPack(); };
   $("#pSave").onclick = async () => { sync(); await saveProduct(); };
-  if (p.id) $("#pDel").onclick = async () => { if (!(await confirmBox("O'chirasizmi?", `"${esc(L(p.name))}" menyudan butunlay o'chadi.`, "O'chirish", true))) return; const r = await api("product/delete", {id: p.id}); if (!r.ok) return fail(r); hap("ok"); toast("O'chirildi"); A.menu = null; render(); };
+  if (p.id) $("#pDel").onclick = async () => { if (!(await confirmBox("O'chirasizmi?", `"${esc(L(p.name))}" katalogdan butunlay o'chadi.`, "O'chirish", true))) return; const r = await api("product/delete", {id: p.id}); if (!r.ok) return fail(r); hap("ok"); toast("O'chirildi"); A.menu = null; render(); };
 }
-function drawPrice() {
-  const p = ed, box = $("#priceBox");
-  if (!p.multi) { box.innerHTML = `<div class="field"><input id="pr1" inputmode="numeric" placeholder="Masalan: 35000" value="${esc(p.price || "")}"><span class="mute" style="font-weight:700">so'm</span></div>`; return; }
-  box.innerHTML = `${(p.variants || []).map((v, i) => `<div class="vrow" data-vi="${i}"><input class="vu" placeholder="Nomi (uz)" value="${esc(v.name.uz)}" maxlength="30"><input class="vr" placeholder="Название" value="${esc(v.name.ru)}" maxlength="30"><input class="vp num" inputmode="numeric" placeholder="Narx" value="${esc(v.price)}"><button data-vdel="${i}" aria-label="O'chirish">${ic("close", "s")}</button></div>`).join("")}
-    <button class="btn soft sm full" id="vAdd">${ic("add", "s")} O'lcham qo'shish</button>`;
-  $("#vAdd").onclick = () => { readPrice(); p.variants.push({id: "v" + Date.now().toString(36).slice(-4), name: {uz: "", ru: ""}, price: ""}); drawPrice(); };
-  $$("[data-vdel]").forEach(b => b.onclick = () => { readPrice(); p.variants.splice(+b.dataset.vdel, 1); drawPrice(); });
+const nOf = v => parseInt(String(v).replace(/\D/g, "")) || "";
+const autoPack = () => ed.price && ed.pack.qty ? `Avtomatik: ${money(ed.price * ed.pack.qty)}` : "Bo'sh qolsa: dona narxi × soni";
+function drawPack() {
+  const p = ed, box = $("#pkBox"); if (!box) return;
+  if (!p.hasPack) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="box" style="margin-top:-2px">
+    <div class="chips" style="flex-wrap:wrap;margin-bottom:8px">${PACKS.map(([u, r]) => `<button class="chip ${p.pack.name.uz === u ? "on" : ""}" data-pk="${u}|${r}" type="button">${u}</button>`).join("")}</div>
+    <div class="two"><input id="pkU" placeholder="Nomi (uz)" maxlength="20" value="${esc(p.pack.name.uz)}"><input id="pkR" placeholder="Название (ru)" maxlength="20" value="${esc(p.pack.name.ru)}"></div>
+    <label class="lbl">1 qadoqda nechta ${UNL[p.unit || "pc"]}</label><input id="pkQ" inputmode="numeric" class="num" placeholder="Masalan: 24" value="${esc(p.pack.qty || "")}">
+    <label class="lbl">Qadoq narxi (ixtiyoriy — chegirma bo'lsa)</label><div class="field"><input id="pkP" inputmode="numeric" class="num" placeholder="Masalan: 195000" value="${esc(p.pack.price || "")}"><span class="mute" style="font-weight:700">so'm</span></div>
+    <small id="pkAuto" style="margin:6px 4px 0">${autoPack()}</small>
+    <label class="lbl">Qanday sotiladi</label><div class="seg">${[["both", "Ikkalasi"], ["pack", "Faqat qadoq"], ["pc", "Faqat " + UNL[p.unit || "pc"]]].map(([k, n]) => `<button data-sell="${k}" class="${p.sell === k ? "on" : ""}" type="button">${n}</button>`).join("")}</div></div>`;
+  $$("[data-pk]").forEach(b => b.onclick = () => { const [u, r] = b.dataset.pk.split("|"); $("#pkU").value = u; $("#pkR").value = r; readPrice(); hap("sel"); $$("[data-pk]").forEach(x => x.classList.toggle("on", x === b)); });
+  $$("[data-sell]").forEach(b => b.onclick = () => { p.sell = b.dataset.sell; hap("sel"); $$("[data-sell]").forEach(x => x.classList.toggle("on", x === b)); });
+  ["#pkQ", "#pkP"].forEach(s => $(s).oninput = () => { readPrice(); $("#pkAuto").textContent = autoPack(); });
 }
 function readPrice() {
-  const p = ed, num = v => parseInt(String(v).replace(/\D/g, "")) || "";
-  if (!p.multi) { const i = $("#pr1"); if (i) p.price = num(i.value); }
-  else p.variants = $$(".vrow").map((r, i) => ({id: (p.variants[i] || {}).id || "v" + i, name: {uz: r.querySelector(".vu").value, ru: r.querySelector(".vr").value}, price: num(r.querySelector(".vp").value)}));
+  const p = ed, i = $("#pr1"); if (i) p.price = nOf(i.value);
+  if (p.hasPack && $("#pkQ")) p.pack = {name: {uz: $("#pkU").value.trim(), ru: $("#pkR").value.trim()}, qty: nOf($("#pkQ").value), price: nOf($("#pkP").value)};
 }
 async function saveProduct() {
   const p = ed;
   if (!p.name.uz.trim() && !p.name.ru.trim()) return toast("Nomini kiriting", "danger");
-  if (p.multi ? !p.variants.length || p.variants.some(v => !v.price || !(v.name.uz || v.name.ru)) : !p.price) return toast("Narxlarni to'liq kiriting", "danger");
-  const out = {id: p.id, cat: p.cat, name: p.name, desc: p.desc, img: p.img, badge: p.badge, available: p.available};
-  if (p.multi) out.variants = p.variants; else out.price = p.price;
+  if (!p.price) return toast("Narxni kiriting", "danger");
+  if (p.hasPack && (!p.pack.qty || p.pack.qty < 2)) return toast("Qadoqdagi sonini kiriting (kamida 2)", "danger");
+  if (p.hasPack && !(p.pack.name.uz || p.pack.name.ru)) return toast("Qadoq nomini kiriting", "danger");
+  const out = {id: p.id, cat: p.cat, name: p.name, desc: p.desc, img: p.img, badge: p.badge, available: p.available, price: p.price, unit: p.unit || "pc"};
+  if (p.hasPack) { out.pack = {name: {uz: p.pack.name.uz || p.pack.name.ru, ru: p.pack.name.ru || p.pack.name.uz}, qty: p.pack.qty}; if (p.pack.price) out.pack.price = p.pack.price; out.sell = p.sell; }
   const b = $("#pSave"); b.disabled = true;
   const r = await api("product/save", {product: out}); b.disabled = false;
   if (!r.ok) return fail(r);
@@ -404,14 +439,16 @@ async function upload(blob, kind) {
 /* ───────── MORE ───────── */
 function vMore() {
   const it = (v, i, n, s, cls = "") => `<button class="card" onclick="go('${v}')"><div class="ico ${cls}">${ic(i)}</div><div class="grow"><b>${n}</b><small>${s}</small></div>${ic("right", "chev")}</button>`;
-  const g1 = (can("banners") ? it("banners", "gallery", "Reklama bannerlari", "Rasm va video, tartib, havola") : "") + (can("menu") ? it("cats", "list", "Bo'limlar", "Qo'shish, nomini o'zgartirish, tartib") : "");
-  const g2 = (can("customers") ? it("customers", "users", "Mijozlar ro'yxati", "Telefon, buyurtmalar soni, xarid summasi") : "") + (can("broadcast") ? it("broadcast", "bell", "Xabar yuborish", "Aksiya va yangiliklar barcha mijozlarga", "gold") : "");
-  const g3 = (can("settings") ? it("settings", "settings", "Sozlamalar", "Telefon, manzil, minimal buyurtma, ish vaqti") : "") + (A.me.owner ? it("staff", "shield", "Xodimlar", "Login, parol va ruxsatlar") : "");
+  const g0 = (can("orders") ? it("loadlist", "clip", "Yuklash ro'yxati", "Kun bo'yicha: nima ortiladi, qaysi do'konga boriladi") : "");
+  const g1 = (can("shops") || can("debts") ? it("shops", "shop", "Do'konlar", "Ro'yxat, hudud, qarz chegarasi, bloklash") : "") + (can("debts") ? it("debts", "wallet", "Qarz daftari", "Nasiya, to'lov qabul qilish", "red") : "") +
+    (can("broadcast") ? it("broadcast", "bell", "Xabar yuborish", "Aksiya va yangiliklar do'konlarga", "gold") : "");
+  const g2 = (can("menu") ? it("cats", "list", "Brendlar / bo'limlar", "Qo'shish, nomini o'zgartirish, tartib") : "") + (can("banners") ? it("banners", "gallery", "Reklama bannerlari", "Rasm va video, tartib, havola") : "");
+  const g3 = (can("settings") ? it("zones", "route", "Hududlar va marshrut kunlari", "Qaysi hududga qaysi kunlari boriladi") + it("settings", "settings", "Sozlamalar", "Firma nomi, telefon, minimal buyurtma, nasiya") : "") + (A.me.owner ? it("staff", "shield", "Xodimlar", "Login, parol va ruxsatlar") : "");
   return `<div class="top"><div class="grow"><small>${A.me.owner ? "Rahbar" : "Xodim"}</small><h1>${esc(A.me.name || "Boshqaruv")}</h1></div>${DEMO ? `<span class="pill gold">DEMO</span>` : ""}</div>
-    ${g1 ? `<h2>Menyu</h2>${g1}` : ""}${g2 ? `<h2>Mijozlar</h2>${g2}` : ""}${g3 ? `<h2>Tizim</h2>${g3}` : ""}
+    ${g0 ? `<h2>Yetkazish</h2>${g0}` : ""}${g1 ? `<h2>Do'konlar</h2>${g1}` : ""}${g2 ? `<h2>Katalog</h2>${g2}` : ""}${g3 ? `<h2>Tizim</h2>${g3}` : ""}
     ${!A.me.owner ? `<h2>Ruxsatlaringiz</h2><div class="box" style="display:flex;flex-wrap:wrap;gap:6px">${A.me.perms.map(p => `<span class="tag">${PL[p][0]}</span>`).join("") || `<span class="mute">Ruxsat berilmagan</span>`}</div>` : ""}
     ${getTok() ? `<button class="card" style="margin-top:12px" onclick="logout()"><div class="ico red">${ic("logout")}</div><div class="grow"><b class="red">Chiqish</b><small>Bu qurilmada hisobdan chiqish</small></div></button>` : ""}
-    <small style="text-align:center;margin-top:18px">Gumbaz Express Admin · v3.0${DEMO ? " · demo" : ""}</small>`;
+    <small style="text-align:center;margin-top:18px">Ulgurji Admin · v1.0${DEMO ? " · demo" : ""}</small>`;
 }
 
 async function logout() { if (!(await confirmBox("Chiqasizmi?", "Qayta kirish uchun login va parol kerak bo'ladi.", "Chiqish", true))) return; await api("logout"); setTok(""); location.reload(); }
@@ -480,75 +517,212 @@ function editBanner(id) {
 }
 async function delBanner(id) { if (!(await confirmBox("Bannerni o'chirasizmi?", "Mijoz ilovasidan darhol yo'qoladi.", "O'chirish", true))) return; const r = await api("banner/delete", {id}); if (!r.ok) return fail(r); hap("ok"); toast("O'chirildi"); render(); }
 
-/* customers */
-async function vCustomers() {
-  const r = await api("customers"); if (!r.ok) return errBox(r);
-  return `${titleBar("Mijozlar")}
-    <div class="stat"><small>Ro'yxatdan o'tgan mijozlar</small><div class="big num">${r.total}</div><div class="sp"><div><small>Buyurtma berganlar</small><b class="num">${r.customers.filter(c => c.orders).length}</b></div><div><small>Jami savdo</small><b class="num">${short(r.customers.reduce((a, c) => a + c.spent, 0))}</b></div></div></div>
-    <h2>Eng faol mijozlar</h2>
-    ${r.customers.map((c, i) => `<div class="card rise" style="animation-delay:${Math.min(i, 10) * 20}ms"><span class="rank">${i + 1}</span><div class="grow"><b>${esc(c.name || "—")}</b><small class="num">${esc(c.phone)}${c.username ? " · @" + esc(c.username) : ""}</small></div><div class="right"><b class="num" style="font-weight:800">${short(c.spent)}</b><small class="num">${c.orders} buyurtma</small></div></div>`).join("") || `<div class="empty"><b>Hali mijoz yo'q</b></div>`}`;
+/* ───────── zones (umumiy) ───────── */
+const WD = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"], WDL = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"];
+async function getZones(force) { if (!A.zones || force) { const r = await api("zones"); if (!r.ok) return []; A.zones = r.zones; A.noZone = r.no_zone; } return A.zones; }
+const zoneLabel = id => { const z = (A.zones || []).find(x => x.id === id); return z ? L(z.name) : ""; };
+
+/* ───────── do'konlar ───────── */
+async function vShops() {
+  const [r] = await Promise.all([api("shops", {q: A.sq || "", zone: A.sz || ""}), getZones()]); if (!r.ok) return errBox(r);
+  const zs = A.zones || [];
+  return `${titleBar("Do'konlar")}
+    <div class="stat"><small>Ro'yxatdan o'tgan do'konlar</small><div class="big num">${r.total}</div><div class="sp"><div><small>Qarzdorlar</small><b class="num">${r.debt.count}</b></div><div><small>Umumiy qarz</small><b class="num">${short(r.debt.total)}</b></div></div></div>
+    <label class="field" style="margin-bottom:10px">${ic("search")}<input id="sq" type="search" placeholder="Do'kon nomi, egasi, telefon" value="${esc(A.sq || "")}" enterkeyhint="search"></label>
+    ${zs.length ? `<div class="chips" style="margin-bottom:12px"><button class="chip ${!A.sz ? "on" : ""}" data-sz="">Hammasi</button>${zs.map(z => `<button class="chip ${A.sz === z.id ? "on" : ""}" data-sz="${z.id}">${esc(L(z.name))}<span class="n num">${z.shops}</span></button>`).join("")}${A.noZone ? `<button class="chip ${A.sz === "-" ? "on" : ""}" data-sz="-">Hududsiz<span class="n num">${A.noZone}</span></button>` : ""}</div>` : ""}
+    ${r.shops.map(shopRow).join("") || `<div class="empty"><div class="ei">${ic("shop", "xl")}</div><b>Do'kon topilmadi</b><p>Do'konchilar do'konlar botida /start bosib ro'yxatdan o'tadi.</p></div>`}`;
+}
+vShops.after = () => { const q = $("#sq"); q.onkeydown = e => { if (e.key === "Enter") { A.sq = q.value.trim(); q.blur(); render(); } }; q.onsearch = () => { A.sq = q.value.trim(); render(); }; };
+function shopRow(s, i) {
+  return `<button class="card rise" style="animation-delay:${Math.min(i, 10) * 20}ms" data-shop="${s.tg_id}"><div class="ico ${s.blocked ? "red" : s.balance > 0 ? "gold" : ""}">${ic(s.blocked ? "block" : "shop")}</div>
+    <div class="grow"><b>${esc(s.shop || s.name || "—")}</b><small class="num">${esc(s.name || "")} · ${esc(s.phone || "")}${s.zone_name ? " · " + esc(s.zone_name) : ""}</small></div>
+    <div class="right">${s.balance > 0 ? `<b class="num red" style="font-weight:800">${short(s.balance)}</b><small>qarz</small>` : `<b class="num" style="font-weight:800">${s.orders}</b><small>buyurtma</small>`}</div></button>`;
+}
+async function openShop(id) {
+  const [r] = await Promise.all([api("shop", {id}), getZones()]); if (!r.ok) return fail(r);
+  const s = r.shop, tel = String(s.phone || "").replace(/[^\d+]/g, ""), bal = s.balance;
+  const kn = {order: "Nasiyaga mahsulot", payment: "To'lov", adjust: "Tuzatish"};
+  modal(`<div class="stat ${bal > 0 ? "red" : "ok"}" style="margin-bottom:10px"><small>${esc(s.shop || "Do'kon")}</small><div class="big num">${bal > 0 ? money(bal) : bal < 0 ? "+" + money(-bal) : "Qarz yo'q"}</div>
+      <div class="sp"><div><small>Chegara</small><b class="num">${s.limit ? short(s.limit) : "cheksiz"}</b></div><div><small>Hudud</small><b>${esc(s.zone_name || "—")}</b></div></div></div>
+    ${can("debts") ? `<div class="row" style="margin-bottom:8px"><button class="btn ok" id="shPay">${ic("handmoney", "s")} To'lov qabul qilish</button><button class="btn soft auto" id="shAdj" aria-label="Tuzatish">${ic("pen", "s")}</button></div>` : ""}
+    <div class="card"><div class="ico">${ic("user")}</div><div class="grow"><b>${esc(s.name || "—")}</b><small class="num">${esc(s.phone || "")}${s.username ? " · @" + esc(s.username) : ""}</small></div>
+      ${tel ? `<a class="ico okb" href="tel:${esc(tel)}" aria-label="Qo'ng'iroq">${ic("phone")}</a>` : ""}${s.username ? `<button class="ico" style="border:0" onclick="openTg('${esc(s.username)}')" aria-label="Telegram">${ic("chat")}</button>` : ""}</div>
+    <div class="card" style="align-items:flex-start"><div class="ico">${ic("pin")}</div><div class="grow"><b style="white-space:normal">${esc(s.address || "Manzil kiritilmagan")}</b>${s.landmark ? `<small style="white-space:normal">${esc(s.landmark)}</small>` : ""}
+      ${s.lat ? `<div style="display:flex;gap:6px;margin-top:8px"><button class="pill" onclick="openExt('https://maps.google.com/?q=${s.lat},${s.lon}')">${ic("pin", "xs")}Google</button><button class="pill" onclick="openExt('https://yandex.uz/maps/?pt=${s.lon},${s.lat}&z=17&l=map')">${ic("pin", "xs")}Yandex</button></div>` : ""}</div></div>
+    ${s.note ? `<div class="banner" style="margin-bottom:8px">${ic("notebook")}<div>${esc(s.note)}</div></div>` : ""}
+    ${can("shops") ? `<button class="btn full" id="shEd">${ic("settings", "s")} Do'kon sozlamalari</button>` : ""}
+    <h2>Hisob-kitob</h2>
+    ${r.ledger.length ? `<div class="box" style="padding:4px 14px">${r.ledger.map(e => `<div class="line" style="align-items:center"><span style="min-width:0"><b style="color:var(--ink);font-weight:700;display:block">${kn[e.kind] || e.kind}</b><small>${esc(e.note || "")}${e.by_name ? " · " + esc(e.by_name) : ""} · ${ago(e.created)}</small></span>
+      <span style="display:flex;align-items:center;gap:6px"><b class="num ${e.amount > 0 ? "red" : "okc"}" style="white-space:nowrap">${e.amount > 0 ? "+" : "−"}${num(Math.abs(e.amount))}</b>${A.me.owner && e.kind !== "order" ? `<button class="ico red" style="width:30px;height:30px;border:0;border-radius:9px" data-ldel="${e.id}" aria-label="O'chirish">${ic("trash", "xs")}</button>` : ""}</span></div>`).join("")}</div>` : `<div class="box mute" style="text-align:center">Hali yozuv yo'q</div>`}
+    <h2>Oxirgi buyurtmalar</h2>
+    ${r.orders.length ? r.orders.map(o => `<button class="card" data-o="${o.id}"><div class="grow"><b class="num">#${o.id} · ${short(o.total)}</b><small>${esc(o.date_label)} · ${o.payment === "debt" ? "Nasiya" : "Naqd"}</small></div><span class="tag ${o.status}">${ST[o.status]}</span></button>`).join("") : `<div class="box mute" style="text-align:center">Buyurtma yo'q</div>`}`);
+  A.curShop = s;
+  if ($("#shPay")) { $("#shPay").onclick = () => payBox(s, "payment"); $("#shAdj").onclick = () => payBox(s, "adjust"); }
+  if ($("#shEd")) $("#shEd").onclick = () => editShop(s);
+  $$("[data-ldel]").forEach(b => b.onclick = async () => { if (!(await confirmBox("Yozuvni o'chirasizmi?", "Xato kiritilgan to'lov yoki tuzatish bekor qilinadi.", "O'chirish", true))) return; const x = await api("ledger/delete", {id: +b.dataset.ldel}); if (!x.ok) return fail(x); toast("O'chirildi"); openShop(s.tg_id); });
+}
+function payBox(s, kind) {
+  const pay = kind === "payment";
+  modal(`<h3 style="margin-bottom:4px">${pay ? "To'lov qabul qilish" : "Qarzni tuzatish"}</h3><small style="margin-bottom:12px">${esc(s.shop || "")} · joriy qarz <span class="num">${money(Math.max(0, s.balance))}</span></small>
+    ${pay ? "" : `<div class="seg" id="adjS" style="margin-bottom:10px"><button class="on" data-sign="1">Qarz qo'shish (+)</button><button data-sign="-1">Qarzni kamaytirish (−)</button></div>`}
+    <div class="field"><input id="pyA" inputmode="numeric" class="num" placeholder="Summa" value="${pay && s.balance > 0 ? s.balance : ""}"><span class="mute" style="font-weight:700">so'm</span></div>
+    ${pay && s.balance > 0 ? `<div class="chips" style="margin-top:8px"><button class="chip" data-pyq="${s.balance}">To'liq</button><button class="chip" data-pyq="${Math.round(s.balance / 2)}">Yarmi</button></div>` : ""}
+    <input id="pyN" maxlength="200" style="margin-top:10px" placeholder="${pay ? "Izoh: masalan, naqd / karta / o'tkazma" : "Sabab: masalan, eski daftardagi qarz"}">
+    <button class="btn ${pay ? "ok" : "b"} full" id="pyS" style="margin-top:12px">${ic("check", "s")} Saqlash</button>
+    <small style="text-align:center;margin-top:8px">Do'konga botda xabar boradi</small>`);
+  let sign = 1;
+  $$("[data-sign]").forEach(b => b.onclick = () => { sign = +b.dataset.sign; hap("sel"); $$("[data-sign]").forEach(x => x.classList.toggle("on", x === b)); });
+  $$("[data-pyq]").forEach(b => b.onclick = () => { $("#pyA").value = b.dataset.pyq; hap("sel"); });
+  $("#pyS").onclick = async () => { const v = +$("#pyA").value.replace(/\D/g, ""); if (!v) return toast("Summani kiriting", "danger");
+    const b = $("#pyS"); b.disabled = true; const r = await api(kind, {id: s.tg_id, amount: pay ? v : sign * v, note: $("#pyN").value.trim()}); b.disabled = false; if (!r.ok) return fail(r);
+    hap("ok"); toast(r.balance > 0 ? `Saqlandi · qoldiq qarz ${short(r.balance)}` : "Saqlandi · qarz yo'q"); openShop(s.tg_id); if (["shops", "debts", "dash"].includes(A.view)) render(); };
+}
+function editShop(s) {
+  const zs = A.zones || [];
+  modal(`<h3 style="margin-bottom:12px">Do'kon sozlamalari</h3>
+    <label class="lbl">Do'kon nomi</label><input id="esN" maxlength="60" value="${esc(s.shop || "")}">
+    ${zs.length ? `<label class="lbl">Hudud (marshrut)</label><select id="esZ"><option value="">— Hududsiz —</option>${zs.map(z => `<option value="${z.id}" ${z.id === s.zone ? "selected" : ""}>${esc(L(z.name))} · ${z.days.map(d => WD[d]).join(", ")}</option>`).join("")}</select>` : ""}
+    <label class="lbl">Qarz chegarasi (so'm)</label><input id="esL" inputmode="numeric" class="num" placeholder="Bo'sh — umumiy sozlama (${A.settings && +A.settings.DEBT_LIMIT ? short(+A.settings.DEBT_LIMIT) : "cheksiz"}); 0 — cheksiz" value="${s.debt_limit == null ? "" : s.debt_limit}">
+    <label class="lbl">Ichki izoh (do'konga ko'rinmaydi)</label><textarea id="esT" rows="2" maxlength="300">${esc(s.note || "")}</textarea>
+    <div class="card" style="margin-top:12px"><div class="ico red">${ic("block")}</div><div class="grow"><b>Bloklash</b><small>Bloklangan do'kon buyurtma bera olmaydi</small></div><button class="sw ${s.blocked ? "on" : ""}" id="esB"></button></div>
+    <button class="btn b full" id="esS" style="margin-top:8px">${ic("check", "s")} Saqlash</button>`);
+  $("#esB").onclick = e => { e.currentTarget.classList.toggle("on"); hap("sel"); };
+  $("#esS").onclick = async () => { const lim = $("#esL").value.replace(/\D/g, "");
+    const body = {id: s.tg_id, shop: $("#esN").value.trim(), debt_limit: lim === "" ? null : +lim, note: $("#esT").value.trim(), blocked: $("#esB").classList.contains("on")};
+    if ($("#esZ")) body.zone = $("#esZ").value;
+    const r = await api("shop/save", body); if (!r.ok) return fail(r); hap("ok"); toast("Saqlandi"); A.zones = null; openShop(s.tg_id); if (A.view === "shops") render(); };
+}
+
+/* ───────── qarz daftari ───────── */
+async function vDebts() {
+  const r = await api("debts"); if (!r.ok) return errBox(r);
+  const max = Math.max(1, ...r.shops.map(s => s.balance));
+  return `${titleBar("Qarz daftari")}
+    <div class="stat red"><small>Do'konlarning umumiy qarzi</small><div class="big num">${money(r.debt.total)}</div><div class="sp"><div><small>Qarzdor do'konlar</small><b class="num">${r.debt.count}</b></div></div></div>
+    ${r.shops.map((s, i) => `<button class="card rise" style="animation-delay:${Math.min(i, 10) * 20}ms;align-items:flex-start" data-shop="${s.tg_id}"><span class="rank">${i + 1}</span><div class="grow"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(s.shop || s.name)}</b><b class="num red" style="flex:none">${money(s.balance)}</b></div>
+      <small class="num">${esc(s.phone || "")}${s.zone_name ? " · " + esc(s.zone_name) : ""}${s.limit && s.balance > s.limit ? ` · <span class="red">chegaradan oshgan</span>` : ""}</small><div class="pbar" style="background:var(--redl)"><i style="width:${s.balance / max * 100}%;background:var(--red)"></i></div></div></button>`).join("")
+      || `<div class="empty"><div class="ei" style="background:var(--okl);color:#079455">${ic("check", "xl")}</div><b>Qarzdor do'kon yo'q</b></div>`}`;
+}
+
+/* ───────── yuklash ro'yxati ───────── */
+async function vLoadlist() {
+  await getZones();
+  const r = await api("loadlist", {date: A.llDate || "", zone: A.llZone || ""}); if (!r.ok) return errBox(r);
+  if (!A.llDate && r.days.length && !r.orders.length) { A.llDate = r.days[0].date; return vLoadlist(); }
+  A.llDate = r.date; A.ll = r; const tt = r.totals, zs = A.zones || [];
+  const days = r.days.some(d => d.date === r.date) ? r.days : [{date: r.date, label: r.label, orders: 0}, ...r.days];
+  return `${titleBar("Yuklash ro'yxati")}
+    <div class="chips" style="margin-bottom:8px">${days.map(d => `<button class="chip ${d.date === r.date ? "on" : ""}" data-lld="${d.date}">${esc(d.label.split(",")[0])} <span class="mute" style="font-weight:600">${esc(d.label.split(",")[1] || "")}</span>${d.orders ? `<span class="n num">${d.orders}</span>` : ""}</button>`).join("")}</div>
+    ${zs.length ? `<div class="chips" style="margin-bottom:12px"><button class="chip ${!A.llZone ? "on" : ""}" data-llz="">Barcha hududlar</button>${zs.map(z => `<button class="chip ${A.llZone === z.id ? "on" : ""}" data-llz="${z.id}">${esc(L(z.name))}</button>`).join("")}</div>` : ""}
+    <div class="stat"><small>${esc(r.label)}</small><div class="big num">${money(tt.sum)}</div>
+      <div class="sp"><div><small>Buyurtmalar</small><b class="num">${tt.orders}${tt.new ? ` <span style="font-size:12px;opacity:.8">(${tt.new} yangi)</span>` : ""}</b></div><div><small>Naqd</small><b class="num">${short(tt.cash)}</b></div><div><small>Nasiya</small><b class="num">${short(tt.debt)}</b></div></div></div>
+    ${tt.orders ? `<div class="row" style="margin-bottom:6px">${DEMO ? "" : `<button class="btn soft" id="llSend">${ic("send", "s")} Botga yuborish</button>`}<button class="btn soft" id="llCopy">${ic("copy", "s")} Nusxalash</button></div>
+    ${tt.new ? `<button class="btn b full" id="llAcc" style="margin-bottom:6px">${ic("check", "s")} Yangilarini qabul qilish (${tt.new})</button>` : ""}
+    <h2>📦 Mashinaga ortish</h2>
+    <div class="box" style="padding:4px 14px">${r.products.map(p => `<div class="line"><span style="color:var(--ink);font-weight:700">${esc(L(p.name))}</span><b class="num" style="text-align:right">${esc(pcsTxt(p))}</b></div>`).join("")}</div>
+    <h2>🏪 Do'konlar · ${tt.orders}</h2>
+    ${r.orders.map((o, i) => `<button class="card oc" data-o="${o.id}" style="align-items:flex-start"><span class="rank">${i + 1}</span><div class="grow"><div class="hd"><b>${esc(o.shop || "—")}</b><span class="tag ${o.status}">${ST[o.status]}</span></div>
+      <small style="white-space:normal">${esc(o.address || "")}</small><div class="ft"><small class="num">#${o.id} · ${esc(o.phone || "")}${o.zone_name && !A.llZone ? " · " + esc(o.zone_name) : ""}</small><span style="display:flex;gap:6px;align-items:center"><span class="tag ${o.payment}">${o.payment === "debt" ? "Nasiya" : "Naqd"}</span><b class="num">${short(o.total)}</b></span></div></div></button>`).join("")}`
+    : `<div class="empty"><div class="ei">${ic("truck", "xl")}</div><b>Bu kunga buyurtma yo'q</b><p>Boshqa kunni tanlang.</p></div>`}`;
+}
+vLoadlist.after = () => {
+  const s = $("#llSend"); if (s) s.onclick = async () => { s.disabled = true; const r = await api("loadlist/send", {date: A.llDate, zone: A.llZone || ""}); s.disabled = false; if (!r.ok) return fail(r); hap("ok"); toast("Admin botga yuborildi"); };
+  const c = $("#llCopy"); if (c) c.onclick = () => { const ok = () => toast("Nusxalandi"); const txt = llText(A.ll); navigator.clipboard ? navigator.clipboard.writeText(txt).then(ok, ok) : ok(); };
+  const a = $("#llAcc"); if (a) a.onclick = async () => { const ids = A.ll.orders.filter(o => o.status === "new").map(o => o.id); if (!(await confirmBox("Qabul qilinsinmi?", `${ids.length} ta yangi buyurtma qabul qilinadi va do'konlarga xabar boradi.`, "Qabul qilish"))) return;
+    for (const id of ids) await api("order/status", {id, status: "accepted"}, null, true); hap("ok"); toast(`${ids.length} ta qabul qilindi`); pollOrders(); render(); };
+};
+function pcsTxt(p) { const b = L(p.base) || "dona"; if (p.pack_qty) { let s = p.packs ? `${p.packs} ${L(p.pack_name).toLowerCase()}` : ""; if (p.rest) s += (s ? " + " : "") + `${p.rest} ${b}`; return s + (p.packs ? ` (${num(p.pcs)} ${b})` : ""); } return `${num(p.pcs)} ${b}`; }
+function llText(r) {
+  return [`Yuklash ro'yxati — ${r.label}`, `Buyurtmalar: ${r.totals.orders} · Jami: ${money(r.totals.sum)}`, "", "MAHSULOTLAR:", ...r.products.map(p => `• ${L(p.name)} — ${pcsTxt(p)}`), "", "DO'KONLAR:",
+    ...r.orders.map((o, i) => `${i + 1}. ${o.shop || "—"} · #${o.id} · ${money(o.total)} · ${o.payment === "debt" ? "Nasiya" : "Naqd"}\n   ${o.phone || ""} · ${o.address || ""}`)].join("\n");
+}
+
+/* ───────── hududlar ───────── */
+async function vZones() {
+  const zs = await getZones(true);
+  return `${titleBar("Hududlar", `<button class="btn b sm" onclick="editZone()">${ic("add", "s")} Hudud</button>`)}
+    <div class="banner info" style="margin-bottom:10px">${ic("info")}<div>Har bir hududga boriladigan hafta kunlarini belgilang. Do'konchi buyurtma berayotganda faqat o'z hududining eng yaqin kunlarini tanlay oladi.</div></div>
+    ${zs.map(z => `<button class="card" onclick="editZone('${z.id}')"><div class="ico">${ic("route")}</div><div class="grow"><b>${esc(L(z.name))}</b><small>${z.days.map(d => WDL[d]).join(", ") || "Kun belgilanmagan — har kuni"}</small></div><div class="right"><b class="num">${z.shops}</b><small>do'kon</small></div></button>`).join("")
+      || `<div class="empty"><div class="ei">${ic("route", "xl")}</div><b>Hudud yo'q</b><p>Hudud bo'lmasa, do'konchi istalgan kunni tanlaydi.</p></div>`}
+    ${A.noZone ? `<div class="banner" style="margin-top:8px">${ic("danger")}<div>${A.noZone} ta do'kon hududga biriktirilmagan<small>Ular buyurtma berishda hududini o'zi tanlaydi yoki Do'konlar bo'limida siz belgilaysiz</small></div></div>` : ""}`;
+}
+function editZone(id) {
+  const z = id ? JSON.parse(JSON.stringify(A.zones.find(x => x.id === id))) : {name: {uz: "", ru: ""}, days: []}, days = new Set(z.days);
+  modal(`<h3 style="margin-bottom:12px">${id ? "Hududni tahrirlash" : "Yangi hudud"}</h3>
+    <label class="lbl">Nomi</label><div class="two"><input id="zU" placeholder="Masalan: Kunchiqar" value="${esc(z.name.uz)}" maxlength="40"><input id="zR" placeholder="Например: Кунчикар" value="${esc(z.name.ru)}" maxlength="40"></div>
+    <label class="lbl">Yetkazish kunlari</label><div class="chips" style="flex-wrap:wrap">${WDL.map((d, i) => `<button class="chip ${days.has(i) ? "on" : ""}" data-zd="${i}" type="button">${d}</button>`).join("")}</div>
+    <button class="btn b full" id="zS" style="margin-top:14px">${ic("check", "s")} Saqlash</button>
+    ${id ? `<button class="link" id="zD" style="color:var(--red)">${ic("trash", "s")} Hududni o'chirish</button>` : ""}`);
+  $$("[data-zd]").forEach(b => b.onclick = () => { const i = +b.dataset.zd; days.has(i) ? days.delete(i) : days.add(i); b.classList.toggle("on", days.has(i)); hap("sel"); });
+  $("#zS").onclick = async () => { const r = await api("zone/save", {zone: {id, name: {uz: $("#zU").value, ru: $("#zR").value}, days: [...days]}}); if (!r.ok) return fail(r); hap("ok"); toast("Saqlandi"); closeModal(); A.zones = null; render(); };
+  if (id) $("#zD").onclick = async () => { if (!(await confirmBox("Hududni o'chirasizmi?", "Bu hududdagi do'konlar hududsiz qoladi.", "O'chirish", true))) return; const r = await api("zone/delete", {id}); if (!r.ok) return fail(r); toast("O'chirildi"); A.zones = null; render(); };
 }
 
 /* broadcast */
-function vBroadcast() {
+async function vBroadcast() {
+  const zs = await getZones();
   return `${titleBar("Xabar yuborish")}
-    <div class="banner info" style="margin-bottom:12px">${ic("bell")}<div>Xabar mijozlar botidan barcha ro'yxatdan o'tgan mijozlarga boradi.<small>Masalan: "Bugun barcha pitsalarga 20% chegirma! 🍕"</small></div></div>
+    <div class="banner info" style="margin-bottom:12px">${ic("bell")}<div>Xabar do'konlar botidan ro'yxatdan o'tgan do'konlarga boradi.<small>Masalan: "Milkita'ga yangi narxlar! Korobka — 190 000 so'm"</small></div></div>
+    ${zs.length ? `<label class="lbl">Kimga</label><select id="bcZ" style="margin-bottom:10px"><option value="">Barcha do'konlar</option>${zs.map(z => `<option value="${z.id}">${esc(L(z.name))} hududi</option>`).join("")}</select>` : ""}
     <textarea id="bcT" rows="6" maxlength="3500" placeholder="Xabar matni…"></textarea>
     <small id="bcN" style="text-align:right;margin:6px 4px 12px">0 / 3500</small>
-    <button class="btn b full" id="bcS" disabled>${ic("send", "s")} Hammaga yuborish</button>`;
+    <button class="btn b full" id="bcS" disabled>${ic("send", "s")} Yuborish</button>`;
 }
 vBroadcast.after = () => { const ta = $("#bcT"), b = $("#bcS"); ta.oninput = () => { $("#bcN").textContent = ta.value.length + " / 3500"; b.disabled = !ta.value.trim(); };
-  b.onclick = async () => { if (!(await confirmBox("Yuborilsinmi?", "Xabar barcha mijozlarga yuboriladi. Buni qaytarib bo'lmaydi.", "Yuborish"))) return; const r = await api("broadcast", {text: ta.value.trim()}); if (!r.ok) return fail(r); hap("ok"); toast(`${r.queued} ta mijozga yuborilmoqda`); ta.value = ""; b.disabled = true; }; };
+  b.onclick = async () => { if (!(await confirmBox("Yuborilsinmi?", "Buni qaytarib bo'lmaydi.", "Yuborish"))) return; const r = await api("broadcast", {text: ta.value.trim(), zone: $("#bcZ") ? $("#bcZ").value : ""}); if (!r.ok) return fail(r); hap("ok"); toast(`${r.queued} ta do'konga yuborilmoqda`); ta.value = ""; b.disabled = true; }; };
 
 /* settings */
-const SF = [["Restoran", [["RESTAURANT_NAME", "Nomi"]]],
-  ["Mijozlar uchun", [["SUPPORT_PHONE", "Xizmat ko'rsatish raqami", "tel"], ["SUPPORT_USERNAME", "Telegram username (@ siz)"], ["WORK_HOURS", "Ish vaqti"], ["MIN_ORDER", "Minimal buyurtma (so'm)", "numeric"]]],
+const SF = [["Firma", [["COMPANY_NAME", "Firma nomi (botda va ilovada chiqadi)"]]],
+  ["Do'konlar uchun", [["SUPPORT_PHONE", "Qo'llab-quvvatlash raqami", "tel"], ["SUPPORT_USERNAME", "Telegram username (@ siz)"], ["WORK_HOURS", "Ish vaqti"], ["MIN_ORDER", "Minimal buyurtma (so'm)", "numeric"]]],
+  ["Nasiya va yetkazish", [["DEBT_LIMIT", "Standart qarz chegarasi, so'm (0 — cheksiz)", "numeric"], ["SAME_DAY_UNTIL", "Shu soatgacha bugunga buyurtma (0 — faqat ertadan)", "numeric"]]],
   ["Yopiq paytdagi xabar", [["CLOSED_MSG_UZ", "O'zbekcha"], ["CLOSED_MSG_RU", "Ruscha"]]]];
 async function vSettings() {
   const r = await api("settings"); if (!r.ok) return errBox(r); A.settings = r.settings; A.mapToken = r.map_token || ""; const s = r.settings;
   return `${titleBar("Sozlamalar")}
-    <div class="card"><div class="ico ${s.ACCEPTING !== false ? "okb" : "red"}">${ic("shop")}</div><div class="grow"><b>Buyurtma qabul qilish</b><small>O'chirilsa, mijozlar buyurtma bera olmaydi</small></div><button class="sw ${s.ACCEPTING !== false ? "on" : ""}" id="sAcc"></button></div>
-    <h2>Restoran joylashuvi</h2>
+    <div class="card"><div class="ico ${s.ACCEPTING !== false ? "okb" : "red"}">${ic("shop")}</div><div class="grow"><b>Buyurtma qabul qilish</b><small>O'chirilsa, do'konlar buyurtma bera olmaydi</small></div><button class="sw ${s.ACCEPTING !== false ? "on" : ""}" id="sAcc"></button></div>
+    <div class="card"><div class="ico gold">${ic("notebook")}</div><div class="grow"><b>Nasiyaga buyurtma</b><small>O'chirilsa, faqat naqd to'lov</small></div><button class="sw ${s.ALLOW_DEBT !== false ? "on" : ""}" id="sDebt"></button></div>
+    <h2>Ombor joylashuvi</h2>
     <div class="box"><div class="locmini" id="locmini"></div>
-      <b style="display:block;font-weight:800" id="locAddr">${esc(s.RESTAURANT_ADDRESS_UZ || "Belgilanmagan")}</b>
-      <small id="locSub">Mijozlar xaritasida va masofa hisobida shu nuqta ishlatiladi</small>
+      <b style="display:block;font-weight:800" id="locAddr">${esc(s.BASE_ADDRESS_UZ || "Belgilanmagan")}</b>
+      <small>Do'konchilar xaritasida ombor shu nuqtada ko'rinadi</small>
       <button class="btn soft full" id="locBtn" style="margin-top:12px">${ic("pin", "s")} Xaritada belgilash</button></div>
     ${SF.map(([g, fs]) => `<h2>${g}</h2><div class="box">${fs.map(([k, n, im]) => `<label class="lbl" style="margin-top:${fs[0][0] === k ? 0 : 12}px">${n}</label><input data-sk="${k}" value="${esc(s[k] == null ? "" : s[k])}" ${im ? `inputmode="${im}"` : ""}>`).join("")}</div>`).join("")}
     <button class="btn b full" id="sSave" style="margin-top:14px">${ic("check", "s")} Saqlash</button>`;
 }
 vSettings.after = () => {
   const s = A.settings, mini = $("#locmini");
-  if (mini) { const m = GMap(mini, {lat: +s.RESTAURANT_LAT, lon: +s.RESTAURANT_LON, zoom: 16, tileUrl: tileFn(A.mapToken, "map")});
+  if (mini) { const m = GMap(mini, {lat: +s.BASE_LAT, lon: +s.BASE_LON, zoom: 16, tileUrl: tileFn(A.mapToken, "map")});
     mini._map = m; const pw = document.createElement("div"); pw.className = "pinw"; pw.innerHTML = `<i class="pshadow"></i><div class="pinb">${PIN_SVG}</div>`; mini.appendChild(pw); }
   $("#locBtn").onclick = () => openRestMap();
-  $("#sAcc").onclick = e => { e.currentTarget.classList.toggle("on"); hap("sel"); };
-  $("#sSave").onclick = async () => { const out = {ACCEPTING: $("#sAcc").classList.contains("on")}; $$("[data-sk]").forEach(i => out[i.dataset.sk] = i.value.trim());
-    const r = await api("settings/save", {settings: out}); if (!r.ok) return fail(r); hap("ok"); toast("Sozlamalar saqlandi"); };
+  ["#sAcc", "#sDebt"].forEach(k => $(k).onclick = e => { e.currentTarget.classList.toggle("on"); hap("sel"); });
+  $("#sSave").onclick = async () => { const out = {ACCEPTING: $("#sAcc").classList.contains("on"), ALLOW_DEBT: $("#sDebt").classList.contains("on")}; $$("[data-sk]").forEach(i => out[i.dataset.sk] = i.value.trim());
+    const r = await api("settings/save", {settings: out}); if (!r.ok) return fail(r); A.settings = r.settings; hap("ok"); toast("Sozlamalar saqlandi"); };
 };
 
 /* staff (faqat rahbar) */
-const PL = {stats: ["Statistika", "Savdo, grafik, eng ko'p sotilganlar"], orders: ["Buyurtmalar", "Ko'rish va holatini o'zgartirish, botga xabar keladi"],
-  stock: ["Tugagan / sotuvda", "Mahsulotni stop-listga qo'yish"], menu: ["Menyu tahriri", "Mahsulot, narx, rasm, bo'lim, saralash"],
-  banners: ["Bannerlar", "Reklama rasmi va videolari"], customers: ["Mijozlar", "Mijozlar ro'yxati va telefonlari"],
-  broadcast: ["Xabar yuborish", "Barcha mijozlarga reklama"], settings: ["Sozlamalar", "Telefon, manzil, qabulni yopish"]};
-const PRESETS = [["Kassir", ["orders", "stock"]], ["Oshpaz", ["orders", "stock"]], ["Menejer", ["stats", "orders", "stock", "menu", "banners", "customers"]], ["Hammasi", Object.keys(PL)]];
+const PL = {stats: ["Statistika", "Savdo, grafik, eng ko'p sotilganlar"], orders: ["Buyurtmalar", "Ko'rish, holatini o'zgartirish, yuklash ro'yxati"],
+  stock: ["Tugagan / sotuvda", "Mahsulotni stop-listga qo'yish"], menu: ["Katalog tahriri", "Mahsulot, narx, qadoq, rasm, brend"],
+  banners: ["Bannerlar", "Reklama rasmi va videolari"], shops: ["Do'konlar", "Ro'yxat, hudud, chegarani o'zgartirish"],
+  debts: ["Qarz daftari", "Nasiyani ko'rish, to'lov qabul qilish"],
+  broadcast: ["Xabar yuborish", "Do'konlarga reklama"], settings: ["Sozlamalar", "Firma, hududlar, nasiya, qabulni yopish"]};
+const PRESETS = [["Haydovchi", ["orders", "debts"]], ["Operator", ["orders", "stock", "shops"]], ["Menejer", ["stats", "orders", "stock", "menu", "banners", "shops", "debts"]], ["Hammasi", Object.keys(PL)]];
 async function vStaff() {
   const r = await api("staff"); if (!r.ok) return errBox(r); A.staff = r.staff;
   return `${titleBar("Xodimlar", `<button class="btn b sm" onclick="editStaff()">${ic("add", "s")} Xodim</button>`)}
-    <div class="banner info" style="margin-bottom:10px">${ic("info")}<div>Xodimga login va parol bering. U admin botni ochib, shu login bilan kiradi — shundan keyin buyurtma xabarlari unga ham keladi.</div></div>
+    <div class="banner info" style="margin-bottom:10px">${ic("info")}<div>Xodimga (haydovchi, operator) login va parol bering. U admin botni ochib, shu login bilan kiradi — shundan keyin buyurtma xabarlari unga ham keladi.</div></div>
     <div class="card"><div class="ico gold">${ic("crown")}</div><div class="grow"><b>Rahbar</b><small class="num">Telegram ID ${r.owner_ids.join(", ")} · barcha ruxsatlar</small></div></div>
     ${r.staff.map(x => `<button class="card" style="align-items:flex-start" data-sid="${x.id}"><div class="ico ${x.active ? "" : "red"}">${ic("user")}</div><div class="grow"><b>${esc(x.name || x.login)}</b>
       <small>@${esc(x.login)}${x.telegram ? " · Telegram ulangan" : ""}${x.active ? "" : " · bloklangan"}</small>
       <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${x.perms.map(p => `<span class="tag">${PL[p][0]}</span>`).join("") || `<span class="tag off">Ruxsat yo'q</span>`}</div></div>${ic("right", "chev")}</button>`).join("")
-      || `<div class="empty"><div class="ei">${ic("users", "xl")}</div><b>Hali xodim yo'q</b><p>Kassir, oshpaz yoki menejer qo'shing va ruxsatlarini belgilang.</p></div>`}`;
+      || `<div class="empty"><div class="ei">${ic("users", "xl")}</div><b>Hali xodim yo'q</b><p>Haydovchi, operator yoki menejer qo'shing va ruxsatlarini belgilang.</p></div>`}`;
 }
 function genPw() { const a = "abcdefghjkmnpqrstuvwxyz23456789"; let s = ""; const r = crypto.getRandomValues(new Uint32Array(8)); r.forEach(x => s += a[x % a.length]); return s; }
 function editStaff(id) {
   const x = id ? Object.assign({}, A.staff.find(s => s.id === id)) : {login: "", name: "", perms: ["orders", "stock"], active: true};
   const perms = new Set(x.perms);
   modal(`<h3 style="margin-bottom:12px">${id ? "Xodimni tahrirlash" : "Yangi xodim"}</h3>
-    <label class="lbl">Ismi</label><input id="sn" maxlength="40" placeholder="Masalan: Dilshod (kassir)" value="${esc(x.name)}">
-    <label class="lbl">Login</label><input id="sl" maxlength="32" placeholder="masalan: dilshod" autocapitalize="none" spellcheck="false" value="${esc(x.login)}">
+    <label class="lbl">Ismi</label><input id="sn" maxlength="40" placeholder="Masalan: Jasur (haydovchi)" value="${esc(x.name)}">
+    <label class="lbl">Login</label><input id="sl" maxlength="32" placeholder="masalan: jasur" autocapitalize="none" spellcheck="false" value="${esc(x.login)}">
     <label class="lbl">${id ? "Yangi parol (o'zgartirmasangiz bo'sh qoldiring)" : "Parol"}</label>
     <div class="row"><input id="sp" maxlength="64" placeholder="${id ? "••••••" : "kamida 6 belgi"}" autocapitalize="none" spellcheck="false" autocomplete="new-password"><button class="btn soft auto" id="sg" type="button">${ic("refresh", "s")} Yaratish</button></div>
     <label class="lbl">Tayyor shablon</label><div class="chips" style="flex-wrap:wrap">${PRESETS.map(([n], i) => `<button class="chip" data-pre="${i}" type="button">${n}</button>`).join("")}</div>
@@ -571,7 +745,7 @@ function editStaff(id) {
   if (id) $("#sd").onclick = async () => { if (!(await confirmBox("Xodimni o'chirasizmi?", esc(x.name || x.login) + " panelga kira olmay qoladi.", "O'chirish", true))) return; const r = await api("staff/delete", {id}); if (!r.ok) return fail(r); toast("O'chirildi"); render(); };
 }
 function showCreds(login, pw, name) {
-  const txt = `Gumbaz Express — xodimlar paneli\nLogin: ${login}\nParol: ${pw}\n\nAdmin botni oching va shu login bilan kiring.`;
+  const txt = `Ulgurji savdo — xodimlar paneli\nLogin: ${login}\nParol: ${pw}\n\nAdmin botni oching va shu login bilan kiring.`;
   modal(`<div class="empty" style="padding:6px 0 10px"><div class="ei" style="background:var(--okl);color:#079455">${ic("check", "l")}</div><b>${esc(name || login)} uchun kirish ma'lumoti</b><p>Shu ma'lumotni xodimga yuboring. Parol keyin ko'rsatilmaydi.</p></div>
     <div class="box"><div class="line"><span>Login</span><b class="num" style="user-select:all">${esc(login)}</b></div><div class="line"><span>Parol</span><b class="num" style="user-select:all">${esc(pw)}</b></div></div>
     <button class="btn b full" id="cc" style="margin-top:6px">${ic("doc", "s")} Nusxalash</button>`);
@@ -583,25 +757,25 @@ let RM = null;
 function openRestMap() {
   if ($("#mapLayer")) return;
   const s = A.settings, tok = A.mapToken, st = mapStyle();
-  RM = {req: 0, sugUz: s.RESTAURANT_ADDRESS_UZ || "", sugRu: s.RESTAURANT_ADDRESS_RU || ""};
+  RM = {req: 0, sugUz: s.BASE_ADDRESS_UZ || "", sugRu: s.BASE_ADDRESS_RU || ""};
   const el = document.createElement("div"); el.id = "mapLayer";
   el.innerHTML = `<div class="gmap mbx" id="gmap"></div><div class="mshade"></div>
-    <div class="pinw" id="pin"><i class="pshadow"></i><i class="pring"></i><div class="pinb">${PIN_SVG}</div><div class="pbub">Restoran</div></div>
-    <div class="mtop"><button class="rbtn" id="rmBack" aria-label="Orqaga">${ic("left")}</button><div class="mtitle">${tok ? "" : "Restoran joylashuvi"}</div>
+    <div class="pinw" id="pin"><i class="pshadow"></i><i class="pring"></i><div class="pinb">${PIN_SVG}</div><div class="pbub">Ombor</div></div>
+    <div class="mtop"><button class="rbtn" id="rmBack" aria-label="Orqaga">${ic("left")}</button><div class="mtitle">${tok ? "" : "Ombor joylashuvi"}</div>
       ${tok ? `<div class="mstyle" id="mstyle"><button data-ms="sat">Sputnik</button><button data-ms="map">Xarita</button></div>` : `<span class="ph"></span>`}</div>
     <div class="mctl" id="mctl"><div class="mzoom"><button id="zin" aria-label="+">${ic("plus")}</button><button id="zout" aria-label="−">${ic("minus")}</button></div>
       <button class="rbtn gps" id="mgps" aria-label="Joylashuvim">${ic("gps")}</button></div>
     <div class="mattr" id="mattr">${tok ? "© Mapbox · © OpenStreetMap · © Maxar" : "© OpenStreetMap"}</div>
     <div class="msheet" id="msheet"><div><div class="grab"></div>
-      <div class="mhead"><h3>Restoran joylashuvi</h3></div>
-      <small style="margin:-4px 2px 10px">Xaritani surib, pinni restoran binosiga qo'ying. Restoranda bo'lsangiz — ${ic("gps", "xs")} tugmasini bosing.</small>
+      <div class="mhead"><h3>Ombor joylashuvi</h3></div>
+      <small style="margin:-4px 2px 10px">Xaritani surib, pinni ombor ustiga qo'ying. Omborda bo'lsangiz — ${ic("gps", "xs")} tugmasini bosing.</small>
       <label class="mstreet" id="mst"><span class="ico">${ic("pin", "s")}</span><input id="ra_uz" maxlength="200" placeholder="Manzil (o'zbekcha)" value="${esc(RM.sugUz)}"></label>
       <label class="mstreet" style="margin-top:8px"><span class="ico">RU</span><input id="ra_ru" maxlength="200" placeholder="Адрес (по-русски)" value="${esc(RM.sugRu)}"></label>
       <button class="btn b full" id="rmSave" style="margin-top:12px">${ic("check", "s")} Joylashuvni saqlash</button></div></div>`;
   document.body.appendChild(el); updBack();
   el.classList.toggle("sat", !!tok && st === "sat");
   const sheet = $("#msheet"), pin = $("#pin"), ctl = $("#mctl"), attr = $("#mattr");
-  const map = RM.map = GMap($("#gmap"), {lat: +s.RESTAURANT_LAT, lon: +s.RESTAURANT_LON, zoom: 18, tileUrl: tileFn(tok, st),
+  const map = RM.map = GMap($("#gmap"), {lat: +s.BASE_LAT, lon: +s.BASE_LON, zoom: 18, tileUrl: tileFn(tok, st),
     focusY: H => Math.max(150, (H - sheet.offsetHeight) / 2 + 40),
     onMeasure: m => { pin.style.top = m.fy + "px"; const b = sheet.offsetHeight + 14; ctl.style.bottom = b + "px"; attr.style.bottom = (b - 4) + "px"; },
     onMoveStart: () => { el.classList.add("moving"); pin.classList.remove("drop"); pin.classList.add("lift"); hap("sel"); },
@@ -620,9 +794,9 @@ function openRestMap() {
     const uz = $("#ra_uz").value.trim(), ru = $("#ra_ru").value.trim() || uz;
     if (uz.length < 3) { toast("Manzilni kiriting", "danger"); return $("#ra_uz").focus(); }
     const b = $("#rmSave"); b.disabled = true;
-    const r = await api("settings/save", {settings: {RESTAURANT_LAT: map.lat, RESTAURANT_LON: map.lon, RESTAURANT_ADDRESS_UZ: uz, RESTAURANT_ADDRESS_RU: ru}});
+    const r = await api("settings/save", {settings: {BASE_LAT: map.lat, BASE_LON: map.lon, BASE_ADDRESS_UZ: uz, BASE_ADDRESS_RU: ru}});
     b.disabled = false; if (!r.ok) return fail(r);
-    A.settings = r.settings; hap("ok"); toast("Restoran joylashuvi saqlandi"); closeRestMap(); if (A.view === "settings") render();
+    A.settings = r.settings; hap("ok"); toast("Ombor joylashuvi saqlandi"); closeRestMap(); if (A.view === "settings") render();
   };
   setTimeout(() => pin.classList.add("drop"), 60);
 }
@@ -643,12 +817,16 @@ function restGeo() {
 
 /* ───────── events ───────── */
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-tab],[data-of],[data-o],[data-st],[data-mc],[data-tog],[data-edit],[data-mv],[data-cmv],[data-bmv],[data-bdel],[data-sid]"); if (!el) return;
+  const el = e.target.closest("[data-tab],[data-of],[data-o],[data-st],[data-mc],[data-tog],[data-edit],[data-mv],[data-cmv],[data-bmv],[data-bdel],[data-sid],[data-shop],[data-sz],[data-lld],[data-llz]"); if (!el) return;
   const d = el.dataset;
   if (d.tab) { hap("sel"); return go(d.tab); }
   if (d.of) { A.ordFilter = d.of; hap("sel"); return render(); }
   if (d.st) return setStatus(+d.oid, d.st);
   if (d.o) { hap(); return openOrder(+d.o); }
+  if (d.shop) { hap(); return openShop(+d.shop); }
+  if (d.sz !== undefined && el.classList.contains("chip")) { A.sz = d.sz; hap("sel"); return render(); }
+  if (d.lld) { A.llDate = d.lld; hap("sel"); return render(); }
+  if (d.llz !== undefined && el.classList.contains("chip")) { A.llZone = d.llz; hap("sel"); return render(); }
   if (d.mc) { A.cat = d.mc; A.sortMode = false; hap("sel"); return render(); }
   if (d.tog) { e.stopPropagation(); return toggleProd(d.tog, el); }
   if (d.edit) { hap(); return editProduct(d.edit); }
@@ -660,62 +838,80 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") back(); if (e.key === "Enter" && e.target.matches("[data-edit]")) editProduct(e.target.dataset.edit); });
 
-/* ───────── DEMO: brauzer ichidagi soxta server (faqat Telegram'dan tashqarida) ───────── */
+/* ───────── DEMO: brauzer ichidagi soxta server (faqat demo-yig'ilmada) ───────── */
 let MK = null;
+const dISO = n => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() + n); return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); };
+const dLbl = iso => { const x = new Date(iso + "T00:00:00"); return WDL[(x.getDay() + 6) % 7] + ", " + x.getDate() + "-" + ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"][x.getMonth()]; };
 function mockInit() {
   const d = JSON.parse(JSON.stringify(DEMO_DATA || {categories: [], products: [], banners: []}));
   d.products.forEach(p => p.available = p.available !== false);
-  const names = ["Jasur Karimov", "Madina Aliyeva", "Sardor Rahimov", "Dilnoza Yusupova", "Bekzod Toshev", "Nilufar Qodirova", "Aziz Ergashev", "Shahnoza Ismoilova"];
-  const users = names.map((n, i) => ({tg_id: 1000 + i, name: n, phone: "+99890" + (1234567 + i * 7919), username: i % 3 ? null : n.split(" ")[0].toLowerCase(), created: Date.now() / 1000 - 86400 * (i * 3 + 1)}));
-  const now = Date.now() / 1000 | 0, orders = []; let id = 1000;
-  const sts = ["done", "done", "done", "done", "cancelled", "done"], dl = ["courier", "courier", "yandex", "pickup"];
+  const zones = (DEMO_DATA.settings && DEMO_DATA.settings.zones) || [];
+  const shops = [["Baraka market", "Aziz Karimov"], ["Oila do'koni", "Madina Aliyeva"], ["Sardor savdo", "Sardor Rahimov"], ["Nur supermarket", "Dilnoza Yusupova"], ["Bekzod mini-market", "Bekzod Toshev"], ["Shirin do'kon", "Nilufar Qodirova"], ["Aziz 24/7", "Aziz Ergashev"], ["Shahnoza market", "Shahnoza Ismoilova"]];
+  const users = shops.map(([s, n], i) => ({tg_id: 1000 + i, shop: s, name: n, phone: "+99890" + (1234567 + i * 7919), username: i % 3 ? null : n.split(" ")[0].toLowerCase(), zone: zones.length ? zones[i % zones.length].id : null, address: "Shahrisabz, Ipak yo'li ko'chasi, " + (5 + i * 7), landmark: i % 2 ? "Bozor yonida" : "", lat: 39.06 + i / 900, lon: 66.83 + i / 800, debt_limit: i === 0 ? 3000000 : null, created: Date.now() / 1000 - 86400 * (i * 3 + 1), blocked: 0, note: ""}));
+  const now = Date.now() / 1000 | 0, orders = [], ledger = []; let id = 1000, lid = 1;
   let seed = 7; const rnd = n => { seed = (seed * 16807) % 2147483647; return seed % n; };
+  const mkItems = () => { const items = []; for (let j = 0, m = 2 + rnd(3); j < m; j++) { const p = d.products[rnd(d.products.length)], u = p.pack && p.sell !== "pc" && rnd(3) ? "pack" : (p.sell === "pack" ? "pack" : "pc");
+    items.push({pid: p.id, name: p.name, unit: u, price: u === "pack" ? (p.pack.price || p.price * p.pack.qty) : p.price, qty: u === "pack" ? 1 + rnd(4) : 5 + rnd(20), base: {uz: UNL[p.unit || "pc"], ru: UNL[p.unit || "pc"]}, pack_qty: u === "pack" ? p.pack.qty : undefined, unit_name: u === "pack" ? p.pack.name : undefined}); } return items; };
   for (let day = 6; day >= 0; day--) {
-    const n = 6 + rnd(9);
-    for (let k = 0; k < n; k++) {
-      const created = now - day * 86400 - rnd(day ? 80000 : Math.max(600, (now % 86400) - 600)), items = [];
-      for (let j = 0, m = 1 + rnd(3); j < m; j++) { const p = d.products[rnd(d.products.length)], v = p.variants ? p.variants[rnd(p.variants.length)] : null; items.push({pid: p.id, name: p.name, variant: v ? v.name : null, price: v ? v.price : p.price, qty: 1 + rnd(2)}); }
-      const u = users[rnd(users.length)];
-      orders.push({id: ++id, tg_id: u.tg_id, items, total: items.reduce((a, x) => a + x.price * x.qty, 0), delivery: dl[rnd(4)], payment: rnd(2) ? "cash" : "card", address: "Shahrisabz, Ipak yo'li ko'chasi, " + (5 + rnd(60)), lat: 39.06 + rnd(100) / 10000, lon: 66.83 + rnd(100) / 10000, comment: rnd(4) ? "" : "Piyozsiz bo'lsin", status: day ? sts[rnd(sts.length)] : "done", created});
+    for (let k = 0, n = 3 + rnd(5); k < n; k++) {
+      const created = now - day * 86400 - rnd(day ? 70000 : 3000), items = mkItems(), u = users[rnd(users.length)], total = items.reduce((a, x) => a + x.price * x.qty, 0), pay = rnd(3) ? "cash" : "debt";
+      const o = {id: ++id, tg_id: u.tg_id, items, total, payment: pay, address: u.address, lat: u.lat, lon: u.lon, comment: rnd(5) ? "" : "Ertalab olib keling", status: day > 1 ? (rnd(9) ? "done" : "cancelled") : "new", created, delivery_date: dISO(day > 1 ? -day + 1 : 1 + rnd(2)), zone: u.zone};
+      if (o.status === "done") { o.paid = pay === "cash" ? total : 0; o.debt = total - o.paid; if (o.debt) ledger.push({id: lid++, tg_id: u.tg_id, amount: o.debt, kind: "order", order_id: o.id, note: "Buyurtma #" + o.id, by_name: "Rahbar", created: created + 86400}); }
+      orders.push(o);
     }
   }
-  orders.sort((a, b) => a.id - b.id); orders.forEach((o, i) => o.id = 1001 + i);
-  const last = orders.slice(-5); ["new", "new", "accepted", "cooking", "on_way"].forEach((s, i) => { last[i].status = s; last[i].created = now - (5 - i) * 420; });
-  MK = {menu: d, users, orders, settings: {RESTAURANT_NAME: "Gumbaz Express", RESTAURANT_ADDRESS_UZ: "Shahrisabz, Kunchiqar chorraxa", RESTAURANT_ADDRESS_RU: "Шахрисабз, перекрёсток Кунчикар", RESTAURANT_LAT: 39.0578, RESTAURANT_LON: 66.8342, SUPPORT_PHONE: "+998 77 501 03 03", SUPPORT_USERNAME: "gumbaz_express", WORK_HOURS: "24/7", MIN_ORDER: 20000, ACCEPTING: true, CLOSED_MSG_UZ: "Hozir buyurtma qabul qilmayapmiz.", CLOSED_MSG_RU: "Сейчас мы не принимаем заказы."},
-    staff: [{id: 1, login: "dilshod", name: "Dilshod (kassir)", perms: ["orders", "stock"], active: true, telegram: true}, {id: 2, login: "malika", name: "Malika (menejer)", perms: ["stats", "orders", "stock", "menu", "banners", "customers"], active: true, telegram: false}]};
+  ledger.push({id: lid++, tg_id: 1001, amount: -200000, kind: "payment", note: "Naqd", by_name: "Rahbar", created: now - 3600});
+  orders.slice(-4).forEach((o, i) => o.status = ["accepted", "accepted", "new", "new"][i]);
+  MK = {menu: d, users, orders, ledger, zones: JSON.parse(JSON.stringify(zones)), lid,
+    settings: {COMPANY_NAME: "Ulgurji savdo", BASE_ADDRESS_UZ: "Shahrisabz, ombor", BASE_ADDRESS_RU: "Шахрисабз, склад", BASE_LAT: 39.0578, BASE_LON: 66.8342, SUPPORT_PHONE: "+998 90 000 00 00", SUPPORT_USERNAME: "", WORK_HOURS: "Du–Sh, 08:00–20:00", MIN_ORDER: 200000, ACCEPTING: true, ALLOW_DEBT: true, DEBT_LIMIT: 0, SAME_DAY_UNTIL: 0, CLOSED_MSG_UZ: "Hozir buyurtma qabul qilmayapmiz.", CLOSED_MSG_RU: "Сейчас мы не принимаем заказы."},
+    staff: [{id: 1, login: "jasur", name: "Jasur (haydovchi)", perms: ["orders", "debts"], active: true, telegram: true}, {id: 2, login: "malika", name: "Malika (operator)", perms: ["stats", "orders", "stock", "menu", "shops"], active: true, telegram: false}]};
 }
-const NX = {new: ["accepted", "cancelled"], accepted: ["cooking", "cancelled"], cooking: ["on_way", "cancelled"], on_way: ["done"], ready: ["done"]};
-const nextOf = o => (NX[o.status] || []).map(s => o.delivery === "pickup" && s === "on_way" ? "ready" : s);
+const NX = {new: ["accepted", "cancelled"], accepted: ["on_way", "cancelled"], on_way: ["done", "cancelled"]};
 async function mock(route, b, raw) {
   if (!MK) mockInit();
-  await new Promise(r => setTimeout(r, route === "upload" ? 400 : 90));
+  await new Promise(r => setTimeout(r, route === "upload" ? 400 : 80));
   const ok = x => Object.assign({ok: true}, x), d0 = (() => { const x = new Date(); x.setHours(0, 0, 0, 0); return x / 1000; })();
-  const withU = o => { const u = MK.users.find(x => x.tg_id === o.tg_id) || {}; return Object.assign({}, o, {uname: u.name, uphone: u.phone, uusername: u.username, next: nextOf(o)}); };
-  const live = MK.orders.filter(o => o.status !== "cancelled");
+  const bal = uid => MK.ledger.filter(e => e.tg_id === uid).reduce((a, e) => a + e.amount, 0);
+  const zn = id => { const z = MK.zones.find(x => x.id === id); return z ? z.name.uz : ""; };
+  const withU = o => { const u = MK.users.find(x => x.tg_id === o.tg_id) || {}; return Object.assign({}, o, {uname: u.name, uphone: u.phone, uusername: u.username, ushop: u.shop, next: NX[o.status] || [], date_label: dLbl(o.delivery_date), zone_name: zn(o.zone), balance: bal(o.tg_id)}); };
+  const live = MK.orders.filter(o => o.status !== "cancelled"), ACT = ["new", "accepted", "on_way"];
+  const dsum = () => { const bs = MK.users.map(u => bal(u.tg_id)).filter(x => x > 0); return {total: bs.reduce((a, x) => a + x, 0), count: bs.length}; };
+  const shopX = u => { const os = live.filter(o => o.tg_id === u.tg_id); return Object.assign({}, u, {balance: bal(u.tg_id), orders: os.length, spent: os.reduce((a, o) => a + o.total, 0), zone_name: zn(u.zone), limit: u.debt_limit != null ? u.debt_limit : +MK.settings.DEBT_LIMIT, last_order: Math.max(0, ...os.map(o => o.created))}); };
   switch (route) {
     case "me": return ok({name: "Rahbar", owner: true, perms: Object.keys(PL)});
     case "login": return ok({token: "demo"});
     case "logout": return ok({});
     case "dashboard": {
-      const start = d0 - 6 * 86400, by = [...Array(7)].map((_, i) => ({day: start + i * 86400, revenue: 0, orders: 0})), top = {}, dv = {courier: 0, yandex: 0, pickup: 0};
-      live.filter(o => o.created >= start).forEach(o => { const i = Math.min(6, Math.floor((o.created - start) / 86400)); by[i].revenue += o.total; by[i].orders++; dv[o.delivery]++; o.items.forEach(x => { const t = top[x.pid] = top[x.pid] || {pid: x.pid, name: x.name, qty: 0}; t.qty += x.qty; }); });
+      const start = d0 - 6 * 86400, by = [...Array(7)].map((_, i) => ({day: start + i * 86400, revenue: 0, orders: 0})), top = {}, pay = {cash: 0, debt: 0};
+      live.filter(o => o.created >= start).forEach(o => { const i = Math.min(6, Math.floor((o.created - start) / 86400)); by[i].revenue += o.total; by[i].orders++; pay[o.payment] += o.total; o.items.forEach(x => { const t = top[x.pid] = top[x.pid] || {pid: x.pid, name: x.name, pcs: 0, revenue: 0, base: x.base}; t.pcs += x.qty * (x.pack_qty || 1); t.revenue += x.qty * x.price; }); });
       const td = live.filter(o => o.created >= d0), ye = live.filter(o => o.created >= d0 - 86400 && o.created < d0), rev = td.reduce((a, o) => a + o.total, 0);
+      const up = {}; MK.orders.filter(o => ACT.includes(o.status) && o.delivery_date >= dISO(0)).forEach(o => { const u = up[o.delivery_date] = up[o.delivery_date] || {date: o.delivery_date, orders: 0, sum: 0, label: dLbl(o.delivery_date)}; u.orders++; u.sum += o.total; });
       return ok({today: {orders: td.length, revenue: rev, avg: td.length ? rev / td.length | 0 : 0}, yesterday: {revenue: ye.reduce((a, o) => a + o.total, 0), orders: ye.length}, by_day: by,
-        top: Object.values(top).sort((a, b) => b.qty - a.qty).slice(0, 5), delivery: dv, active: MK.orders.filter(o => NX[o.status]).length, customers: MK.users.length, new_customers: 1});
+        top: Object.values(top).sort((a, b) => b.revenue - a.revenue).slice(0, 5), pay, active: MK.orders.filter(o => ACT.includes(o.status)).length, debt: dsum(),
+        upcoming: Object.values(up).sort((a, b) => a.date < b.date ? -1 : 1), shops: MK.users.length, new_shops: 1});
     }
     case "orders": {
-      const G = {active: ["new", "accepted", "cooking", "on_way", "ready"], done: ["done"], cancelled: ["cancelled"], new: ["new"]};
-      let l = MK.orders.filter(o => (G[b.status] || G.active).includes(o.status)).map(withU);
-      if (b.q) { const q = b.q.toLowerCase().replace("#", ""); l = l.filter(o => String(o.id).includes(q) || (o.uphone || "").includes(q) || (o.uname || "").toLowerCase().includes(q)); }
-      const ac = {}; MK.orders.filter(o => NX[o.status]).forEach(o => ac[o.status] = (ac[o.status] || 0) + 1);
-      return ok({orders: l.reverse().slice(0, 40), active_counts: ac});
+      const G = {active: ACT, done: ["done"], cancelled: ["cancelled"]};
+      let l = MK.orders.filter(o => (G[b.status] || [b.status]).includes(o.status)).map(withU);
+      if (b.q) { const q = b.q.toLowerCase().replace("#", ""); l = l.filter(o => String(o.id).includes(q) || (o.uphone || "").includes(q) || (o.uname + " " + o.ushop).toLowerCase().includes(q)); }
+      const ac = {}; MK.orders.filter(o => ACT.includes(o.status)).forEach(o => ac[o.status] = (ac[o.status] || 0) + 1);
+      return ok({orders: l.reverse().slice(0, 60), active_counts: ac});
     }
     case "order": { const o = MK.orders.find(x => x.id === b.id); return o ? ok({order: withU(o)}) : {ok: false, error: "not_found"}; }
-    case "order/status": { const o = MK.orders.find(x => x.id === b.id); if (!o || !nextOf(o).includes(b.status)) return {ok: false, error: "Bu holatga o'tkazib bo'lmaydi"}; o.status = b.status; return ok({status: o.status}); }
+    case "order/status": { const o = MK.orders.find(x => x.id === b.id); if (!o || !(NX[o.status] || []).includes(b.status)) return {ok: false, error: "Bu holatga o'tkazib bo'lmaydi"}; o.status = b.status;
+      if (b.status === "done") { o.paid = b.paid == null ? (o.payment === "cash" ? o.total : 0) : Math.min(o.total, b.paid); o.debt = o.total - o.paid; if (o.debt) MK.ledger.push({id: MK.lid++, tg_id: o.tg_id, amount: o.debt, kind: "order", order_id: o.id, note: "Buyurtma #" + o.id, by_name: "Rahbar", created: Date.now() / 1000}); }
+      return ok({status: o.status, paid: o.paid, debt: o.debt}); }
+    case "loadlist": {
+      const date = b.date || dISO(0), os = MK.orders.filter(o => o.delivery_date === date && ACT.includes(o.status) && (!b.zone || o.zone === b.zone)).map(withU), prods = {}, tot = {orders: os.length, sum: 0, cash: 0, debt: 0, new: 0};
+      os.forEach(o => { tot.sum += o.total; tot[o.payment] += o.total; tot.new += o.status === "new"; o.items.forEach(x => { const p = prods[x.pid] = prods[x.pid] || {pid: x.pid, name: x.name, pcs: 0, base: x.base, pack_qty: 0}; p.pcs += x.qty * (x.pack_qty || 1); const cur = MK.menu.products.find(y => y.id === x.pid); if (cur && cur.pack) { p.pack_qty = cur.pack.qty; p.pack_name = cur.pack.name; } }); });
+      Object.values(prods).forEach(p => { if (p.pack_qty) { p.packs = Math.floor(p.pcs / p.pack_qty); p.rest = p.pcs % p.pack_qty; } });
+      const days = {}; MK.orders.filter(o => ACT.includes(o.status) && o.delivery_date >= dISO(0)).forEach(o => { days[o.delivery_date] = (days[o.delivery_date] || 0) + 1; });
+      return ok({date, label: dLbl(date), totals: tot, products: Object.values(prods), orders: os.map(o => Object.assign(o, {shop: o.ushop, phone: o.uphone})), days: Object.keys(days).sort().map(k => ({date: k, orders: days[k], label: dLbl(k)}))});
+    }
     case "menu": return ok(JSON.parse(JSON.stringify(MK.menu)));
     case "product/toggle": { const p = MK.menu.products.find(x => x.id === b.id); p.available = b.available; return ok({}); }
     case "product/delete": MK.menu.products = MK.menu.products.filter(x => x.id !== b.id); return ok({});
-    case "product/save": { const p = b.product; if (p.id) { const i = MK.menu.products.findIndex(x => x.id === p.id); MK.menu.products[i] = p; } else { p.id = "p" + Date.now(); const idx = MK.menu.products.map(x => x.cat).lastIndexOf(p.cat); MK.menu.products.splice(idx + 1, 0, p); } if (!p.variants) delete p.variants; return ok({product: p}); }
+    case "product/save": { const p = b.product; if (p.id) { const i = MK.menu.products.findIndex(x => x.id === p.id); MK.menu.products[i] = p; } else { p.id = "p" + Date.now(); const idx = MK.menu.products.map(x => x.cat).lastIndexOf(p.cat); MK.menu.products.splice(idx + 1, 0, p); } return ok({product: p}); }
     case "sort": {
       if (b.kind === "categories") MK.menu.categories = b.ids.map(i => MK.menu.categories.find(c => c.id === i));
       if (b.kind === "banners") MK.menu.banners = b.ids.map(i => MK.menu.banners.find(c => c.id === i));
@@ -725,14 +921,29 @@ async function mock(route, b, raw) {
     case "category/save": { if (b.id) MK.menu.categories.find(c => c.id === b.id).name = {uz: b.name.uz || b.name.ru, ru: b.name.ru || b.name.uz}; else { if (!b.name.uz && !b.name.ru) return {ok: false, error: "name_required"}; MK.menu.categories.push({id: "c" + Date.now(), name: {uz: b.name.uz || b.name.ru, ru: b.name.ru || b.name.uz}}); } return ok({}); }
     case "category/delete": if (MK.menu.products.some(p => p.cat === b.id)) return {ok: false, error: "category_not_empty"}; MK.menu.categories = MK.menu.categories.filter(c => c.id !== b.id); return ok({});
     case "upload": return ok({src: URL.createObjectURL(raw.blob)});
-    case "banner/save": { const x = b.banner, item = {id: x.id || "b" + Date.now(), src: x.src, type: /^blob:/.test(x.src) ? (bed && bed.type) || "image" : /\.(mp4|mov)$/i.test(x.src) ? "video" : "image"}; if (x.product) item.product = x.product; if (x.category) item.category = x.category; if (x.id) { const i = MK.menu.banners.findIndex(y => y.id === x.id); item.poster = MK.menu.banners[i].poster; MK.menu.banners[i] = item; } else MK.menu.banners.unshift(item); return ok({banner: item}); }
+    case "banner/save": { const x = b.banner, item = {id: x.id || "b" + Date.now(), src: x.src, type: /^blob:/.test(x.src) ? (bed && bed.type) || "image" : /\.(mp4|mov)$/i.test(x.src) ? "video" : "image"}; if (x.product) item.product = x.product; if (x.category) item.category = x.category; if (x.id) { const i = MK.menu.banners.findIndex(y => y.id === x.id); MK.menu.banners[i] = item; } else MK.menu.banners.unshift(item); return ok({banner: item}); }
     case "banner/delete": MK.menu.banners = MK.menu.banners.filter(x => x.id !== b.id); return ok({});
     case "settings": return ok({settings: Object.assign({}, MK.settings), map_token: ""});
     case "geocode": return ok({uz: "Qashqadaryo viloyati, Shahrisabz, Ipak yo'li ko'chasi", ru: "Кашкадарьинская область, Шахрисабз, улица Ипак йули"});
     case "settings/save": Object.assign(MK.settings, b.settings); return ok({settings: Object.assign({}, MK.settings)});
-    case "customers": { const l = MK.users.map(u => { const os = live.filter(o => o.tg_id === u.tg_id); return Object.assign({}, u, {orders: os.length, spent: os.reduce((a, o) => a + o.total, 0)}); }).sort((a, b) => b.spent - a.spent); return ok({customers: l, total: l.length}); }
-    case "broadcast": return ok({queued: MK.users.length});
-    case "staff": return ok({staff: MK.staff, owner_ids: [8515369931]});
+    case "zones": return ok({zones: MK.zones.map(z => Object.assign({}, z, {shops: MK.users.filter(u => u.zone === z.id).length})), no_zone: MK.users.filter(u => !u.zone).length});
+    case "zone/save": { const z = b.zone, cur = MK.zones.find(x => x.id === z.id); if (!z.name.uz && !z.name.ru) return {ok: false, error: "name_required"}; const nz = {id: z.id || "z" + Date.now(), name: {uz: z.name.uz || z.name.ru, ru: z.name.ru || z.name.uz}, days: z.days.sort()}; if (cur) Object.assign(cur, nz); else MK.zones.push(nz); return ok({zone: nz}); }
+    case "zone/delete": MK.zones = MK.zones.filter(z => z.id !== b.id); MK.users.forEach(u => { if (u.zone === b.id) u.zone = null; }); return ok({});
+    case "shops": case "debts": {
+      let l = MK.users.map(shopX);
+      if (b.q) { const q = b.q.toLowerCase(); l = l.filter(u => (u.shop + " " + u.name + " " + u.phone).toLowerCase().includes(q)); }
+      if (b.zone) l = l.filter(u => b.zone === "-" ? !u.zone : u.zone === b.zone);
+      if (route === "debts") l = l.filter(u => u.balance > 0).sort((a, c) => c.balance - a.balance);
+      return ok({shops: l, total: l.length, debt: dsum()});
+    }
+    case "shop": { const u = MK.users.find(x => x.tg_id === b.id); if (!u) return {ok: false, error: "not_found"};
+      return ok({shop: shopX(u), ledger: MK.ledger.filter(e => e.tg_id === u.tg_id).slice().reverse(), orders: MK.orders.filter(o => o.tg_id === u.tg_id).slice(-15).reverse().map(o => Object.assign({}, o, {date_label: dLbl(o.delivery_date)}))}); }
+    case "shop/save": { const u = MK.users.find(x => x.tg_id === b.id); ["shop", "zone", "debt_limit", "note"].forEach(k => { if (k in b) u[k] = b[k] === "" && k === "zone" ? null : b[k]; }); u.blocked = b.blocked ? 1 : 0; return ok({shop: u}); }
+    case "payment": case "adjust": { const amt = route === "payment" ? -Math.abs(b.amount) : b.amount; MK.ledger.push({id: MK.lid++, tg_id: b.id, amount: amt, kind: route, note: b.note, by_name: "Rahbar", created: Date.now() / 1000}); return ok({balance: bal(b.id)}); }
+    case "ledger/delete": { const e = MK.ledger.find(x => x.id === b.id); MK.ledger = MK.ledger.filter(x => x.id !== b.id); return ok({balance: e ? bal(e.tg_id) : 0}); }
+    case "broadcast": return ok({queued: MK.users.filter(u => !b.zone || u.zone === b.zone).length});
+    case "loadlist/send": return ok({});
+    case "staff": return ok({staff: MK.staff, owner_ids: [123456789]});
     case "staff/save": { const x = b.staff; if (MK.staff.some(s => s.login === x.login && s.id !== x.id)) return {ok: false, error: "login_taken"};
       if (x.id) Object.assign(MK.staff.find(s => s.id === x.id), {login: x.login, name: x.name, perms: x.perms, active: x.active}); else MK.staff.push({id: Date.now(), login: x.login, name: x.name, perms: x.perms, active: true, telegram: false}); return ok({}); }
     case "staff/delete": MK.staff = MK.staff.filter(s => s.id !== b.id); return ok({});
@@ -740,4 +951,5 @@ async function mock(route, b, raw) {
   return {ok: false, error: "not_found"};
 }
 boot();
+</script>
 </script>

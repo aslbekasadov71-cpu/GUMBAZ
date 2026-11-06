@@ -30,6 +30,11 @@ ICONS = {  # ilova nomi -> Solar ikonka
     "gallery": "gallery-bold-duotone", "upload": "upload-minimalistic-bold", "list": "list-bold-duotone",
     "bell": "bell-bold-duotone", "settings": "settings-bold-duotone", "shield": "shield-check-bold-duotone",
     "crown": "crown-bold-duotone", "send": "plain-bold",
+    "wallet": "wallet-money-bold-duotone", "calendar": "calendar-mark-bold-duotone", "money": "banknote-2-bold-duotone",
+    "history": "history-bold-duotone", "repeat": "repeat-bold", "route": "routing-2-bold-duotone", "copy": "copy-bold-duotone",
+    "sale": "sale-bold", "notebook": "notebook-bold-duotone", "handmoney": "hand-money-bold-duotone",
+    "block": "user-block-bold-duotone", "map": "map-bold-duotone", "layers": "layers-bold-duotone", "star": "star-bold",
+    "truck": "delivery-bold-duotone", "clip": "clipboard-list-bold-duotone",
 }
 FALLBACK_BODY = {
     "add-linear": '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M12 5v14m7-7H5"/>',
@@ -84,11 +89,12 @@ def demo_data():
     banners = json.load(open(os.path.join(ROOT, "data", "banners.json"), encoding="utf-8"))
     cfg = json.load(open(os.path.join(ROOT, "config.example.json"), encoding="utf-8"))
     return {"categories": menu["categories"], "products": menu["products"], "banners": banners,
-            "settings": {"restaurant": {"name": cfg["RESTAURANT_NAME"], "lat": cfg["RESTAURANT_LAT"], "lon": cfg["RESTAURANT_LON"],
-                                        "address": {"uz": cfg["RESTAURANT_ADDRESS_UZ"], "ru": cfg["RESTAURANT_ADDRESS_RU"]}},
+            "settings": {"company": cfg["COMPANY_NAME"], "base": {"lat": cfg["BASE_LAT"], "lon": cfg["BASE_LON"],
+                                                                 "address": {"uz": cfg["BASE_ADDRESS_UZ"], "ru": cfg["BASE_ADDRESS_RU"]}},
                          "support_phone": cfg["SUPPORT_PHONE"], "support_username": cfg["SUPPORT_USERNAME"], "work_hours": cfg["WORK_HOURS"],
-                         "min_order": cfg["MIN_ORDER"], "accepting": True, "closed_msg": {"uz": cfg["CLOSED_MSG_UZ"], "ru": cfg["CLOSED_MSG_RU"]},
-                         "yandex_tariff": "express", "yandex_price_api": False}}
+                         "min_order": cfg["MIN_ORDER"], "accepting": True, "allow_debt": True, "map_token": "",
+                         "closed_msg": {"uz": cfg["CLOSED_MSG_UZ"], "ru": cfg["CLOSED_MSG_RU"]},
+                         "zones": json.load(open(os.path.join(ROOT, "data", "zones.json"), encoding="utf-8"))}}
 
 
 def main():

@@ -1,9 +1,9 @@
-/* Gumbaz design system — GRMARKET uslubi (flat, Manrope, tint chiplar), logotip ranglari.
+/* Ulgurji design system — flat, Manrope, tint chiplar; asosiy rang logotipdan.
    Layout: bitta ustun, max 560px, pastki navigatsiya; kartalar soyasiz, 18px burchak. */
 :root{
   --bg:#f2f4f7; --card:#fff; --ink:#101828; --mute:#8a94a6; --line:#e6e9ef;
-  --b:#0f6e4c; --bd:#0b3d2c; --bl:#e3f2eb;
-  --g:#c9a95e; --gd:#7a5d16; --gl:#f8f0dc;
+  --b:#1d5bd8; --bd:#0f2f6e; --bl:#e8effc;
+  --g:#f5b301; --gd:#8a5a00; --gl:#fff4d6;
   --red:#f04438; --redl:#fee4e2; --ok:#12b76a; --okl:#dcfae6; --warn:#dc6803; --warnl:#fef0c7;
   --photo:#f4f4f3;
   --font:Manrope,-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
@@ -73,8 +73,9 @@ button.card:active,.card.tap:active{transform:scale(.99)}
 .chev{color:#c3cad6;flex:none}
 .tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--bl);color:var(--b);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 .tag.new{background:var(--warnl);color:var(--warn)}
-.tag.accepted,.tag.cooking{background:var(--gl);color:var(--gd)}
-.tag.on_way,.tag.ready{background:var(--bl);color:var(--b)}
+.tag.accepted{background:var(--gl);color:var(--gd)}
+.tag.on_way{background:var(--bl);color:var(--b)}
+.tag.debt{background:var(--redl);color:var(--red)}.tag.cash{background:var(--okl);color:#079455}
 .tag.done{background:var(--okl);color:#079455}
 .tag.cancelled{background:var(--redl);color:var(--red)}
 .tag.off{background:#eef0f4;color:var(--mute)}
